@@ -3,6 +3,9 @@ import VueRouter from 'vue-router'
 import Booking from '../components/Booking.vue'
 import CreateSlot from '../components/CreateSlot.vue'
 import Home from '../components/Home.vue'
+import Login from '../components/Login.vue'
+import Register from '../components/Register.vue'
+import store from '../store/store.js'
 Vue.use(VueRouter)
 
 const routes = [
@@ -32,6 +35,18 @@ const routes = [
       isAuthenticated: true
     }
   },
+
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
+
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
+  },
 ]
 
 const router = new VueRouter({
@@ -40,26 +55,15 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.meta.isAuthenticated) {
-    // Get the actual url of the app, it's needed for Keycloak
-    const basePath = window.location.toString()
-    if (!Vue.$keycloak.authenticated) {
+    if (store.getters.getUser == null) {
       // The page is protected and the user is not authenticated. Force a login.
-      Vue.$keycloak.login({ redirectUri: basePath.slice(0, -1) + to.path })
-    } else if (Vue.$keycloak.hasResourceRole('remrob-student')) {
-      // The user was authenticated, and has the app role
-      Vue.$keycloak.updateToken(70)
-        .then(() => {
-          next()
-        })
-        .catch(err => {
-          console.error(err)
-        })
-    } else {
-      // The user was authenticated, but did not have the correct role
-      // Redirect to an error page
-      next({ name: 'Unauthorized' })
+      next('/login')
     }
-  } else {
+    else {
+      next()
+    }
+  } 
+  else {
     // This page did not require authentication
     next()
   }

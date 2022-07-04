@@ -1,5 +1,8 @@
 <template>
     <b-container fluid>
+        <b-modal ok-title="Confirm" @ok="deleteBooking" title="Delete booking" id="delete-booking-modal">
+            <h4>Are you sure you want to delete your booking?</h4>
+        </b-modal>
         <b-modal ok-title="Confirm" @ok="bookSlot" title="Book the slot" id="booking-modal">
             <h4>Are you sure you want to book this slot?</h4>
         </b-modal>
@@ -18,6 +21,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 
 export default {
     name: "Booking",
@@ -60,16 +64,30 @@ export default {
             selectedSlot: null
         };
     },
+    computed: {
+        ...mapGetters(["getUser"])
+    },
     methods: {
         handleEventClick: function (info) {
             this.selectedSlot = info.event.id
-            this.$bvModal.show("booking-modal");
+            if (info.event.backgroundColor === "green") {
+                this.$bvModal.show("delete-booking-modal")
+            }
+            else {
+                this.$bvModal.show("booking-modal");
+            }
         },
         handleDateSelect: function (info) {
             console.log(info);
         },
         bookSlot: function () {
-            axios.post(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {"userId": this.$keycloak.subject}).then((res) => {
+            axios.post(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {"userId": this.getUser.user_id}).then((res) => {
+                this.getAllSlots()
+            })
+        },
+
+        deleteBooking: function() {
+            axios.delete(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot).then((res) => {
                 this.getAllSlots()
             })
         },
@@ -78,7 +96,7 @@ export default {
                 console.log(res.data.bookings)
                 this.calendarOptions.events = res.data.bookings
             });
-            axios.get(this.$store.state.baseURL + "/bookings/" + this.$keycloak.subject).then((res) => {
+            axios.get(this.$store.state.baseURL + "/bookings/" + this.getUser.user_id).then((res) => {
                 console.log(res.data.user_bookings)
                 for (let i = 0; i < res.data.user_bookings.length; i++) {
                     this.calendarOptions.events.push(res.data.user_bookings[i])

@@ -13,12 +13,18 @@ Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 Vue.use(authentication)
 
-Vue.$keycloak.init({ onload: 'login-required' }).then(() => {
-  new Vue({
-    router,
-    store,
-    render: h => h(App),
-  }).$mount('#app')
-})
+// Vue.$keycloak.init({ onload: 'login-required' }).then(() => {
+//   new Vue({
+//     router,
+//     store,
+//     render: h => h(App),
+//   }).$mount('#app')
+// })
+new Vue({
+  router,
+  store,
+  render: h => h(App),
+}).$mount('#app')
+
 
 

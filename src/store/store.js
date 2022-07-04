@@ -4,18 +4,18 @@ import Vuex from "vuex"
 Vue.use(Vuex)
 
 const state = {
-    currentUserId: null,
+    user: null,
     baseURL: "http://" + window.location.hostname + ":5000/api/v1" 
 }
 const getters = {
-    getCurrentUserId: (state) => state.currentUserId
+    getUser: (state) => state.user
 }
 const mutations = {
-    SET_CURRENT_USER_ID: (state, currentUserId) => state.currentUserId = currentUserId
+    SET_CURRENT_USER: (state, user) => state.user = user
 }
 const actions = {
-    async setCurrentUserId({commit}, currentUserId) {
-        commit("SET_CURRENT_USER_ID", currentUserId)
+    async setCurrentUser({commit}, user) {
+        commit("SET_CURRENT_USER", user)
     }
 }
 

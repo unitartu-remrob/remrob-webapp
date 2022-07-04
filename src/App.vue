@@ -3,9 +3,9 @@
     <b-navbar toggleable="lg" type="dark" sticky variant="dark">
       <b-navbar-brand style="cursor:pointer" @click="$router.push({name:'Home'})">Remrob</b-navbar-brand>
       <b-navbar-nav class="ml-auto">
-        <b-nav-item>
+        <!-- <b-nav-item>
           <b-button @click="$keycloak.logout()">Logout</b-button>
-        </b-nav-item>
+        </b-nav-item> -->
       </b-navbar-nav>
     </b-navbar>
     <router-view/>

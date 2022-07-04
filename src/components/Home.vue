@@ -8,7 +8,7 @@
                 </b-card>
             </b-col>
             <b-col>
-                <h3>List of bookings</h3>
+                <b-button v-if="getUser.role == 'ROLE_ADMIN'" to="/createSlot">Create slot</b-button>
             </b-col>
         </b-row>
 
@@ -16,11 +16,11 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 export default {
     name: "Home",
-    mounted() {
-        console.log(this.$keycloak.loadUserInfo())
-        console.log(this.$keycloak)
+    computed: {
+        ...mapGetters(["getUser"])
     }
     
 }
