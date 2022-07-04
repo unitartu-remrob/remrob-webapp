@@ -9,7 +9,7 @@ from flask_jwt_extended import JWTManager
 import bcrypt
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5432/remrob'
@@ -49,7 +49,7 @@ class Inventory(db.Model):
 
 @app.route('/')
 def index():
-    return ""
+    return app.send_static_file("index.html")
 
 @app.route("/api/v1/register", methods=["POST"])
 def register():
@@ -152,4 +152,4 @@ def inventory():
         return jsonify(results), 200
     
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")
