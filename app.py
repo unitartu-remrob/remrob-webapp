@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 import bcrypt
@@ -12,7 +11,7 @@ import bcrypt
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5432/remrob'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/remrob'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -85,6 +84,7 @@ def login():
         return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
 
 @app.route('/api/v1/bookings', methods=["GET", "POST"])
+@jwt_required()
 def bookings():
     if request.method == "POST":
         data = request.json
@@ -105,6 +105,7 @@ def bookings():
         return jsonify({"bookings": results}), 200
 
 @app.route('/api/v1/bookings/<user_id>', methods=["GET"])
+@jwt_required()
 def user_bookings(user_id):
     bookings = Bookings.query.filter_by(user_id=user_id).all()
     results = [
@@ -119,6 +120,7 @@ def user_bookings(user_id):
     return jsonify({"user_bookings": results}), 200
 
 @app.route("/api/v1/bookings/book/<id>", methods=["POST", "DELETE"])
+@jwt_required()
 def book_slot(id):
     if request.method == "POST":
         data = request.json
@@ -133,6 +135,7 @@ def book_slot(id):
         return "Booking deleted", 200
 
 @app.route("/api/v1/inventory", methods=["POST", "GET"])
+@jwt_required()
 def inventory():
     if request.method =="POST":
         data = request.json

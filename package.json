@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "gunicorn --bind 0.0.0.0:5000 app:app --workers 4"
+    "start": "gunicorn --bind 0.0.0.0:9000 app:app --workers 4"
   },
   "dependencies": {
     "@burhanahmeed/vue-modal-2": "^1.1.11",

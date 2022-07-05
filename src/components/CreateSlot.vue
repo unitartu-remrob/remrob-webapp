@@ -27,6 +27,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 
 export default {
     name: "CreateSlot",
@@ -69,6 +70,9 @@ export default {
             ]
         };
     },
+    computed: {
+        ...mapGetters(["getUser"])
+    },
     methods: {
         handleEventClick: function (info) {
             console.log(info.event.id);
@@ -85,12 +89,14 @@ export default {
                 "end": this.selectedDate + "T" + this.end,
                 "inventoryId": this.selectedInventory
             }
-            axios.post(this.$store.state.baseURL + "/bookings", slotData).then((res) => {
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.post(this.$store.state.baseURL + "/bookings", slotData, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             });
         },
         getAllSlots: function() {
-            axios.get(this.$store.state.baseURL + "/bookings").then((res) => {
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.get(this.$store.state.baseURL + "/bookings", {headers: this.$store.state.header}).then((res) => {
                 console.log(res.data.bookings)
                 this.calendarOptions.events = res.data.bookings
             });

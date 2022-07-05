@@ -61,7 +61,7 @@ export default {
             end: null,
             selectedInventory: null,
             selectedDate: null,
-            selectedSlot: null
+            selectedSlot: null,      
         };
     },
     computed: {
@@ -81,26 +81,31 @@ export default {
             console.log(info);
         },
         bookSlot: function () {
-            axios.post(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {"userId": this.getUser.user_id}).then((res) => {
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.post(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {"userId": this.getUser.user_id}, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             })
         },
 
         deleteBooking: function() {
-            axios.delete(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot).then((res) => {
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.delete(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             })
         },
         getAllSlots: function() {
-            axios.get(this.$store.state.baseURL + "/bookings").then((res) => {
+            this.calendarOptions.events = []
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.get(this.$store.state.baseURL + "/bookings", {headers: this.$store.state.header}).then((res) => {
                 console.log(res.data.bookings)
-                this.calendarOptions.events = res.data.bookings
+                for (let i = 0; i < res.data.bookings.length; i++) {
+                    this.calendarOptions.events.push(res.data.bookings[i]) 
+                }
             });
-            axios.get(this.$store.state.baseURL + "/bookings/" + this.getUser.user_id).then((res) => {
+            axios.get(this.$store.state.baseURL + "/bookings/" + this.getUser.user_id, {headers: this.$store.state.header}).then((res) => {
                 console.log(res.data.user_bookings)
                 for (let i = 0; i < res.data.user_bookings.length; i++) {
-                    this.calendarOptions.events.push(res.data.user_bookings[i])
-                    
+                    this.calendarOptions.events.push(res.data.user_bookings[i]) 
                 }
             })
         },

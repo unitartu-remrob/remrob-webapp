@@ -5,7 +5,11 @@ Vue.use(Vuex)
 
 const state = {
     user: null,
-    baseURL: "http://" + window.location.hostname + ":5000/api/v1" 
+    baseURL: "http://" + window.location.hostname + "/api/v1",
+    header: {
+        'Authorization': '',
+        'Content-Type': 'application/json'
+    }
 }
 const getters = {
     getUser: (state) => state.user
