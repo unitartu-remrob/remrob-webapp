@@ -124,7 +124,7 @@ def bookings():
 @jwt_required()
 def user_bookings(user_id):
     current_user = get_jwt_identity()
-    if current_user == user_id:
+    if current_user == int(user_id):
         bookings = Bookings.query.filter_by(user_id=user_id).all()
         results = [
             {
@@ -144,7 +144,7 @@ def user_bookings(user_id):
 def book_slot(id):
     data = request.json
     current_user = get_jwt_identity()
-    if data["userId"] == current_user:
+    if int(data["userId"]) == current_user:
         if request.method == "POST":
             slot = Bookings.query.get(id)
             slot.user_id = data["userId"]
