@@ -9,6 +9,7 @@
             </b-col>
             <b-col>
                 <b-button v-if="getUser.role == 'ROLE_ADMIN'" to="/createSlot">Create slot</b-button>
+                <b-button v-if="getUser.role == 'ROLE_ADMIN'" to="/inventory">Create Inventory</b-button>
             </b-col>
         </b-row>
 

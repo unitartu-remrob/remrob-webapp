@@ -8,7 +8,7 @@
                 <b-form-timepicker v-model="end" locale="est"></b-form-timepicker>
             </b-form-group>
             <b-form-group label="Item">
-                <b-form-select v-model="selectedInventory" :options="inventoryOptions"></b-form-select>
+                <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
             </b-form-group>
         </b-modal>
         <b-modal ok-title="Confirm" title="Book the slot" id="booking-modal">
@@ -65,15 +65,23 @@ export default {
             end: null,
             selectedInventory: null,
             selectedDate: null,
-            inventoryOptions: [
-                {value: 1, text: "Robot + Server"}
-            ]
+            inventory: []
         };
     },
     computed: {
         ...mapGetters(["getUser"])
     },
     methods: {
+        getInventory: function() {
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
+                for (let i = 0; i < res.data.length; i++) {
+                    var element = res.data[i];
+                    this.inventory.push({value: element.id, text: element.title})
+                    
+                }
+            })
+        },
         handleEventClick: function (info) {
             console.log(info.event.id);
             this.$bvModal.show("booking-modal");
@@ -97,13 +105,13 @@ export default {
         getAllSlots: function() {
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.get(this.$store.state.baseURL + "/bookings", {headers: this.$store.state.header}).then((res) => {
-                console.log(res.data.bookings)
                 this.calendarOptions.events = res.data.bookings
             });
         }
     },
     created() {
         this.getAllSlots()
+        this.getInventory()
     }
 };
 </script>

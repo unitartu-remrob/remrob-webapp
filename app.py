@@ -2,10 +2,9 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request
 import bcrypt
+from functools import wraps
 
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
@@ -14,13 +13,27 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/remrob'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
 app.config["JWT_SECRET_KEY"] = "super-secret"
 
 jwt = JWTManager(app)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+def admin_required():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            claims = get_jwt()
+            if claims["is_administrator"]:
+                return fn(*args, **kwargs)
+            else:
+                return jsonify(msg="Admins only!"), 403
+
+        return decorator
+
+    return wrapper
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -80,7 +93,10 @@ def login():
         return "User not found", 400
 
     if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")) and user.active == True:
-        access_token = create_access_token(identity=user.id)
+        if user.role == "ROLE_ADMIN":
+            access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": True})
+        else:
+            access_token = create_access_token(identity=user.id)
         return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
 
 @app.route('/api/v1/bookings', methods=["GET", "POST"])
@@ -107,39 +123,48 @@ def bookings():
 @app.route('/api/v1/bookings/<user_id>', methods=["GET"])
 @jwt_required()
 def user_bookings(user_id):
-    bookings = Bookings.query.filter_by(user_id=user_id).all()
-    results = [
-        {
-            "title": "Robot + Server",
-            "start": booking.start_time,
-            "end": booking.end_time,
-            "id": booking.id,
-            "color": "green"
-        } for booking in bookings
-    ]
-    return jsonify({"user_bookings": results}), 200
+    current_user = get_jwt_identity()
+    if current_user == user_id:
+        bookings = Bookings.query.filter_by(user_id=user_id).all()
+        results = [
+            {
+                "title": "Robot + Server",
+                "start": booking.start_time,
+                "end": booking.end_time,
+                "id": booking.id,
+                "color": "green"
+            } for booking in bookings
+        ]
+        return jsonify({"user_bookings": results}), 200
+    else:
+        return "Wrong user", 400
 
 @app.route("/api/v1/bookings/book/<id>", methods=["POST", "DELETE"])
 @jwt_required()
 def book_slot(id):
-    if request.method == "POST":
-        data = request.json
-        slot = Bookings.query.get(id)
-        slot.user_id = data["userId"]
-        db.session.commit()
-        return "Slot booked", 200
-    elif request.method == "DELETE":
-        slot = Bookings.query.get(id)
-        slot.user_id = None
-        db.session.commit()
-        return "Booking deleted", 200
+    data = request.json
+    current_user = get_jwt_identity()
+    if data["userId"] == current_user:
+        if request.method == "POST":
+            slot = Bookings.query.get(id)
+            slot.user_id = data["userId"]
+            db.session.commit()
+            return "Slot booked", 200
+        elif request.method == "DELETE":
+            slot = Bookings.query.get(id)
+            slot.user_id = None
+            db.session.commit()
+            return "Booking deleted", 200
+    else:
+        return "Wrong user", 400
 
 @app.route("/api/v1/inventory", methods=["POST", "GET"])
 @jwt_required()
 def inventory():
     if request.method =="POST":
         data = request.json
-        inventory = Inventory(server_container_id = data["server_container_id"], robot_id = data["robot_id"])
+        print(data)
+        inventory = Inventory(server_container_id = data["container_id"], robot_id = data["robot_id"])
         db.session.add(inventory)
         db.session.commit()
         return "Inventory created successfully", 200
@@ -147,7 +172,8 @@ def inventory():
         inventory = Inventory.query.all()
         results = [
             {
-                "title": "Robot " + inv.robot_id + "+" "Server " + inv.server_container_id,
+                "title": "Robot " + str(inv.robot_id) + "+" "Server " + str(inv.server_container_id),
+                "id": inv.id,
                 "robot_id": inv.robot_id,
                 "server_container_id": inv.server_container_id,
             } for inv in inventory

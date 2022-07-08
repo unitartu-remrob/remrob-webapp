@@ -5,6 +5,7 @@ import CreateSlot from '../components/CreateSlot.vue'
 import Home from '../components/Home.vue'
 import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
+import Inventory from '../components/Inventory.vue'
 import store from '../store/store.js'
 Vue.use(VueRouter)
 
@@ -47,6 +48,15 @@ const routes = [
     name: 'Register',
     component: Register
   },
+
+  {
+    path: '/inventory',
+    name: 'Inventory',
+    component: Inventory,
+    meta: {
+      isAuthenticated: true
+    }
+  }
 ]
 
 const router = new VueRouter({
