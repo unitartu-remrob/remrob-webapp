@@ -96,7 +96,7 @@ def login():
         if user.role == "ROLE_ADMIN":
             access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": True})
         else:
-            access_token = create_access_token(identity=user.id)
+            access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": False})
         return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
 
 @app.route('/api/v1/bookings', methods=["GET", "POST"])
@@ -139,24 +139,32 @@ def user_bookings(user_id):
     else:
         return "Wrong user", 400
 
-@app.route("/api/v1/bookings/book/<id>", methods=["POST", "DELETE"])
+@app.route("/api/v1/bookings/book/<id>", methods=["POST"])
 @jwt_required()
 def book_slot(id):
     data = request.json
     current_user = get_jwt_identity()
     if int(data["userId"]) == current_user:
-        if request.method == "POST":
-            slot = Bookings.query.get(id)
-            slot.user_id = data["userId"]
-            db.session.commit()
-            return "Slot booked", 200
-        elif request.method == "DELETE":
-            slot = Bookings.query.get(id)
-            slot.user_id = None
-            db.session.commit()
-            return "Booking deleted", 200
+        slot = Bookings.query.get(id)
+        slot.user_id = data["userId"]
+        db.session.commit()
+        return "Slot booked", 200
     else:
         return "Wrong user", 400
+
+@app.route("/api/v1/bookings/unbook/<user_id>/<slot_id>", methods=["DELETE"])
+@jwt_required()
+def unbook(user_id, slot_id):
+    current_user = get_jwt_identity()
+    if int(user_id) == current_user:
+        slot = Bookings.query.get(slot_id)
+        slot.user_id = None
+        db.session.commit()
+        return "Booking deleted", 200
+    else:
+        return "Wrong user", 400
+
+
 
 @app.route("/api/v1/inventory", methods=["POST", "GET"])
 @jwt_required()
@@ -180,5 +188,21 @@ def inventory():
         ]
         return jsonify(results), 200
     
+
+@app.route("/api/v1/users", methods=["GET"])
+@admin_required()
+def get_users():
+    users = User.query.all()
+    results = [
+        {
+            "id": user.id,
+            "email": user.email,
+            "active": user.active,
+            "role": user.role
+        } for user in users
+    ]
+    return jsonify(results), 200 
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0")

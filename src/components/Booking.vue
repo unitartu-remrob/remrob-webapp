@@ -89,7 +89,7 @@ export default {
 
         deleteBooking: function() {
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.delete(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {headers: this.$store.state.header}).then((res) => {
+            axios.delete(this.$store.state.baseURL + "/bookings/unbook/" + this.getUser.user_id + "/" + this.selectedSlot, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             })
         },
