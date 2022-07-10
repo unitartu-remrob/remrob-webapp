@@ -17,10 +17,16 @@
         <br>
         <b-row>
             <b-col>
-                <b-table striped :items="inventory"></b-table>
+                <b-table striped :items="inventory" :fields="fields">
+                    <template v-for="(field, index) in fields" #[`cell(${field.key})`]="data">
+                        <div :key="index" :value="inventory[data.index][field.key]">
+                            {{inventory[data.index][field.key]}}
+                            <b-button v-if="field.key === 'delete'" type="button" class="delete-button" variant="dark" @click="deleteInventory(data.index)">Delete</b-button>
+                        </div>                     
+                    </template>
+                </b-table>
             </b-col>
         </b-row>
-
     </b-container>
 </template>
 
@@ -32,7 +38,13 @@ export default {
         return {
             robotId: null,
             containerId: null,
-            inventory: []
+            inventory: [],
+            fields: [
+                { key: "robot_id", label: "Robot ID" },
+                { key: "server_container_id", label: "?" },
+                { key: "title", label: "Name" },
+                { key: "delete", label: ""}
+            ]
         }
     },   
     computed: {
@@ -55,6 +67,16 @@ export default {
                 this.robotId = null;
                 this.containerId = null;
                 this.getInventory()
+            })
+        },
+        deleteInventory: function(index) {
+            const pk_ID = this.inventory[index]["id"];
+            this.inventory = this.inventory.filter((item, i) => i !== index)   
+
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            console.log(this.$store.state.header)
+            axios.delete(this.$store.state.baseURL + "/inventory", { data: {id: pk_ID} }, {headers: this.$store.state.header}).then((res) => {
+                console.log("Item deleted")
             })
         }
     },

@@ -14,6 +14,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhos
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config["JWT_SECRET_KEY"] = "super-secret"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 10000
 
 jwt = JWTManager(app)
 
@@ -55,8 +56,9 @@ class Bookings(db.Model):
 class Inventory(db.Model):
     __tablename__ = "inventory"
     id = db.Column(db.Integer, primary_key = True)
-    server_container_id = db.Column('server_container_id', db.Integer)
     robot_id = db.Column('robot_id', db.Integer)
+    server_container_id = db.Column('server_container_id', db.Integer)
+    status = db.Column(db.Boolean)
 
 
 @app.route('/')
@@ -165,14 +167,12 @@ def unbook(user_id, slot_id):
         return "Wrong user", 400
 
 
-
-@app.route("/api/v1/inventory", methods=["POST", "GET"])
-@jwt_required()
+@app.route("/api/v1/inventory", methods=["POST", "GET", "DELETE"])
 def inventory():
     if request.method =="POST":
         data = request.json
         print(data)
-        inventory = Inventory(server_container_id = data["container_id"], robot_id = data["robot_id"])
+        inventory = Inventory(server_container_id = data["container_id"], robot_id = data["robot_id"], status=True)
         db.session.add(inventory)
         db.session.commit()
         return "Inventory created successfully", 200
@@ -184,9 +184,15 @@ def inventory():
                 "id": inv.id,
                 "robot_id": inv.robot_id,
                 "server_container_id": inv.server_container_id,
+                # "status": inv.status
             } for inv in inventory
         ]
         return jsonify(results), 200
+    elif request.method =="DELETE":
+        inv_id = request.json["id"]
+        Inventory.query.filter(Inventory.id == inv_id).delete()
+        db.session.commit()
+        return "Record deleted successfully", 200
     
 
 @app.route("/api/v1/users", methods=["GET"])
