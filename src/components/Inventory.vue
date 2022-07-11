@@ -52,7 +52,6 @@ export default {
     },
     methods: {
         getInventory: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
                 this.inventory = res.data
             })
@@ -62,7 +61,6 @@ export default {
                 "container_id": this.containerId,
                 "robot_id": this.robotId
             }
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/inventory", data, {headers: this.$store.state.header}).then((res) => {
                 this.robotId = null;
                 this.containerId = null;
@@ -73,14 +71,13 @@ export default {
             const pk_ID = this.inventory[index]["id"];
             this.inventory = this.inventory.filter((item, i) => i !== index)   
 
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            console.log(this.$store.state.header)
-            axios.delete(this.$store.state.baseURL + "/inventory", { data: {id: pk_ID} }, {headers: this.$store.state.header}).then((res) => {
+            axios.delete(this.$store.state.baseURL + `/inventory/${pk_ID}`, {headers: this.$store.state.header}).then((res) => {
                 console.log("Item deleted")
             })
         }
     },
     created() {
+        this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
         this.getInventory()
     }
 }

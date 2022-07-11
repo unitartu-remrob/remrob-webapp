@@ -6,6 +6,8 @@ import Home from '../components/Home.vue'
 import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
 import Inventory from '../components/Inventory.vue'
+import AdminPanel from  '../components/AdminPanel'
+import UserPanel from '../components/UserPanel'
 import store from '../store/store.js'
 Vue.use(VueRouter)
 
@@ -53,6 +55,24 @@ const routes = [
     path: '/inventory',
     name: 'Inventory',
     component: Inventory,
+    meta: {
+      isAuthenticated: true
+    }
+  },
+
+  {
+    path: '/user-panel',
+    name: 'UserPanel',
+    component: UserPanel,
+    meta: {
+      isAuthenticated: true
+    }
+  },
+
+  {
+    path: '/admin-panel',
+    name: 'AdminPanel',
+    component: AdminPanel,
     meta: {
       isAuthenticated: true
     }
