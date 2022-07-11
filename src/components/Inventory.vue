@@ -41,7 +41,7 @@ export default {
             inventory: [],
             fields: [
                 { key: "robot_id", label: "Robot ID" },
-                { key: "server_container_id", label: "?" },
+                { key: "server_container_id", label: "Container ID" },
                 { key: "title", label: "Name" },
                 { key: "delete", label: ""}
             ]

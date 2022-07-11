@@ -11,8 +11,8 @@
                 <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
             </b-form-group>
         </b-modal>
-        <b-modal ok-title="Confirm" title="Book the slot" id="booking-modal">
-            <h4>Are you sure you want to book this slot?</h4>
+        <b-modal ok-title="Confirm" title="Delete the slot" id="delete-modal">
+            <h4>Are you sure you want to delete this slot?</h4>
         </b-modal>
         <div class="m-3">
             <FullCalendar :options="calendarOptions" />
@@ -84,7 +84,7 @@ export default {
         },
         handleEventClick: function (info) {
             console.log(info.event.id);
-            this.$bvModal.show("booking-modal");
+            this.$bvModal.show("delete-modal");
         },
         handleDateSelect: function (info) {
             console.log(info);

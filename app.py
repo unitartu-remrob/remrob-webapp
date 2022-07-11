@@ -112,15 +112,17 @@ def bookings():
         db.session.commit()
         return "Booking slot created", 200
     elif request.method == "GET":
+        results = []
         bookings = Bookings.query.filter_by(user_id=None).all()
-        results = [
-            {
-                "title": "Robot + Server",
+        for booking in bookings: 
+            inv = Inventory.query.get(booking.inventory_id)
+            slot_object = {
+                "title": "Robot " + str(inv.robot_id) + " + " + "Server " + str(inv.server_container_id),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id
-            } for booking in bookings
-        ]
+            }
+            results.append(slot_object)
         return jsonify({"bookings": results}), 200
 
 @app.route('/api/v1/bookings/<user_id>', methods=["GET"])
@@ -128,16 +130,18 @@ def bookings():
 def user_bookings(user_id):
     current_user = get_jwt_identity()
     if current_user == int(user_id):
+        results = []
         bookings = Bookings.query.filter_by(user_id=user_id).all()
-        results = [
-            {
-                "title": "Robot + Server",
+        for booking in bookings: 
+            inv = Inventory.query.get(booking.inventory_id)
+            slot_object = {
+                "title": "Robot " + str(inv.robot_id) + " + " + "Server " + str(inv.server_container_id),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id,
                 "color": "green"
-            } for booking in bookings
-        ]
+            }
+            results.append(slot_object)
         return jsonify({"user_bookings": results}), 200
     else:
         return "Wrong user", 400
