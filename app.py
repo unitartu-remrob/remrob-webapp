@@ -58,6 +58,7 @@ class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     robot_id = db.Column('robot_id', db.Integer)
     server_container_id = db.Column('server_container_id', db.Integer)
+    vnc_uri = db.Column('vnc_uri', db.String(255))
     status = db.Column(db.Boolean)
 
 
@@ -167,7 +168,8 @@ def unbook(user_id, slot_id):
         return "Wrong user", 400
 
 
-@app.route("/api/v1/inventory", methods=["POST", "GET", "DELETE"])
+@app.route("/api/v1/inventory", methods=["POST", "GET"])
+@admin_required()
 def inventory():
     if request.method =="POST":
         data = request.json
@@ -184,16 +186,27 @@ def inventory():
                 "id": inv.id,
                 "robot_id": inv.robot_id,
                 "server_container_id": inv.server_container_id,
+                "vnc_uri": inv.vnc_uri
                 # "status": inv.status
             } for inv in inventory
         ]
         return jsonify(results), 200
-    elif request.method =="DELETE":
-        inv_id = request.json["id"]
+
+
+@app.route("/api/v1/inventory/<inv_id>", methods=["DELETE", "PUT"])
+@admin_required()
+def update_token(inv_id):
+    if request.method == "PUT":
+        data = request.json
+        entry = Inventory.query.get(inv_id)
+        entry.vnc_uri = data["vnc_uri"]
+        db.session.commit()
+        return "Token successfully updated", 200
+
+    elif request.method == "DELETE":
         Inventory.query.filter(Inventory.id == inv_id).delete()
         db.session.commit()
         return "Record deleted successfully", 200
-    
 
 @app.route("/api/v1/users", methods=["GET"])
 @admin_required()

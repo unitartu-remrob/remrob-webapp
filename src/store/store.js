@@ -5,7 +5,8 @@ Vue.use(Vuex)
 
 const state = {
     user: null,
-    baseURL: "http://" + window.location.hostname + ":9000/api/v1",
+    baseURL: "http://" + window.location.hostname + ":5000/api/v1",
+    containerAPI: "http://" + window.location.hostname + ":9000/api/container",
     header: {
         'Authorization': '',
         'Content-Type': 'application/json'
