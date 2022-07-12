@@ -57,9 +57,10 @@ class Inventory(db.Model):
     __tablename__ = "inventory"
     id = db.Column(db.Integer, primary_key = True)
     robot_id = db.Column('robot_id', db.Integer)
-    server_container_id = db.Column('server_container_id', db.Integer)
-    vnc_uri = db.Column('vnc_uri', db.String(255))
+    slug = db.Column('slug', db.String(100))
+    project = db.Column('project', db.String(100))
     status = db.Column(db.Boolean)
+    vnc_uri = db.Column('vnc_uri', db.String(255))
 
 
 @app.route('/')
@@ -177,40 +178,70 @@ def unbook(user_id, slot_id):
 def inventory():
     if request.method =="POST":
         data = request.json
-        print(data)
-        inventory = Inventory(server_container_id = data["container_id"], robot_id = data["robot_id"], status=True)
-        db.session.add(inventory)
-        db.session.commit()
-        return "Inventory created successfully", 200
+        if "robot_id" in data:
+            id = data["robot_id"]
+            if id == None:
+                return "Empty id", 400
+        else: return "Bad query", 400
+
+        entry = Inventory.query.filter(Inventory.robot_id == id).first()
+        if entry == None:
+            inventory = Inventory(
+                robot_id = id,
+                slug = f"robo-{id}",
+                project = 'default',
+                status = True
+            )
+            db.session.add(inventory)
+            db.session.commit()
+            return "Inventory entry created successfully", 201
+        else:
+            return "Item already in inventory", 400
+
     elif request.method == "GET":
         inventory = Inventory.query.all()
         results = [
-            {
-                "title": "Robot " + str(inv.robot_id) + "+" "Server " + str(inv.server_container_id),
+            {   
                 "id": inv.id,
                 "robot_id": inv.robot_id,
-                "server_container_id": inv.server_container_id,
+                "slug": inv.slug,
+                "title": f"Robotont-{inv.robot_id}",
+                "status": inv.status,
+                "project": inv.project,
                 "vnc_uri": inv.vnc_uri
-                # "status": inv.status
             } for inv in inventory
         ]
         return jsonify(results), 200
 
-
 @app.route("/api/v1/inventory/<inv_id>", methods=["DELETE", "PUT"])
 @admin_required()
-def update_token(inv_id):
+def update_inventory(inv_id):
     if request.method == "PUT":
         data = request.json
-        entry = Inventory.query.get(inv_id)
-        entry.vnc_uri = data["vnc_uri"]
+        print(data)
+        entry = Inventory.query.filter(Inventory.robot_id == inv_id).first()
+        if entry == None:
+            return "Requested item does not exist", 400
+        # Check between different update targets
+        if "status" in data:
+            if isinstance(data["status"], bool):             
+                entry.status = data["status"]
+            else:
+                return "Expected boolean", 400
+        elif "vnc_uri" in data:
+            entry.vnc_uri = data["vnc_uri"]
+        elif "project" in data:
+            entry.project = data["project"]
+        else:
+            return "Bad query", 400
         db.session.commit()
-        return "Token successfully updated", 200
+        return "Inventory successfully updated", 200
 
     elif request.method == "DELETE":
-        Inventory.query.filter(Inventory.id == inv_id).delete()
+        Inventory.query.filter(Inventory.robot_id == inv_id).delete()
         db.session.commit()
         return "Record deleted successfully", 200
+
 
 @app.route("/api/v1/users", methods=["GET"])
 @admin_required()
@@ -228,4 +259,4 @@ def get_users():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", debug=True)
