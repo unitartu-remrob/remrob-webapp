@@ -78,47 +78,50 @@ export default {
 			return items
 		}
     },
-    methods: {
-		lol: function(e) {
-			console.log(e)
-		},
+    methods: { 
+				// "id": inv.id,
+				// "robot_id": inv.robot_id,
+				// "slug": inv.slug,
+				// "title": f"Robotont-{inv.robot_id}",
+				// "status": inv.status,
+				// "project": inv.project,
+				// "vnc_uri": inv.vnc_uri
         getInventory: function() {
             axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
                 this.inventory = res.data
-				this.robot_ids = this.inventory.map(({robot_id}) => `robo-${robot_id}`)
-				this.inventory.forEach(({robot_id, id, vnc_uri}) => {
-					this.connections[`robo-${robot_id}`] = {
-						id: id,
+				this.inventory.forEach(({robot_id, slug, vnc_uri}) => {
+					this.connections[slug] = {
+						// Change to .env later
+						id: robot_id,
 						vnc_uri: `http://localhost${vnc_uri}`
 					}
 				})
-				console.log(this.connections)
 				this.listContainers()
             })			
         },
 		listContainers: async function() {
-			const calls = this.robot_ids.map(id => {
-				return axios.get(`${this.$store.state.containerAPI}/inspect/${id}`, {headers: this.$store.state.header})
+			const calls = this.inventory.map(({ slug }) => {
+				return axios.get(`${this.$store.state.containerAPI}/inspect/${slug}`, {headers: this.$store.state.header})
 			});
 			const results = await Promise.allSettled(calls)
-			const data = this.robot_ids.map((id, index) => {
+			const data = this.inventory.map(({ slug }, index) => {
 				return {
-					id: id,
+					id: slug,
 					data: (results[index].status === 'fulfilled') 
 						?  results[index].value.data
-						: 404
+						:  404
 				}
 			})
+			console.log(data)
 			this.containerList = data
         },
 		startContainer: function(c) {
-			axios.post(`${this.$store.state.containerAPI}/start/${c.id}`, {}, {headers: this.$store.state.header}).then((res) => {
+			// robot_id required to update DB entry on the backend, slug used to start container
+			const robot_id = this.connections[c.id].id
+			axios.post(`${this.$store.state.containerAPI}/start/${robot_id}`, {slug: c.id}, {headers: this.$store.state.header}).then((res) => {
                 const { path } = res.data
 				// Update the UI
 				this.connections[c.id].vnc_uri = `http://localhost${path}`;
-				// Update the database entry
-				this.updateURI(this.connections[c.id].id, path)
-				console.log(path)
 				this.listContainers()
             })	
 		},
@@ -132,23 +135,18 @@ export default {
 			axios.post(`${this.$store.state.containerAPI}/remove/${c.id}`, {}, {headers: this.$store.state.header}).then((res) => {
 				this.listContainers()
             })	
-		},
-		updateURI: function(id, uri) {
-			axios.put(`${this.$store.state.baseURL}/inventory/${id}`, { vnc_uri: uri }, {headers: this.$store.state.header}).then((res) => {
-				this.listContainers()
-            })	
-		},
+		}
     },
     created() {
 		this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
         this.getInventory()	
     },
 	mounted() {
-		this.pollInterval = setInterval(() => this.listContainers(), 5000)
+		//this.pollInterval = setInterval(() => this.listContainers(), 5000)
 	},
 	// Only hook that triggered for interval clearance (?)
 	beforeRouteLeave(to, from, next) {
-		clearInterval(this.pollInterval)
+		//clearInterval(this.pollInterval)
 		next()
 	}
 	
