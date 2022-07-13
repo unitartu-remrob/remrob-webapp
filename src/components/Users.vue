@@ -1,7 +1,19 @@
 <template>
     <b-container fluid>
-        <b-table striped :items="users"></b-table>
-
+        <b-row>
+            <b-col>
+                <b-table striped :items="users" :fields="fields">
+                    <template #cell(active)="data">
+                        <b-form-checkbox switch v-model="users[data.index].active"></b-form-checkbox>
+                    </template>
+                </b-table>
+            </b-col>
+        </b-row>
+        <b-row>
+            <b-col>
+                <b-button>Save</b-button>
+            </b-col>
+        </b-row>
     </b-container>
 </template>
 
@@ -11,7 +23,13 @@ import axios from 'axios';
 export default {
     data() {
         return {
-            users: null
+            users: null,
+            fields: [
+                { key: "id", label: "User ID" },
+                { key: "email", label: "Email" },
+                { key: "role", label: "Role" },
+                { key: "active", label: "Active" },
+            ]
         }
     },
     computed: {

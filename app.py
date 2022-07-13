@@ -102,6 +102,8 @@ def login():
         else:
             access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": False})
         return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
+    else:
+        return "User not active or wrong credentials", 400
 
 @app.route('/api/v1/bookings', methods=["GET", "POST"])
 @jwt_required()
@@ -118,7 +120,7 @@ def bookings():
         for booking in bookings: 
             inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
-                "title": "Robot " + str(inv.robot_id) + " + " + "Server " + str(inv.server_container_id),
+                "title": "Robotont " + str(inv.robot_id),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id
@@ -136,7 +138,7 @@ def user_bookings(user_id):
         for booking in bookings: 
             inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
-                "title": "Robot " + str(inv.robot_id) + " + " + "Server " + str(inv.server_container_id),
+                "title": "Robotont " + str(inv.robot_id),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id,
