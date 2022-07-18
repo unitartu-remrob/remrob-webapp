@@ -245,19 +245,29 @@ def update_inventory(inv_id):
         return "Record deleted successfully", 200
 
 
-@app.route("/api/v1/users", methods=["GET"])
+@app.route("/api/v1/users", methods=["GET", "PUT"])
 @admin_required()
-def get_users():
-    users = User.query.all()
-    results = [
-        {
-            "id": user.id,
-            "email": user.email,
-            "active": user.active,
-            "role": user.role
-        } for user in users
-    ]
-    return jsonify(results), 200 
+def users():
+    if request.method == "GET":
+        users = User.query.all()
+        results = [
+            {
+                "id": user.id,
+                "email": user.email,
+                "active": user.active,
+                "role": user.role
+            } for user in users
+        ]
+        return jsonify(results), 200
+
+    elif request.method == "PUT":
+        data = request.json
+        for u in data:
+            user = User.query.get(u["id"])
+            user.active = u["active"]
+            user.role = u["role"]
+            db.session.commit()
+        return "Users updated", 200
 
 
 if __name__ == '__main__':
