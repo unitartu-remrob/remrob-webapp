@@ -77,7 +77,7 @@ export default {
             axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
                 for (let i = 0; i < res.data.length; i++) {
                     var element = res.data[i];
-                    this.inventory.push({value: element.id, text: element.title})
+                    this.inventory.push({value: null, text: element.title})
                     
                 }
             })
@@ -97,6 +97,7 @@ export default {
                 "end": this.selectedDate + "T" + this.end,
                 "inventoryId": this.selectedInventory
             }
+            console.log(slotData)
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings", slotData, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()

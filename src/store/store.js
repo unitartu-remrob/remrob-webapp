@@ -9,7 +9,7 @@ const state = {
     containerAPI: "http://" + window.location.hostname + ":9000/api/container",
     header: {
         'Authorization': '',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
     }
 }
 const getters = {

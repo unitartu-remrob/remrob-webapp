@@ -48,6 +48,7 @@ export default {
         "email": this.email,
         "password": this.password,
       }).then((res) => {
+        console.log(res)
         this.setCurrentUser(res.data)
         this.$router.push({name:"Home"})
       }).catch((error) => {

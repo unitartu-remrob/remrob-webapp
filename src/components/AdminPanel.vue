@@ -10,13 +10,13 @@
         <b-row>
             <b-col>
                 <b-table striped :items="containerStatus" :fields="fields">
-					<template v-slot:cell(actions)="{ item }">
-						<b-button class="mr-2" @click="startContainer(item)">Start</b-button>
-						<b-button class="mr-2" @click="stopContainer(item)">Stop</b-button>
-						<b-button class="mr-2" @click="removeContainer(item)">Remove</b-button>
+					<template v-slot:cell(actions)="{ item: { running, inactive, disconnected, id } }">
+						<b-button class="mr-2" variant="success" :disabled="running" @click="startContainer(id)">Start</b-button>
+						<b-button class="mr-2" variant="warning" :disabled="inactive" @click="stopContainer(id)">Stop</b-button>
+						<b-button class="mr-2" variant="danger" :disabled="disconnected || running" @click="removeContainer(id)">Remove</b-button>
 					</template>
-					<template v-slot:cell(connection)="{ item }">
-						<b-button target="_blank" :href="connections[item.id].vnc_uri">Connect</b-button>
+					<template v-slot:cell(connection)="{ item: { inactive, vnc_uri } }">
+						<b-button variant="primary" :disabled="inactive" target="_blank" :href="vnc_uri">Connect</b-button>
 					</template>
 				</b-table>
             </b-col>
@@ -38,12 +38,11 @@ export default {
                 { key: "status", label: "State" },
 				{ key: "ip", label: "IP address" },
 				{ key: "uptime", label: "Uptime" },
+				{ key: "cpu", label: "%CPU" },
 				"actions",
 				"connection"
             ],
-			robot_ids: [],
 			containerList: [],
-			connections: {},
 			pollInterval: null
         }
     },   
@@ -51,7 +50,7 @@ export default {
         ...mapGetters(["getUser"]),
 		containerStatus: function() {
 			const items = this.containerList.map(container => {
-				const { id, data } = container;
+				const { id, data, vnc_uri } = container;
 				let Status,
 					StartedAt,
 					IPAddress
@@ -63,15 +62,18 @@ export default {
 					const network = Object.keys(data.NetworkSettings.Networks)[0];
 					({ IPAddress } = data.NetworkSettings.Networks[network]) // what is this abomination :D
 				}
-				const RUNNING = (Status === "running");
-				const DISCONNECTED = (Status === "inactive");
-				const INACTIVE = (Status === "exited" || DISCONNECTED);
+				const running = (Status === "running"); // => stop active
+				const disconnected = (Status === "inactive"); // remove && start active
+				const inactive = (Status === "exited" || disconnected); // start active
 
 				return {
+					running, disconnected, inactive,
 					id: id,
 					ip: IPAddress,
-					uptime: !INACTIVE ? getUptime(StartedAt) : '-',
-					status: Status
+					uptime: !inactive ? getUptime(StartedAt) : '-',
+					status: Status,
+					cpu: data.cpu_percent,
+					vnc_uri
 				}
 			})
 			console.log(items)
@@ -79,62 +81,47 @@ export default {
 		}
     },
     methods: { 
-				// "id": inv.id,
-				// "robot_id": inv.robot_id,
-				// "slug": inv.slug,
-				// "title": f"Robotont-{inv.robot_id}",
-				// "status": inv.status,
-				// "project": inv.project,
-				// "vnc_uri": inv.vnc_uri
         getInventory: function() {
             axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
                 this.inventory = res.data
-				this.inventory.forEach(({robot_id, slug, vnc_uri}) => {
-					this.connections[slug] = {
-						// Change to .env later
-						id: robot_id,
-						vnc_uri: `http://localhost${vnc_uri}`
-					}
-				})
 				this.listContainers()
             })			
         },
 		listContainers: async function() {
-			const calls = this.inventory.map(({ slug }) => {
-				return axios.get(`${this.$store.state.containerAPI}/inspect/${slug}`, {headers: this.$store.state.header})
+			const calls = []
+			this.inventory.forEach(({ slug }) => {
+				calls.push(axios.get(`${this.$store.state.containerAPI}/stats/${slug}`, {headers: {...this.$store.state.header, "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate"}}));
 			});
-			const results = await Promise.allSettled(calls)
-			const data = this.inventory.map(({ slug }, index) => {
+			const results = await Promise.allSettled(calls);
+
+			const data = this.inventory.map(({ robot_id, slug, vnc_uri }, index) => {
 				return {
+					robot_id,
 					id: slug,
+					vnc_uri: `http://localhost${vnc_uri}`, // TODO: change to .env
 					data: (results[index].status === 'fulfilled') 
 						?  results[index].value.data
 						:  404
 				}
-			})
-			console.log(data)
+			}).sort( (a, b) => a.robot_id > b.robot_id );
+			console.log("data fetched")
 			this.containerList = data
         },
-		startContainer: function(c) {
-			// robot_id required to update DB entry on the backend, slug used to start container
-			const robot_id = this.connections[c.id].id
-			axios.post(`${this.$store.state.containerAPI}/start/${robot_id}`, {slug: c.id}, {headers: this.$store.state.header}).then((res) => {
-                const { path } = res.data
-				// Update the UI
-				this.connections[c.id].vnc_uri = `http://localhost${path}`;
+		startContainer: function(id) {
+			axios.post(`${this.$store.state.containerAPI}/start/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
 				this.listContainers()
             })	
 		},
-		stopContainer: function(c) {
-			axios.post(`${this.$store.state.containerAPI}/stop/${c.id}`, {}, {headers: this.$store.state.header}).then((res) => {
-				console.log(`${c.id} stopped`)
+		stopContainer: function(id) {
+			axios.post(`${this.$store.state.containerAPI}/stop/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
+				console.log(`${id} stopped`)
 				this.listContainers()
             })	
 		},
-		removeContainer: function(c) {
-			axios.post(`${this.$store.state.containerAPI}/remove/${c.id}`, {}, {headers: this.$store.state.header}).then((res) => {
+		removeContainer: function(id) {
+			axios.post(`${this.$store.state.containerAPI}/remove/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
 				this.listContainers()
-            })	
+            })
 		}
     },
     created() {
@@ -142,14 +129,11 @@ export default {
         this.getInventory()	
     },
 	mounted() {
-		//this.pollInterval = setInterval(() => this.listContainers(), 5000)
+		this.pollInterval = setInterval(() => this.getInventory(), 2500)
 	},
-	// Only hook that triggered for interval clearance (?)
-	beforeRouteLeave(to, from, next) {
-		//clearInterval(this.pollInterval)
-		next()
-	}
-	
+	beforeDestroy() {  
+        clearInterval(this.pollInterval);
+    }
 }
 </script>
 

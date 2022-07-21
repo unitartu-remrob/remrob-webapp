@@ -65,8 +65,11 @@ class Inventory(db.Model):
     slug = db.Column('slug', db.String(100))
     project = db.Column('project', db.String(100))
     status = db.Column(db.Boolean)
-    vnc_uri = db.Column('vnc_uri', db.String(255))
 
+
+    expires = db.Column('end_time', db.String(100))
+    user_id = db.Column('user', db.Integer)
+    vnc_uri = db.Column('vnc_uri', db.String(255))
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
@@ -140,7 +143,7 @@ def bookings():
         for booking in bookings: 
             inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
-                "title": "Robotont " + str(inv.robot_id),
+                "title": "Robotont",# + str(inv.robot_id),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id
@@ -152,13 +155,21 @@ def bookings():
 @jwt_required()
 def user_bookings(user_id):
     current_user = get_jwt_identity()
+    _filter = request.args.get('booking')
+
     if current_user == int(user_id):
         results = []
-        bookings = Bookings.query.filter_by(user_id=user_id).all()
+        if _filter:
+            bookings = Bookings.query.filter_by(user_id=user_id, id=_filter).all()
+            if len(bookings) == 0:
+                return "No such booking", 400
+        else:
+            bookings = Bookings.query.filter_by(user_id=user_id).all()
+
         for booking in bookings: 
-            inv = Inventory.query.get(booking.inventory_id)
+            #inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
-                "title": "Robotont " + str(inv.robot_id),
+                "title": "Robotont ",# + str(inv.robot_id),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id,
@@ -194,50 +205,53 @@ def unbook(user_id, slot_id):
     else:
         return "Wrong user", 400
 
-
-@app.route("/api/v1/inventory", methods=["POST", "GET"])
-@admin_required()
+@app.route("/api/v1/inventory", methods=["GET"])
+@jwt_required()
 def inventory():
-    if request.method =="POST":
-        data = request.json
-        if "robot_id" in data:
-            id = data["robot_id"]
-            if id == None:
-                return "Empty id", 400
-        else: return "Bad query", 400
+    inventory = Inventory.query.all()
+    results = [
+        {   
+            "id": inv.id,
+            "robot_id": inv.robot_id,
+            "slug": inv.slug,
+            "title": f"Robotont-{inv.robot_id}",
+            "status": inv.status,
+            "project": inv.project,
+            "vnc_uri": inv.vnc_uri
+        } for inv in inventory
+    ]
+    sorted_inv = sorted(results, key=lambda x : x['robot_id'])
+    return jsonify(sorted_inv), 200
 
-        entry = Inventory.query.filter(Inventory.robot_id == id).first()
-        if entry == None:
-            inventory = Inventory(
-                robot_id = id,
-                slug = f"robo-{id}",
-                project = 'default',
-                status = True
-            )
-            db.session.add(inventory)
-            db.session.commit()
-            return "Inventory entry created successfully", 201
-        else:
-            return "Item already in inventory", 400
+@app.route("/api/v1/inventory", methods=["POST"])
+@admin_required()
+def new_inventory():
+    data = request.json
+    if "robot_id" in data:
+        id = data["robot_id"]
+        if id == None:
+            return "Empty id", 400
+    else:
+        return "Bad query", 400
 
-    elif request.method == "GET":
-        inventory = Inventory.query.all()
-        results = [
-            {   
-                "id": inv.id,
-                "robot_id": inv.robot_id,
-                "slug": inv.slug,
-                "title": f"Robotont-{inv.robot_id}",
-                "status": inv.status,
-                "project": inv.project,
-                "vnc_uri": inv.vnc_uri
-            } for inv in inventory
-        ]
-        return jsonify(results), 200
+    entry = Inventory.query.filter(Inventory.robot_id == id).first()
+    if entry == None:
+        inventory = Inventory(
+            robot_id = id,
+            slug = f"robo-{id}",
+            project = 'default',
+            status = True
+        )
+        db.session.add(inventory)
+        db.session.commit()
+        return "Inventory entry created successfully", 201
+    else:
+        return "Item already in inventory", 400
 
 @app.route("/api/v1/inventory/<inv_id>", methods=["DELETE", "PUT"])
-@admin_required()
+@jwt_required()
 def update_inventory(inv_id):
+    is_admin = get_jwt()["is_administrator"]
     if request.method == "PUT":
         data = request.json
         print(data)

@@ -8,6 +8,7 @@ import Register from '../components/Register.vue'
 import Inventory from '../components/Inventory.vue'
 import AdminPanel from  '../components/AdminPanel'
 import UserPanel from '../components/UserPanel'
+import Session from '../components/Session'
 import Users from '../components/Users.vue'
 import store from '../store/store.js'
 Vue.use(VueRouter)
@@ -65,6 +66,12 @@ const routes = [
     path: '/user-panel',
     name: 'UserPanel',
     component: UserPanel
+  },
+
+  {
+    path: '/user-panel/:session',
+    name: 'Session',
+    component: Session
   },
   
   {
