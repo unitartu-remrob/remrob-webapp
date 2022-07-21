@@ -72,14 +72,35 @@ export default {
         ...mapGetters(["getUser"])
     },
     methods: {
+        getOptions: function(inv) {
+            const getInstances = ({ project }, data) => data.filter(d => d.project === project).length
+            const optionCount = inv.reduce((group, item, i, stock) => {
+                const alreadyCounted = group.some(({ project }) => project === item.project)
+                if (!alreadyCounted) {
+                    group.push({
+                        project: item.project,
+                        id: item.robot_id,
+                        count: getInstances(item, stock)
+                    })
+                }
+                return group
+            }, [])
+            return optionCount
+        },
         getInventory: function() {
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
-                for (let i = 0; i < res.data.length; i++) {
-                    var element = res.data[i];
-                    this.inventory.push({value: null, text: element.title})
-                    
+                const options = this.getOptions(res.data);
+                for (let i = 0; i < options.length; i++) {
+                    this.inventory.push({value: {
+                        simulation: false,
+                        project: options[i].project
+                    }, text: `Robotont@${options[i].project} (x${options[i].count})`})
                 }
+                this.inventory.push({value: {
+                    simulation: true,
+                    project: "simulation"
+                }, text: "Simulation (x9)"})
             })
         },
         handleEventClick: function (info) {
@@ -95,7 +116,8 @@ export default {
             var slotData = {
                 "start": this.selectedDate + "T" + this.start,
                 "end": this.selectedDate + "T" + this.end,
-                "inventoryId": this.selectedInventory
+                "project": this.selectedInventory.project,
+                "is_simulation": this.selectedInventory.simulation
             }
             console.log(slotData)
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token

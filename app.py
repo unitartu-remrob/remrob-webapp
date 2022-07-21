@@ -54,7 +54,8 @@ class Bookings(db.Model):
     __tablename__ = "bookings"
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column('user_id', db.String(100), nullable=True)
-    inventory_id = db.Column('inventory_id', db.Integer)
+    simulation = db.Column(db.Boolean)
+    project = db.Column('project', db.String(100))
     start_time = db.Column('start_time', db.String(100))
     end_time = db.Column('end_time', db.String(100))
 
@@ -66,10 +67,20 @@ class Inventory(db.Model):
     project = db.Column('project', db.String(100))
     status = db.Column(db.Boolean)
 
+    expires = db.Column('end_time', db.String(100))
+    user_id = db.Column('user', db.Integer)
+    vnc_uri = db.Column('vnc_uri', db.String(255))
+
+class Simtainers(db.Model):
+    __tablename__ = "simulation_containers"
+    id = db.Column(db.Integer, primary_key = True)
+    container_id = db.Column('container_id', db.Integer)
+    slug = db.Column('slug', db.String(100))
 
     expires = db.Column('end_time', db.String(100))
     user_id = db.Column('user', db.Integer)
     vnc_uri = db.Column('vnc_uri', db.String(255))
+
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
@@ -133,7 +144,12 @@ def modify_token():
 def bookings():
     if request.method == "POST":
         data = request.json
-        booking = Bookings(start_time=data["start"], end_time=data["end"], inventory_id=data["inventoryId"])
+        booking = Bookings(
+            start_time=data["start"],
+            end_time=data["end"],
+            simulation=data["is_simulation"],
+            project=data["project"]
+        )
         db.session.add(booking)
         db.session.commit()
         return "Booking slot created", 200
@@ -141,9 +157,9 @@ def bookings():
         results = []
         bookings = Bookings.query.filter_by(user_id=None).all()
         for booking in bookings: 
-            inv = Inventory.query.get(booking.inventory_id)
+            #inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
-                "title": "Robotont",# + str(inv.robot_id),
+                "title": booking.project.title(),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id
@@ -169,7 +185,7 @@ def user_bookings(user_id):
         for booking in bookings: 
             #inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
-                "title": "Robotont ",# + str(inv.robot_id),
+                "title": booking.project.title(),
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id,
@@ -204,6 +220,21 @@ def unbook(user_id, slot_id):
         return "Booking deleted", 200
     else:
         return "Wrong user", 400
+
+@app.route("/api/v1/simtainers", methods=["POST"])
+@admin_required()
+def new_simtainer():
+    # Just an endpoint, so you don't have to manually fill the table
+    # Currently a single server can handle max 9 containers, will have to adjust this table with a multi-server setup
+    Simtainers.query.delete()
+    for i in range(9):
+        cont = Simtainers(
+            container_id = i+1,
+            slug = f"robosim-{i+1}",
+        )
+        db.session.add(cont)
+    db.session.commit()
+    return "Simtainer table filled", 201
 
 @app.route("/api/v1/inventory", methods=["GET"])
 @jwt_required()
