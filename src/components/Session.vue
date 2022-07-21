@@ -50,8 +50,12 @@ export default {
     computed: {
         ...mapGetters(["getUser"]),
         message: function() {
-            const { robot_id, project } = this.container;
-            return `You have been assigned Robotont nr. ${robot_id} at the ${project} location`;
+            const { robot_id, project, container_id } = this.container;
+            if (container_id) {
+                return `Your simulation environment is ready`;
+            } else {
+                return `You have been assigned Robotont nr. ${robot_id} at the ${project} location`;
+            }
         },
         containerState: function() {
             if (!this.loading) {

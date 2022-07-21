@@ -14,7 +14,7 @@
                         <b-button :disabled="!item.isActive" @click="$router.push({ name: 'Session', params: {session: item.id} })">Session dashboard</b-button>
                     </template>
                     <template v-slot:cell(countdown)="{ item }">
-                        <div :key="timerKey">
+                        <div :key="timerKey">                   
                             <p v-if="!item.isActive && !item.isExpired">Starts in: {{ item.displayTime }}</p>
                             <p v-else-if="!item.isExpired">Time left: {{ item.displayTime }}</p>
                             <p v-else>Finished</p>
@@ -37,7 +37,7 @@ export default {
         return {
             fields: [
                 { key: "id", label: "Booking ID" },
-                { key: "title", label: "Title" },
+                { key: "title", label: "Project" },
 				{ key: "start", label: "Start" },
 				{ key: "end", label: "End" },
                 { key: "countdown", label: "" },
