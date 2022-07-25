@@ -1,27 +1,22 @@
 <template>
     <b-container fluid>
 		<br><br><br>
-		<b-row>
-            <b-col>
-                ADMIN HERE
-            </b-col>
-        </b-row>
-        <br><br><br><br>
-        <b-row>
-            <b-col>
-                <b-table striped :items="containerStatus" :fields="fields">
-					<template v-slot:cell(actions)="{ item: { running, inactive, disconnected, id } }">
-						<b-button class="mr-2" variant="success" :disabled="running" @click="startContainer(id)">Start</b-button>
-						<b-button class="mr-2" variant="warning" :disabled="inactive" @click="stopContainer(id)">Stop</b-button>
-						<b-button class="mr-2" variant="danger" :disabled="disconnected || running" @click="removeContainer(id)">Remove</b-button>
-					</template>
-					<template v-slot:cell(connection)="{ item: { inactive, vnc_uri } }">
-						<b-button variant="primary" :disabled="inactive" target="_blank" :href="vnc_uri">Connect</b-button>
-					</template>
-				</b-table>
-            </b-col>
-        </b-row>
-
+        <b-tabs card>
+			<b-tab title="Containers"  @click="switchTab(sim=false)" active>
+			</b-tab>
+			<b-tab title="Simtainers" @click="switchTab(sim=true)">	
+			</b-tab>
+		</b-tabs>
+		<b-table striped :items="containerStatus" :fields="fields">
+			<template v-slot:cell(actions)="{ item: { running, inactive, disconnected, id } }">
+				<b-button class="mr-2" variant="success" :disabled="running" @click="startContainer(id)">Start</b-button>
+				<b-button class="mr-2" variant="warning" :disabled="inactive" @click="stopContainer(id)">Stop</b-button>
+				<b-button class="mr-2" variant="danger" :disabled="disconnected || running" @click="removeContainer(id)">Remove</b-button>
+			</template>
+			<template v-slot:cell(connection)="{ item: { inactive, vnc_uri } }">
+				<b-button variant="primary" :disabled="inactive" target="_blank" :href="vnc_uri">Connect</b-button>
+			</template>
+		</b-table>
     </b-container>
 </template>
 
@@ -43,14 +38,16 @@ export default {
 				"connection"
             ],
 			containerList: [],
-			pollInterval: null
+			pollInterval: null,
+			is_sim: false,
+			ws: null
         }
     },   
     computed: {
         ...mapGetters(["getUser"]),
 		containerStatus: function() {
 			const items = this.containerList.map(container => {
-				const { id, data, vnc_uri } = container;
+				const { data, slug } = container;
 				let Status,
 					StartedAt,
 					IPAddress
@@ -68,71 +65,69 @@ export default {
 
 				return {
 					running, disconnected, inactive,
-					id: id,
 					ip: IPAddress,
 					uptime: !inactive ? getUptime(StartedAt) : '-',
 					status: Status,
 					cpu: data.cpu_percent,
-					vnc_uri
+					vnc_uri: `http://localhost${data.vnc_uri}`, // TODO: change to .env
+					id: slug
 				}
 			})
-			console.log(items)
 			return items
 		}
     },
     methods: { 
-        getInventory: function() {
-            axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
-                this.inventory = res.data
-				this.listContainers()
-            })			
-        },
-		listContainers: async function() {
-			const calls = []
-			this.inventory.forEach(({ slug }) => {
-				calls.push(axios.get(`${this.$store.state.containerAPI}/stats/${slug}`, {headers: {...this.$store.state.header, "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate"}}));
-			});
-			const results = await Promise.allSettled(calls);
-
-			const data = this.inventory.map(({ robot_id, slug, vnc_uri }, index) => {
-				return {
-					robot_id,
-					id: slug,
-					vnc_uri: `http://localhost${vnc_uri}`, // TODO: change to .env
-					data: (results[index].status === 'fulfilled') 
-						?  results[index].value.data
-						:  404
-				}
-			}).sort( (a, b) => a.robot_id > b.robot_id );
-			console.log("data fetched")
-			this.containerList = data
-        },
 		startContainer: function(id) {
-			axios.post(`${this.$store.state.containerAPI}/start/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
-				this.listContainers()
+			const params = new URLSearchParams([['is_simulation', this.is_sim]]);
+			axios.post(`${this.$store.state.containerAPI}/start/${id}`, {}, {headers: this.$store.state.header, params}).then((res) => {
+				this.ws.send("update")
             })	
 		},
 		stopContainer: function(id) {
 			axios.post(`${this.$store.state.containerAPI}/stop/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
 				console.log(`${id} stopped`)
-				this.listContainers()
+				this.ws.send("update")
             })	
 		},
 		removeContainer: function(id) {
 			axios.post(`${this.$store.state.containerAPI}/remove/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
-				this.listContainers()
+				this.ws.send("update")
             })
+		},
+		switchTab: function(sim) {
+			this.is_sim = sim
+			this.ws.close()
+			this.connectWs()
+		},
+		connectWs: function() {
+			console.log("connecting...")
+			const endpoint = (this.is_sim) ? "simulation" : "physbots";
+			const ws = new WebSocket(`ws://localhost:9000/api/container/live/${endpoint}`)
+			ws.onmessage = (event) => {
+				const results = JSON.parse(event.data);
+				console.log("PARSED", results)
+				const data = results.map(({ slug, status, value }) => {
+					return {
+						slug,
+						data: (status === 'fulfilled') 
+							?  value
+							:  404,
+					}
+				});
+				this.containerList = data
+			}
+			ws.onopen = function(event) {
+				console.log("Successfully connected to the websocket server")
+			}
+			this.ws = ws; // ref for closing
 		}
     },
     created() {
 		this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-        this.getInventory()	
+		this.connectWs()
     },
-	mounted() {
-		this.pollInterval = setInterval(() => this.getInventory(), 2500)
-	},
 	beforeDestroy() {  
-        clearInterval(this.pollInterval);
+		this.ws.close()
     }
 }
 </script>

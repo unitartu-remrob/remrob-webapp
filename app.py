@@ -222,20 +222,35 @@ def unbook(user_id, slot_id):
     else:
         return "Wrong user", 400
 
-@app.route("/api/v1/simtainers", methods=["POST"])
+@app.route("/api/v1/simtainers", methods=["POST", "GET"])
 @admin_required()
 def new_simtainer():
     # Just an endpoint, so you don't have to manually fill the table
     # Currently a single server can handle max 9 containers, will have to adjust this table with a multi-server setup
-    Simtainers.query.delete()
-    for i in range(9):
-        cont = Simtainers(
-            container_id = i+1,
-            slug = f"robosim-{i+1}",
-        )
-        db.session.add(cont)
-    db.session.commit()
-    return "Simtainer table filled", 201
+    if request.method == "POST":
+        Simtainers.query.delete()
+        for i in range(9):
+            cont = Simtainers(
+                container_id = i+1,
+                slug = f"robosim-{i+1}",
+            )
+            db.session.add(cont)
+        db.session.commit()
+        return "Simtainer table filled", 201
+
+    elif request.method == "GET":
+        sims = Simtainers.query.all()
+        results = [
+            {   
+                "id": sim.id,
+                "container_id": sim.container_id,
+                "slug": sim.slug,
+                "title": f"ROBOSIM-{sim.container_id}",
+                "vnc_uri": sim.vnc_uri
+            } for sim in sims
+        ]
+        sorted_inv = sorted(results, key=lambda x : x['container_id'])
+        return jsonify(sorted_inv), 200
 
 @app.route("/api/v1/inventory", methods=["GET"])
 @jwt_required()
