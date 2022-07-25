@@ -4,7 +4,7 @@
             <b-col>
                 <b-table striped :items="users" :fields="fields">
                     <template #cell(role)="data">
-                        <input v-model="users[data.index].role">
+                        <b-form-input v-model="users[data.index].role"></b-form-input>
                     </template>
                     <template #cell(active)="data">
                         <b-form-checkbox switch v-model="users[data.index].active"></b-form-checkbox>
