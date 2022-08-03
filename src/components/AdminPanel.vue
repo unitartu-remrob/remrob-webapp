@@ -7,7 +7,8 @@
 			<b-tab title="Simtainers" @click="switchTab(sim=true)">	
 			</b-tab>
 		</b-tabs>
-		<b-table striped :items="containerStatus" :fields="fields">
+		<div class="loader" v-if="!this.is_loaded"><b-spinner class="spinner" type="grow" variant="info"></b-spinner></div>
+		<b-table striped v-else :items="containerStatus" :fields="fields">
 			<template v-slot:cell(actions)="{ item: { running, inactive, disconnected, id } }">
 				<b-button class="mr-2" variant="success" :disabled="running" @click="startContainer(id)">Start</b-button>
 				<b-button class="mr-2" variant="warning" :disabled="inactive" @click="stopContainer(id)">Stop</b-button>
@@ -40,6 +41,7 @@ export default {
 			containerList: [],
 			pollInterval: null,
 			is_sim: false,
+			is_loaded: false,
 			ws: null
         }
     },   
@@ -69,7 +71,7 @@ export default {
 					uptime: !inactive ? getUptime(StartedAt) : '-',
 					status: Status,
 					cpu: data.cpu_percent,
-					vnc_uri: `http://localhost${data.vnc_uri}`, // TODO: change to .env
+					vnc_uri: `http://localhost${data.vnc_uri}`, // TODO: change to .env, can add &view_only=true for spying
 					id: slug
 				}
 			})
@@ -78,31 +80,32 @@ export default {
     },
     methods: { 
 		startContainer: function(id) {
-			const params = new URLSearchParams([['is_simulation', this.is_sim]]);
+			const params = new URLSearchParams([['is_simulation', this.is_sim], ['fresh', true]]);
 			axios.post(`${this.$store.state.containerAPI}/start/${id}`, {}, {headers: this.$store.state.header, params}).then((res) => {
-				this.ws.send("update")
+				// this.ws.send("update") // crashes the connection ??
             })	
 		},
 		stopContainer: function(id) {
 			axios.post(`${this.$store.state.containerAPI}/stop/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
 				console.log(`${id} stopped`)
-				this.ws.send("update")
+				// this.ws.send("update")
             })	
 		},
 		removeContainer: function(id) {
 			axios.post(`${this.$store.state.containerAPI}/remove/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
-				this.ws.send("update")
+				// this.ws.send("update")
             })
 		},
 		switchTab: function(sim) {
 			this.is_sim = sim
 			this.ws.close()
+			this.is_loaded = false
 			this.connectWs()
 		},
 		connectWs: function() {
 			console.log("connecting...")
 			const endpoint = (this.is_sim) ? "simulation" : "physbots";
-			const ws = new WebSocket(`ws://localhost:9000/api/container/live/${endpoint}`)
+			const ws = new WebSocket(`ws://localhost:9000/api/container/live/${endpoint}`) // TODO: add cookie auth, headers not available
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)
@@ -114,6 +117,7 @@ export default {
 							:  404,
 					}
 				});
+				this.is_loaded = true
 				this.containerList = data
 			}
 			ws.onopen = function(event) {
@@ -132,6 +136,15 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+.loader {
+	height: 50vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.spinner {
+	width: 6rem;
+	height: 6rem;
+}
 </style>

@@ -13,14 +13,24 @@
         </b-row>
         <br>
         <b-card class="border text-center float-right mr-5" style="max-width: 50vw" img-fluid :img-src="require('../assets/ubuntu.png')">
-            <b-button :href="container.vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
+            <b-button :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
             <b-img style="max-width: 10vw" :src="require('../assets/robotont.png')"></b-img>
         </b-card>
         <b-row>
             <b-col class="text-center mr-5">
                 <p class="h2 mb-3">Status: <strong>{{containerState.Status}}</strong></p>
+                <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
+                    Use fresh
+                </b-form-checkbox>
                 <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer()">Start</b-button>
-                <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer()">Stop</b-button>          
+                <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer()">Stop</b-button>
+                <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="commitContainer()">Save workspace</b-button>
+                <b-button class="ml-2" variant="danger" size="sm" :disabled="!containerState.exited" @click="removeContainer()">Delete workspace</b-button>    
+            </b-col>
+        </b-row>
+        <b-row>
+            <b-col>
+
             </b-col>
         </b-row>
         <br><br><br>
@@ -41,10 +51,13 @@ export default {
     data() {
         return {
             container: {},
+            containerData: {},
             booking: {},
+            freshImage: false,
             sesssionID: '',
             timerKey: 0,
-            loading: true
+            loading: true,
+            started: false,
         }
     },   
     computed: {
@@ -62,14 +75,18 @@ export default {
                 const { Status } = this.containerData.State;
                 const running = (Status === "running");
                 const disconnected = (Status === "inactive");
-                const inactive = (Status === "exited" || disconnected);
+                const exited = (Status === "exited");
+                const inactive = (exited || disconnected);
 
                 return {
-                    running, inactive, Status
+                    running, inactive, disconnected, exited, Status
                 }  
             } else {
                 return {}
             }
+        },
+        vnc_uri: function() {
+            return `http://localhost${this.container.vnc_uri}` // change to .env
         }
     },
     methods: { 
@@ -79,14 +96,19 @@ export default {
             axios.get(`${this.$store.state.containerAPI}/inspect/${slug}`, {headers: this.$store.state.header}).then((res) => {
                 this.containerData = res.data
                 this.loading = false;
+            }).catch(e => {
+                // With the expectation of exception 404 - container dead
+                this.containerData.State = { Status: "inactive" }
+                this.loading = false;
             })
         },
 		startContainer: function() {
             const { slug } = this.container;
-			axios.post(`${this.$store.state.containerAPI}/start/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
+            const params = new URLSearchParams([['fresh', this.freshImage]]);
+			axios.post(`${this.$store.state.containerAPI}/start/${slug}`, {}, {headers: this.$store.state.header, params}).then((res) => {
                 const { path } = res.data
                 // Update the UI
-                this.container.vnc_uri = `http://localhost${path}`;
+                this.container.vnc_uri = path;
 				this.inspectContainer()
             })	
 		},
@@ -96,6 +118,19 @@ export default {
 				console.log(`${slug} stopped`)
 				this.inspectContainer()
             })	
+		},
+        removeContainer: function() {
+            const { slug } = this.container;
+			axios.post(`${this.$store.state.containerAPI}/remove/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
+                this.inspectContainer()
+				// this.ws.send("update")
+            })
+		},
+        commitContainer: function() {
+            const { slug } = this.container;
+			axios.post(`${this.$store.state.containerAPI}/commit/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
+                console.log("Container successfully saved")
+            })
 		},
         getBookingInfo: function() {
             const params = new URLSearchParams([['booking', this.sesssionID]]);

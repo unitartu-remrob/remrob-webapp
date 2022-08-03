@@ -65,13 +65,19 @@ const routes = [
   {
     path: '/user-panel',
     name: 'UserPanel',
-    component: UserPanel
+    component: UserPanel,
+    meta: {
+      isAuthenticated: true
+    }
   },
 
   {
     path: '/user-panel/:session',
     name: 'Session',
-    component: Session
+    component: Session,
+    meta: {
+      isAuthenticated: true
+    }
   },
   
   {
