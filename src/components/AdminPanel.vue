@@ -83,6 +83,7 @@ export default {
 			const params = new URLSearchParams([['is_simulation', this.is_sim], ['fresh', true]]);
 			axios.post(`${this.$store.state.containerAPI}/start/${id}`, {}, {headers: this.$store.state.header, params}).then((res) => {
 				// this.ws.send("update") // crashes the connection ??
+				console.log('something')
             })	
 		},
 		stopContainer: function(id) {
@@ -105,7 +106,7 @@ export default {
 		connectWs: function() {
 			console.log("connecting...")
 			const endpoint = (this.is_sim) ? "simulation" : "physbots";
-			const ws = new WebSocket(`ws://localhost:9000/api/container/live/${endpoint}`) // TODO: add cookie auth, headers not available
+			const ws = new WebSocket(`ws://localhost/containers/live/${endpoint}`) // TODO: add cookie auth, headers not available
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)
