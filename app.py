@@ -14,7 +14,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhos
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config["JWT_SECRET_KEY"] = "super-secret"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 10000
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 100000
 
 jwt = JWTManager(app)
 
@@ -70,6 +70,7 @@ class Inventory(db.Model):
     expires = db.Column('end_time', db.String(100))
     user_id = db.Column('user', db.Integer)
     vnc_uri = db.Column('vnc_uri', db.String(255))
+    issue = db.Column('issue', db.Boolean)
 
 class Simtainers(db.Model):
     __tablename__ = "simulation_containers"
@@ -299,21 +300,24 @@ def new_inventory():
 @jwt_required()
 def update_inventory(inv_id):
     is_admin = get_jwt()["is_administrator"]
+    current_user = get_jwt_identity()
     if request.method == "PUT":
         data = request.json
-        print(data)
-        entry = Inventory.query.filter(Inventory.robot_id == inv_id).first()
+        entry = Inventory.query.filter_by(slug=inv_id).first()
         if entry == None:
             return "Requested item does not exist", 400
+        # Check if the user has ownership of the item
+        if entry.user_id != current_user and not is_admin:
+            return "Unauthorized item", 403
         # Check between different update targets
-        if "status" in data:
+        if "issue" in data:
+            entry.issue = data["issue"]
+        elif "status" in data and is_admin:
             if isinstance(data["status"], bool):             
                 entry.status = data["status"]
             else:
                 return "Expected boolean", 400
-        elif "vnc_uri" in data:
-            entry.vnc_uri = data["vnc_uri"]
-        elif "project" in data:
+        elif "project" in data and is_admin:
             entry.project = data["project"]
         else:
             return "Bad query", 400
@@ -321,7 +325,7 @@ def update_inventory(inv_id):
         return "Inventory successfully updated", 200
 
     elif request.method == "DELETE":
-        Inventory.query.filter(Inventory.robot_id == inv_id).delete()
+        Inventory.query.filter(Inventory.slug == inv_id).delete()
         db.session.commit()
         return "Record deleted successfully", 200
 

@@ -44,3 +44,30 @@ export const getCountdown = (start, end) => {
 		displayTime
 	}
 }
+
+export const getTimeLeft = (expires) => {
+	var now = new Date().getTime();
+	
+	expires = new Date(expires)
+
+	var isActive = (now < expires);
+
+	var timeleft;
+	if (isActive) {
+		timeleft = expires - now;
+	} else {
+		timeleft = 0
+	}
+			
+	var days = Math.floor(timeleft / (1000 * 60 * 60 * 24));
+	var hours = Math.floor((timeleft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+	var minutes = Math.floor((timeleft % (1000 * 60 * 60)) / (1000 * 60));
+	var seconds = Math.floor((timeleft % (1000 * 60)) / 1000);
+
+	var displayTime = (days == 1) ? `${days} day` : (days > 1) ? `${days} days` : (seconds >= 0) ? `${hours}:${minutes > 9 ? minutes : '0' + minutes}:${seconds > 9 ? seconds : '0' + seconds}` : "Finished"
+
+	return {
+		isActive,
+		displayTime
+	}
+}

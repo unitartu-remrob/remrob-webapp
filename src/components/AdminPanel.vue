@@ -9,6 +9,18 @@
 		</b-tabs>
 		<div class="loader" v-if="!this.is_loaded"><b-spinner class="spinner" type="grow" variant="info"></b-spinner></div>
 		<b-table striped v-else :items="containerStatus" :fields="fields">
+			<template v-slot:cell(status)="{ item: { running, disconnected } }">
+				<CircleFill :variant="running ? 'success' : disconnected ? 'danger' : 'warning'" font-scale="1.5" />
+			</template>
+			<template v-slot:cell(user)="{ item: { user } }">
+				<div v-if="user.isActive" class="d-flex align-items-center">
+					<div class="mr-2">{{user.displayTime}}</div>
+					<PersonFill font-scale="3" />
+				</div>	
+			</template>
+			<template v-slot:cell(alarm)="{ item: { issue, id } }">
+				<Exclamation variant="warning" v-if="issue" @click="clearIssue(id)" font-scale="2"/>
+			</template>
 			<template v-slot:cell(actions)="{ item: { running, inactive, disconnected, id } }">
 				<b-button class="mr-2" variant="success" :disabled="running" @click="startContainer(id)">Start</b-button>
 				<b-button class="mr-2" variant="warning" :disabled="inactive" @click="stopContainer(id)">Stop</b-button>
@@ -23,20 +35,22 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { getUptime } from '../util/helpers'
+import { getUptime, getTimeLeft } from '../util/helpers'
 import axios from 'axios';
 export default {
     data() {
         return {
             inventory: [],
 			fields: [
-                { key: "id", label: "Container ID" },
-                { key: "status", label: "State" },
-				{ key: "ip", label: "IP address" },
-				{ key: "uptime", label: "Uptime" },
-				{ key: "cpu", label: "%CPU" },
-				"actions",
-				"connection"
+                { key: "id", label: "Container ID", tdClass: 'align-middle', thClass: "", },
+				{ key: "user", label: "", tdClass: 'align-middle text-center', thClass: "", },
+				{ key: "alarm", label: "", tdClass: 'align-middle', thClass: "", },
+                { key: "status", label: "State", tdClass: 'align-middle text-center', thClass: "text-center", },
+				{ key: "ip", label: "IP address", tdClass: 'align-middle', thClass: "", },
+				{ key: "uptime", label: "Uptime", tdClass: 'align-middle', thClass: "", },
+				{ key: "cpu", label: "%CPU", tdClass: 'align-middle', thClass: "", },
+				{ key: "actions", label: "", thClass: 'text-center'},
+				{ key: "connection", label: "", tdClass: 'text-left', thClass: "text-center"},
             ],
 			containerList: [],
 			pollInterval: null,
@@ -49,7 +63,7 @@ export default {
         ...mapGetters(["getUser"]),
 		containerStatus: function() {
 			const items = this.containerList.map(container => {
-				const { data, slug } = container;
+				const { data, slug, booking: { end_time, issue } } = container;
 				let Status,
 					StartedAt,
 					IPAddress
@@ -72,7 +86,9 @@ export default {
 					status: Status,
 					cpu: data.cpu_percent,
 					vnc_uri: `http://localhost${data.vnc_uri}`, // TODO: change to .env, can add &view_only=true for spying
-					id: slug
+					id: slug,
+					user: getTimeLeft(end_time),
+					issue
 				}
 			})
 			return items
@@ -97,6 +113,11 @@ export default {
 				// this.ws.send("update")
             })
 		},
+		clearIssue: function(id) {
+			axios.put(`${this.$store.state.baseURL}/inventory/${id}`, { issue: false }, {headers: this.$store.state.header}).then((res) => {
+				// this.ws.send("update")
+            })
+		},
 		switchTab: function(sim) {
 			this.is_sim = sim
 			this.ws.close()
@@ -110,9 +131,10 @@ export default {
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)
-				const data = results.map(({ slug, status, value }) => {
+				const data = results.map(({ slug, status, value, booking }) => {
 					return {
 						slug,
+						booking,
 						data: (status === 'fulfilled') 
 							?  value
 							:  404,

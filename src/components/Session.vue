@@ -25,7 +25,8 @@
                 <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer()">Start</b-button>
                 <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer()">Stop</b-button>
                 <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="commitContainer()">Save workspace</b-button>
-                <b-button class="ml-2" variant="danger" size="sm" :disabled="!containerState.exited" @click="removeContainer()">Delete workspace</b-button>    
+                <b-button class="ml-2" variant="danger" size="sm" :disabled="!containerState.exited" @click="removeContainer()">Delete workspace</b-button>
+                <b-button class="ml-2" variant="dark" size="sm" @click="raiseIssue()">HELP</b-button>     
             </b-col>
         </b-row>
         <b-row>
@@ -130,6 +131,12 @@ export default {
             const { slug } = this.container;
 			axios.post(`${this.$store.state.containerAPI}/commit/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
                 console.log("Container successfully saved")
+            })
+		},
+        raiseIssue: function() {
+            const { slug } = this.container;
+			axios.put(`${this.$store.state.baseURL}/inventory/${slug}`, { issue: true }, {headers: this.$store.state.header}).then((res) => {
+                console.log("Issue submitted")
             })
 		},
         getBookingInfo: function() {
