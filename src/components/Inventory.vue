@@ -15,11 +15,11 @@
         <b-row>
             <b-col>
                 <b-table striped :items="inventory" :fields="fields">
-                    <template v-for="(field, index) in fields" #[`cell(${field.key})`]="data">
-                        <div :key="index" :value="inventory[data.index][field.key]">
-                            {{inventory[data.index][field.key]}}
-                            <b-button v-if="field.key === 'delete'" type="button" class="delete-button" variant="dark" @click="deleteInventory(data.index)">Remove</b-button>
-                        </div>                     
+                    <template #cell(delete)="{ item: { slug } }">
+                        <b-button type="button" class="delete-button" variant="dark" @click="deleteInventory(slug)">Remove</b-button>
+                    </template>
+                    <template #cell(project)="{ item }">
+                        <InventoryInput :inventoryItem="item" @update="updateInventory"/>
                     </template>
                 </b-table>
             </b-col>
@@ -30,20 +30,24 @@
 <script>
 import { mapGetters } from 'vuex';
 import axios from 'axios';
+import InventoryInput from './InputForm.vue'
 export default {
     data() {
         return {
             robotId: null,
             inventory: [],
+            formState: [],
             fields: [
-                // { key: "robot_id", label: "Robot ID" },
                 { key: "title", label: "Name" },
                 { key: "project", label: "Location" },
-                { key: "status", label: "Available" },
+                // { key: "status", label: "Available" },
                 { key: "delete", label: ""}
             ]
         }
-    },   
+    },
+    components: {
+        InventoryInput
+    },
     computed: {
         ...mapGetters(["getUser"])
     },
@@ -58,7 +62,7 @@ export default {
                 console.log("empty submit")
                 return 
             }
-            var data = {
+            const data = {
                 "robot_id": this.robotId
             }
             axios.post(this.$store.state.baseURL + "/inventory", data, {headers: this.$store.state.header}).then((res) => {
@@ -66,14 +70,21 @@ export default {
                 this.getInventory()
             })
         },
-        deleteInventory: function(index) {
-            const id = this.inventory[index]["robot_id"];
-            this.inventory = this.inventory.filter((item, i) => i !== index)   
+        deleteInventory: function(id) {
+            this.inventory = this.inventory.filter(item => item.slug !== id)
 
             axios.delete(this.$store.state.baseURL + `/inventory/${id}`, {headers: this.$store.state.header}).then((res) => {
                 console.log("Item deleted")
             })
-        }
+        },
+        updateInventory: function(item) {
+			const data = {
+				"project": item.project
+			}
+			axios.put(this.$store.state.baseURL + `/inventory/${item.slug}`, data, {headers: this.$store.state.header}).then((res) => {
+				
+			})
+		}
     },
     created() {
         this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
