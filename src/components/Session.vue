@@ -7,14 +7,15 @@
                 <p>{{message}}</p>
                 <div :key="timerKey">
                     <p v-if="true">Time left: {{ this.booking.displayTime }}</p>
-                    <p v-else>Finished</p>
+                    <p v-else>Finished</p>                
                 </div>
+                <b-button class="ml-2 border-danger" variant="light" size="md" @click="yieldSession">Yield slot</b-button>   
             </b-col>
         </b-row>
         <br>
         <b-card class="border text-center float-right mr-5" style="max-width: 50vw" img-fluid :img-src="require('../assets/ubuntu.png')">
             <b-button :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
-            <b-img style="max-width: 10vw" :src="require('../assets/robotont.png')"></b-img>
+            <b-img v-if="!is_sim" style="max-width: 10vw" :src="require('../assets/robotont.png')"></b-img>
         </b-card>
         <b-row>
             <b-col class="text-center mr-5">
@@ -22,16 +23,16 @@
                 <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                     Use fresh
                 </b-form-checkbox>
-                <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer()">Start</b-button>
-                <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer()">Stop</b-button>
-                <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="commitContainer()">Save workspace</b-button>
-                <b-button class="ml-2" variant="danger" size="sm" :disabled="!containerState.exited" @click="removeContainer()">Delete workspace</b-button>
-                <b-button class="ml-2" variant="dark" size="sm" @click="raiseIssue()">HELP</b-button>     
+                <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">Start</b-button>
+                <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">Stop</b-button>
+                <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="commitContainer">Save workspace</b-button>
+                <b-button class="ml-2" variant="danger" size="sm" :disabled="!containerState.exited" @click="removeContainer">Delete workspace</b-button>
+                <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button>     
             </b-col>
         </b-row>
         <b-row>
             <b-col>
-
+                
             </b-col>
         </b-row>
         <br><br><br>
@@ -88,6 +89,9 @@ export default {
         },
         vnc_uri: function() {
             return `http://localhost${this.container.vnc_uri}` // change to .env
+        },
+        is_sim: function() {
+            return this.booking.is_simulation;
         }
     },
     methods: { 
@@ -105,10 +109,12 @@ export default {
         },
 		startContainer: function() {
             const { slug } = this.container;
-            const params = new URLSearchParams([['fresh', this.freshImage]]);
+            // Always inform whether sim, the server will validate the environment if user is not an admin
+            const params = new URLSearchParams([['fresh', this.freshImage], ['is_simulation', this.booking.is_simulation]]);
 			axios.post(`${this.$store.state.containerAPI}/start/${slug}`, {}, {headers: this.$store.state.header, params}).then((res) => {
                 const { path } = res.data
                 // Update the UI
+                console.log(res.data)
                 this.container.vnc_uri = path;
 				this.inspectContainer()
             })	
@@ -153,6 +159,14 @@ export default {
                 console.log("Assigned container", res.data)
                 this.container = res.data
                 this.inspectContainer()
+            })
+        },
+        yieldSession: function() {
+            const { slug } = this.container;   
+            axios.post(`${this.$store.state.containerAPI}/yield/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
+                axios.delete(`${this.$store.state.baseURL}/bookings/unbook/${this.getUser.user_id}/${this.booking.id}`, {headers: this.$store.state.header}).then((res) => {
+                    this.$router.push({name: "Home"})
+                })
             })
         },
         updateTime() {
