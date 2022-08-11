@@ -196,7 +196,7 @@ def user_bookings(user_id):
             results.append(slot_object)
         return jsonify({"user_bookings": results}), 200
     else:
-        return "Wrong user", 400
+        return "Wrong user", 403
 
 @app.route("/api/v1/bookings/book/<id>", methods=["POST"])
 @jwt_required()
@@ -217,8 +217,16 @@ def unbook(user_id, slot_id):
     current_user = get_jwt_identity()
     if int(user_id) == current_user:
         slot = Bookings.query.get(slot_id)
+        # Check if a container assignment might also need to be unset
+        inv = Simtainers if slot.simulation else Inventory
+        claimed_container = inv.query.filter_by(user_id=slot.user_id).first()
+
+        if claimed_container:
+            claimed_container.user_id = None
+            claimed_container.expires = None
         slot.user_id = None
         db.session.commit()
+
         return "Booking deleted", 200
     else:
         return "Wrong user", 400
