@@ -10,6 +10,7 @@ import AdminPanel from  '../components/AdminPanel'
 import UserPanel from '../components/UserPanel'
 import Session from '../components/Session'
 import Users from '../components/Users.vue'
+import NotFound from '../components/Errors/404'
 import store from '../store/store.js'
 Vue.use(VueRouter)
 
@@ -96,6 +97,13 @@ const routes = [
     meta: {
       isAuthenticated: true
     }
+  },
+  { 
+    path: '*', beforeEnter: (to, from, next) => { next('/404') } },
+  {
+    path: "/404",
+    name: '404',
+    component: NotFound
   }
 ]
 

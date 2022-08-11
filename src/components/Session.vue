@@ -1,6 +1,5 @@
 <template>
     <b-container fluid>
-		<br><br><br>
 		<b-row>
             <b-col class="text-center">
                 <p>SESSION {{ this.$route.params.session }} HERE</p>
@@ -12,6 +11,9 @@
                 <b-button class="ml-2 border-danger" variant="light" size="md" @click="yieldSession">Yield slot</b-button>   
             </b-col>
         </b-row>
+        <div class="session">
+            <Desktop :source="vnc_uri" />
+        </div>
         <br>
         <b-card class="border text-center float-right mr-5" style="max-width: 50vw" img-fluid :img-src="require('../assets/ubuntu.png')">
             <b-button :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
@@ -47,6 +49,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { getCountdown } from '../util/helpers'
+import Desktop from './Desktop.vue'
 
 import axios from 'axios';
 export default {
@@ -61,7 +64,10 @@ export default {
             loading: true,
             started: false,
         }
-    },   
+    },
+    components: {
+        Desktop
+    },
     computed: {
         ...mapGetters(["getUser"]),
         message: function() {
@@ -88,13 +94,13 @@ export default {
             }
         },
         vnc_uri: function() {
-            return `http://localhost${this.container.vnc_uri}` // change to .env
+            return `http://${window.location.hostname}${this.container.vnc_uri}` // change to .env
         },
         is_sim: function() {
             return this.booking.is_simulation;
         }
     },
-    methods: { 
+    methods: {
 		inspectContainer: function() {
             const { slug } = this.container;
             this.loading = true;
@@ -152,21 +158,24 @@ export default {
                 console.log("Active booking", this.booking)
                 // Assign ourselves a container:
                 this.requestContainer();
-            }).catch(e => console.log(e)); // 404 redirect?
+            }).catch(e => {
+                // 404 redirect?
+                this.$router.push({name: "404"})
+             });
         },
         requestContainer: function() {
             axios.get(`${this.$store.state.containerAPI}/assign`, {headers: this.$store.state.header}).then((res) => {
                 console.log("Assigned container", res.data)
                 this.container = res.data
                 this.inspectContainer()
-            })
+            }).catch(e => {
+                // this.$router.push({name: "UserPanel"})
+             });
         },
         yieldSession: function() {
             const { slug } = this.container;   
             axios.post(`${this.$store.state.containerAPI}/yield/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
-                axios.delete(`${this.$store.state.baseURL}/bookings/unbook/${this.getUser.user_id}/${this.booking.id}`, {headers: this.$store.state.header}).then((res) => {
-                    this.$router.push({name: "Home"})
-                })
+                this.$router.push({ name: "Home" })
             })
         },
         updateTime() {
@@ -192,6 +201,9 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+.session {
+    transform: translateX(21rem) scale(0.65);
+    margin-top: -5rem;
+}
 </style>
