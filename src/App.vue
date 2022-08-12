@@ -38,5 +38,7 @@ export default {
 </script>
 
 <style>
-
+ #app {
+  overflow-x: hidden;
+ }
 </style>

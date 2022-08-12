@@ -1,48 +1,42 @@
 <template>
     <b-container fluid>
 		<b-row>
-            <b-col class="text-center">
-                <p>SESSION {{ this.$route.params.session }} HERE</p>
-                <p>{{message}}</p>
+            <b-col class="info text-center">
+                <h1>{{message}}</h1>
                 <div :key="timerKey">
-                    <p v-if="true">Time left: {{ this.booking.displayTime }}</p>
-                    <p v-else>Finished</p>                
+                    <h3 class="mt-4">Time left: <strong>{{ this.booking.displayTime }}</strong></h3>
                 </div>
-                <b-button class="ml-2 border-danger" variant="light" size="md" @click="yieldSession">Yield slot</b-button>   
+                <div class="controls">
+                    <p class="h2 mb-3">Status: <strong>{{containerState.Status}}</strong></p>
+                    <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
+                        Use fresh
+                    </b-form-checkbox>
+                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">Start</b-button>
+                    <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">Stop</b-button>
+                    <b-button class="mr-2" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
+                    <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="commitContainer">Save workspace</b-button>
+                    <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer">Delete workspace</b-button>
+                    <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button>
+                </div>
             </b-col>
-        </b-row>
-        <div class="session">
-            <Desktop :source="vnc_uri" />
-        </div>
-        <br>
-        <b-card class="border text-center float-right mr-5" style="max-width: 50vw" img-fluid :img-src="require('../assets/ubuntu.png')">
-            <b-button :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
-            <b-img v-if="!is_sim" style="max-width: 10vw" :src="require('../assets/robotont.png')"></b-img>
-        </b-card>
-        <b-row>
-            <b-col class="text-center mr-5">
-                <p class="h2 mb-3">Status: <strong>{{containerState.Status}}</strong></p>
-                <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
-                    Use fresh
-                </b-form-checkbox>
-                <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">Start</b-button>
-                <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">Stop</b-button>
-                <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="commitContainer">Save workspace</b-button>
-                <b-button class="ml-2" variant="danger" size="sm" :disabled="!containerState.exited" @click="removeContainer">Delete workspace</b-button>
-                <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button>     
-            </b-col>
-        </b-row>
-        <b-row>
             <b-col>
                 
             </b-col>
         </b-row>
-        <br><br><br>
         <b-row>
-            <b-card style="max-width: 20vw" img-fluid class="text-center ml-5" :img-src="require('../assets/camera.png')">
-                <b-card-text>Link to camera</b-card-text>
-            </b-card>
+            <b-button class="ml-2 yield" variant="light" size="md" @click="yieldSession">Yield slot</b-button>  
         </b-row>
+        <div class="room">
+            <div v-if="!is_sim" class="room-items">
+                <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
+                    <b-button>Link to camera</b-button>
+                </b-card>
+                <b-img style="max-width: 20vw" :src="require('../assets/robotont.png')"></b-img>
+            </div>
+        </div>
+        <div class="session">
+            <Desktop :source="vnc_uri" />
+        </div>
     </b-container>
 </template>
 
@@ -202,8 +196,35 @@ export default {
 </script>
 
 <style scoped>
-.session {
-    transform: translateX(21rem) scale(0.65);
-    margin-top: -5rem;
+.info {
+    margin-top: 8rem;
 }
+.controls {
+    margin-top: 3rem;
+}
+.session {
+    /* This styling is a mess */
+    transform: translateX(29rem) scale(0.58);
+    margin-top: -56rem;
+}
+.yield {
+    position: absolute;
+    right: 10rem;
+    top: 10rem;
+    font-size: 1.5rem;
+    border: 2px solid rgb(201, 204, 37);
+}
+.room {
+    height: 22rem;
+    margin: 2rem 4rem;
+    width: 42vw;
+    border: 2px solid black;
+}
+
+.room-items {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
 </style>
