@@ -1,6 +1,7 @@
 <template>
 	<div class="resp-container" :style="`background-image: url(${require('../assets/monitor-icon.svg')})`">
 		<iframe
+			v-if="started"
 			:src="source"
 			class="resp-iframe"
 			:style="`display: ${preventScroll}`"
@@ -10,7 +11,7 @@
 
 <script>
 export default {
-	props: ['source'],
+	props: ['source', 'started'],
 	data() {
 		return {
 			loaded: false

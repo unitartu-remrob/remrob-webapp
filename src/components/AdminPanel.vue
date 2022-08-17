@@ -7,7 +7,7 @@
 			<b-tab title="Simtainers" @click="switchTab(sim=true)">	
 			</b-tab>
 		</b-tabs>
-		<div class="loader" v-if="!this.is_loaded"><b-spinner class="spinner" type="grow" variant="info"></b-spinner></div>
+		<div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
 		<b-table striped v-else :items="containerStatus" :fields="fields">
 			<template v-slot:cell(status)="{ item: { running, disconnected } }">
 				<CircleFill :variant="running ? 'success' : disconnected ? 'danger' : 'warning'" font-scale="1.5" />
@@ -19,7 +19,7 @@
 				</div>	
 			</template>
 			<template v-slot:cell(alarm)="{ item: { issue, id } }">
-				<Exclamation variant="warning" v-if="issue" @click="clearIssue(id)" font-scale="2"/>
+				<Exclamation class="exclm" variant="warning" v-if="issue" @click="clearIssue(id)" font-scale="2"/>
 			</template>
 			<template v-slot:cell(actions)="{ item: { running, inactive, disconnected, id } }">
 				<b-button class="mr-2" variant="success" :disabled="running" @click="startContainer(id)">Start</b-button>
@@ -160,14 +160,8 @@ export default {
 </script>
 
 <style scoped>
-.loader {
-	height: 50vh;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-.spinner {
-	width: 6rem;
-	height: 6rem;
-}
+	.exclm:hover {
+		transform: scale(1.2);
+		cursor: pointer;
+	}
 </style>

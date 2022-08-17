@@ -1,15 +1,11 @@
 <template>
     <b-container fluid>
 		<br><br><br>
-		<b-row>
-            <b-col>
-                USER HERE
-            </b-col>
-        </b-row>
         <br><br><br><br>
         <b-row>
             <b-col>
-                <b-table striped :items="bookings" :fields="fields">
+                <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
+                <b-table v-else striped :items="bookings" :fields="fields">
                     <template v-slot:cell(join)="{ item }">
                         <b-button :disabled="!item.isActive" @click="$router.push({ name: 'Session', params: {session: item.id} })">Session dashboard</b-button>
                     </template>
@@ -36,7 +32,7 @@ export default {
     data() {
         return {
             fields: [
-                { key: "id", label: "Booking ID" },
+                // { key: "id", label: "Booking ID" },
                 { key: "title", label: "Project" },
 				{ key: "start", label: "Start" },
 				{ key: "end", label: "End" },
@@ -45,12 +41,12 @@ export default {
             ],
             bookings: [],
             timerKey: 0,
-            timer: ""
+            timer: "",
+            is_loaded: false
         }
     },   
     computed: {
         ...mapGetters(["getUser"]),
-
     },
     methods: {
         getBookings: function() {
@@ -60,6 +56,7 @@ export default {
                     item.start = item.start.slice(0, 16).replace("T", "  ")
                     item.end = item.end.slice(0, 16).replace("T", "  ")
                 })
+                this.bookings.sort((a, b) => (b.id - a.id))
                 console.log(res.data)
             })			
         },
@@ -69,6 +66,7 @@ export default {
                 const time = getCountdown(start, end);
                 booking = Object.assign(booking, time)
             });
+            this.is_loaded = true
             this.timerKey += 1;
         }
     },
@@ -85,6 +83,6 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 
 </style>

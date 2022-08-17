@@ -1,5 +1,14 @@
 <template>
     <b-container fluid>
+        <!-- <b-modal ok-title="Confirm" @ok="removeContainer" title="Remove workspace?" id="kill-modal">
+            <h4>This will remove any unsaved changes</h4>
+        </b-modal> -->
+        <b-modal ok-title="Confirm" @ok="yieldSession" title="Quit session" id="yield-modal">
+            <h4>Are you sure you want to surrender your slot?</h4>
+        </b-modal>
+        <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
+            <h4>This will overwrite any previous save</h4>
+        </b-modal>
 		<b-row>
             <b-col class="info text-center">
                 <h1>{{message}}</h1>
@@ -11,10 +20,19 @@
                     <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
                     </b-form-checkbox>
-                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">Start</b-button>
-                    <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">Stop</b-button>
+                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
+                        <b-spinner v-if="starting" small></b-spinner>
+                        Start
+                    </b-button>
+                    <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">
+                        <b-spinner v-if="stopping" small></b-spinner>
+                        Stop
+                    </b-button>
                     <b-button class="mr-2" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
-                    <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="commitContainer">Save workspace</b-button>
+                    <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
+                        <b-spinner v-if="saving" small></b-spinner>
+                        Save workspace
+                    </b-button>
                     <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer">Delete workspace</b-button>
                     <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button>
                 </div>
@@ -24,7 +42,7 @@
             </b-col>
         </b-row>
         <b-row>
-            <b-button class="ml-2 yield" variant="light" size="md" @click="yieldSession">Yield slot</b-button>  
+            <b-button class="ml-2 yield" variant="light" size="md" @click="$bvModal.show('yield-modal')">Yield slot</b-button>  
         </b-row>
         <div class="room">
             <div v-if="!is_sim" class="room-items">
@@ -35,7 +53,7 @@
             </div>
         </div>
         <div class="session">
-            <Desktop :source="vnc_uri" />
+            <Desktop :started="started" :source="vnc_uri" />
         </div>
     </b-container>
 </template>
@@ -56,7 +74,10 @@ export default {
             sesssionID: '',
             timerKey: 0,
             loading: true,
+            saving: false,
+            starting: false,
             started: false,
+            stopping: false
         }
     },
     components: {
@@ -100,6 +121,10 @@ export default {
             this.loading = true;
             axios.get(`${this.$store.state.containerAPI}/inspect/${slug}`, {headers: this.$store.state.header}).then((res) => {
                 this.containerData = res.data
+                const { Status } = this.containerData.State;
+                setTimeout(() => {
+                    this.started = (Status === "exited" || Status === "running") ? true : false;
+                }, 500)
                 this.loading = false;
             }).catch(e => {
                 // With the expectation of exception 404 - container dead
@@ -109,6 +134,7 @@ export default {
         },
 		startContainer: function() {
             const { slug } = this.container;
+            this.starting = true;
             // Always inform whether sim, the server will validate the environment if user is not an admin
             const params = new URLSearchParams([['fresh', this.freshImage], ['is_simulation', this.booking.is_simulation]]);
 			axios.post(`${this.$store.state.containerAPI}/start/${slug}`, {}, {headers: this.$store.state.header, params}).then((res) => {
@@ -117,12 +143,16 @@ export default {
                 console.log(res.data)
                 this.container.vnc_uri = path;
 				this.inspectContainer()
+                this.starting = false;
+                // Artificial buffer to        
             })	
 		},
 		stopContainer: function() {
             const { slug } = this.container;
+            this.stopping = true;
 			axios.post(`${this.$store.state.containerAPI}/stop/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
 				console.log(`${slug} stopped`)
+                this.stopping = false;
 				this.inspectContainer()
             })	
 		},
@@ -130,13 +160,16 @@ export default {
             const { slug } = this.container;
 			axios.post(`${this.$store.state.containerAPI}/remove/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
                 this.inspectContainer()
+                this.started = false
 				// this.ws.send("update")
             })
 		},
         commitContainer: function() {
             const { slug } = this.container;
+            this.saving = true;
 			axios.post(`${this.$store.state.containerAPI}/commit/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
                 console.log("Container successfully saved")
+                this.saving = false;
             })
 		},
         raiseIssue: function() {
