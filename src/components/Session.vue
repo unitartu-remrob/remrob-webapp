@@ -31,9 +31,9 @@
                     <b-button class="mr-2" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
                     <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
                         <b-spinner v-if="saving" small></b-spinner>
-                        Save workspace
+                        Save environment
                     </b-button>
-                    <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer">Delete workspace</b-button>
+                    <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer">Delete environment</b-button>
                     <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button>
                 </div>
             </b-col>
