@@ -39,6 +39,7 @@ export default {
                 },
                 initialView: "dayGridMonth",
                 displayEventTime: true,
+                displayEventEnd: true,
                 editable: true,
                 selectable: true,
                 selectMirror: true,

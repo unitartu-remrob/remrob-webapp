@@ -11,7 +11,7 @@
                 <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
             </b-form-group>
         </b-modal>
-        <b-modal ok-title="Confirm" title="Delete the slot" id="delete-modal">
+        <b-modal ok-title="Confirm" @ok="deleteSlot" title="Delete the slot" id="delete-modal">
             <h4>Are you sure you want to delete this slot?</h4>
         </b-modal>
         <div class="m-3">
@@ -45,6 +45,7 @@ export default {
                 },
                 initialView: "dayGridMonth",
                 displayEventTime: true,
+                displayEventEnd: true,
                 editable: true,
                 selectable: true,
                 selectMirror: true,
@@ -65,6 +66,7 @@ export default {
             end: null,
             selectedInventory: null,
             selectedDate: null,
+            selectedSlot: null,
             inventory: []
         };
     },
@@ -104,11 +106,10 @@ export default {
             })
         },
         handleEventClick: function (info) {
-            console.log(info.event.id);
+            this.selectedSlot = info.event.id
             this.$bvModal.show("delete-modal");
         },
         handleDateSelect: function (info) {
-            console.log(info);
             this.selectedDate = info.startStr;
             this.$bvModal.show("slot-modal");
         },
@@ -119,15 +120,21 @@ export default {
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation
             }
-            console.log(slotData)
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings", slotData, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             });
         },
+
+        deleteSlot: function() {
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.delete(this.$store.state.baseURL + "/bookings/delete/" + this.selectedSlot, {headers: this.$store.state.header}).then((res) => {
+                this.getAllSlots()
+            });
+        },
         getAllSlots: function() {
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.get(this.$store.state.baseURL + "/bookings", {headers: this.$store.state.header}).then((res) => {
+            axios.get(this.$store.state.baseURL + "/slots", {headers: this.$store.state.header}).then((res) => {
                 this.calendarOptions.events = res.data.bookings
             });
         }

@@ -140,6 +140,21 @@ def modify_token():
     db.session.commit()
     return jsonify(msg="JWT revoked")
 
+@app.route("/api/v1/slots", methods=["GET"])
+@admin_required()
+def all_slots():
+    results = []
+    slots = Bookings.query.all()
+    for slot in slots: 
+        slot_object = {
+            "title": slot.project.title(),
+            "start": slot.start_time,
+            "end": slot.end_time,
+            "id": slot.id
+        }
+        results.append(slot_object)
+    return jsonify({"bookings": results}), 200
+
 @app.route('/api/v1/bookings', methods=["GET", "POST"])
 @jwt_required()
 def bookings():
@@ -205,11 +220,23 @@ def book_slot(id):
     current_user = get_jwt_identity()
     if int(data["userId"]) == current_user:
         slot = Bookings.query.get(id)
-        slot.user_id = data["userId"]
-        db.session.commit()
-        return "Slot booked", 200
+        if slot.user_id == None:
+            slot.user_id = data["userId"]
+            db.session.commit()
+            return "Slot booked", 200
+        else:
+            return "Slot is already booked", 400
     else:
-        return "Wrong user", 400
+        return "Wrong user", 403
+
+@app.route("/api/v1/bookings/delete/<id>", methods=["DELETE"])
+@admin_required()
+def delete_slot(id):
+    slot = Bookings.query.get(id)
+    db.session.delete(slot)
+    db.session.commit()
+    return "Slot deleted",200
+
 
 @app.route("/api/v1/bookings/unbook/<user_id>/<slot_id>", methods=["DELETE"])
 @jwt_required()
@@ -229,7 +256,7 @@ def unbook(user_id, slot_id):
 
         return "Booking deleted", 200
     else:
-        return "Wrong user", 400
+        return "Wrong user", 403
 
 @app.route("/api/v1/simtainers", methods=["POST", "GET"])
 @admin_required()
