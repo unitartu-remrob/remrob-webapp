@@ -85,7 +85,7 @@ export default {
 					uptime: !inactive ? getUptime(StartedAt) : '-',
 					status: Status,
 					cpu: data.cpu_percent,
-					vnc_uri: `http://${window.location.hostname}${data.vnc_uri}`, // TODO: change to .env, can add &view_only=true for spying
+					vnc_uri: `http://${window.location.host}${data.vnc_uri}`, // TODO: change to .env, can add &view_only=true for spying
 					id: slug,
 					user: getTimeLeft(end_time),
 					issue
@@ -127,7 +127,7 @@ export default {
 		connectWs: function() {
 			console.log("connecting...")
 			const endpoint = (this.is_sim) ? "simulation" : "physbots";
-			const ws = new WebSocket(`ws://${window.location.hostname}/containers/live/${endpoint}`) // TODO: add cookie auth, headers not available
+			const ws = new WebSocket(`ws://${window.location.host}/containers/live/${endpoint}`) // TODO: add cookie auth, headers not available
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)

@@ -17,17 +17,27 @@
                 <b-button v-if="getUser.role == 'ROLE_ADMIN'" to="/admin-panel">Admin panel</b-button>
             </b-col>
         </b-row>
-
+        <canvas id='canvas'></canvas>
     </b-container>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import { loadPlayer } from 'rtsp-relay/browser';
 export default {
     name: "Home",
     computed: {
         ...mapGetters(["getUser"])
-    }
+    },
+    mounted() {
+		loadPlayer({
+            url: `ws://${window.location.host}/containers/api/stream/192.168.200.211`,
+            canvas: document.getElementById('canvas'),
+
+            // optional
+            onDisconnect: () => console.log('Connection lost!'),
+        });
+    },
     
 }
 </script>
