@@ -6,6 +6,7 @@ After=network.target
 User=remrob
 WorkingDirectory=/home/remrob/dev/remrob-webapp
 ExecStart=/home/remrob/.local/bin/gunicorn --bind 0.0.0.0:5000 app:app --workers 4
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

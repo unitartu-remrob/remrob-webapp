@@ -3,10 +3,16 @@ import Vuex from "vuex"
 
 Vue.use(Vuex)
 
+const domain = (process.env.NODE_ENV === "development") ? window.location.hostname : window.location.host;
+const protocol = (process.env.VUE_APP_PROTOCOL === "http") ? "http" : "https";
+const protocolWs = (process.env.VUE_APP_PROTOCOL === "http") ? "ws" : "wss";
+
 const state = {
     user: null,
-    baseURL: "http://" + window.location.host + "/api/v1",
-    containerAPI: "http://" + window.location.host + "/containers",
+    baseURL: `${protocol}://` + domain + "/api/v1",
+    containerAPI: `${protocol}://` + domain + "/containers",
+    rootURL: `${protocol}://` + domain,
+    wsRootURL: `${protocolWs}://` + domain,
     header: {
         'Authorization': '',
         'Content-Type': 'application/json',

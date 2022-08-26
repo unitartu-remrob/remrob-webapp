@@ -109,7 +109,7 @@ export default {
             }
         },
         vnc_uri: function() {
-            return `http://${window.location.hostname}${this.container.vnc_uri}` // change to .env
+            return `${this.$store.state.rootURL}${this.container.vnc_uri}`;
         },
         is_sim: function() {
             return this.booking.is_simulation;
