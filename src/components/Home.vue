@@ -17,7 +17,7 @@
                 <b-button v-if="getUser.role == 'ROLE_ADMIN'" to="/admin-panel">Admin panel</b-button>
             </b-col>
         </b-row>
-        <canvas id='canvas'></canvas>
+        <canvas id='canvas'>h264Preview_01_main</canvas>
     </b-container>
 </template>
 
@@ -48,5 +48,10 @@ export default {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+}
+
+#canvas {
+    max-width: 50%;
+    margin-left: 30%;
 }
 </style>
