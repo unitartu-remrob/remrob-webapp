@@ -31,11 +31,11 @@ export default {
     },
     mounted() {
 		loadPlayer({
-            url: `ws://${window.location.host}/containers/api/stream/192.168.200.211`,
+            url: `${this.$store.state.wsRootURL}/containers/api/stream/2`,
             canvas: document.getElementById('canvas'),
 
             // optional
-            onDisconnect: () => console.log('Connection lost!'),
+            onDisconnect: () => console.log('Camera connection lost!'),
         });
     },
     

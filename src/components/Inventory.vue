@@ -20,8 +20,13 @@
                     </template>
                     <template #cell(project)="{ item }">
                         <InventoryInput :inventoryItem="item" @update="updateInventory"/>
-                    </template>
+                    </template>                    
                 </b-table>
+            </b-col>
+        </b-row>
+        <b-row>
+            <b-col class="d-flex justify-content-center mt-2">
+                <b-img style="max-width: 20vw" :src="require('../assets/field_plan.jpg')"></b-img>
             </b-col>
         </b-row>
     </b-container>
@@ -38,8 +43,9 @@ export default {
             inventory: [],
             formState: [],
             fields: [
-                { key: "title", label: "Name" },
-                { key: "project", label: "Location" },
+                { key: "title", label: "" },
+                // { key: "location", label: "Workcell" },
+                { key: "project", label: "" },              
                 // { key: "status", label: "Available" },
                 { key: "delete", label: ""}
             ]
@@ -79,7 +85,8 @@ export default {
         },
         updateInventory: function(item) {
 			const data = {
-				"project": item.project
+				"project": item.project,
+                "cell": item.cell
 			}
 			axios.put(this.$store.state.baseURL + `/inventory/${item.slug}`, data, {headers: this.$store.state.header}).then((res) => {
 				

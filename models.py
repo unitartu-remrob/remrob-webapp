@@ -29,6 +29,7 @@ class Inventory(db.Model):
     robot_id = db.Column('robot_id', db.Integer)
     slug = db.Column('slug', db.String(100))
     project = db.Column('project', db.String(100))
+    cell = db.Column('cell', db.Integer)
     status = db.Column(db.Boolean)
 
     expires = db.Column('end_time', db.String(100))
@@ -45,3 +46,10 @@ class Simtainers(db.Model):
     expires = db.Column('end_time', db.String(100))
     user_id = db.Column('user', db.Integer)
     vnc_uri = db.Column('vnc_uri', db.String(255))
+
+class Cameras(db.Model):
+    __tablename__ = "cameras"
+    id = db.Column(db.Integer, primary_key = True)
+
+    cell = db.Column('cell', db.Integer)
+    ip = db.Column('camera_ip', db.String(100))

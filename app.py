@@ -242,7 +242,7 @@ def new_simtainer():
         return jsonify(sorted_inv), 200
 
 @app.route("/api/v1/inventory", methods=["GET"])
-@jwt_required()
+@admin_required()
 def inventory():
     inventory = Inventory.query.all()
     results = [
@@ -253,6 +253,7 @@ def inventory():
             "title": f"Robotont-{inv.robot_id}",
             "status": inv.status,
             "project": inv.project,
+            "cell": inv.cell,
             "vnc_uri": inv.vnc_uri
         } for inv in inventory
     ]
@@ -276,6 +277,7 @@ def new_inventory():
             robot_id = id,
             slug = f"robo-{id}",
             project = 'default',
+            cell = 0,
             status = True
         )
         db.session.add(inventory)
@@ -300,19 +302,21 @@ def update_inventory(inv_id):
         # Check between different update targets
         if "issue" in data:
             entry.issue = data["issue"]
-        elif "status" in data and is_admin:
+        if "status" in data and is_admin:
             if isinstance(data["status"], bool):             
                 entry.status = data["status"]
             else:
                 return "Expected boolean", 400
-        elif "project" in data and is_admin:
+        if "project" in data and is_admin:
             entry.project = data["project"]
-        else:
-            return "Bad query", 400
+        if "cell" in data and is_admin:
+            entry.cell = data["cell"]
+        # else:
+        #     return "Bad query", 400
         db.session.commit()
         return "Inventory successfully updated", 200
 
-    elif request.method == "DELETE":
+    elif is_admin and request.method == "DELETE":
         Inventory.query.filter(Inventory.slug == inv_id).delete()
         db.session.commit()
         return "Record deleted successfully", 200
@@ -341,6 +345,20 @@ def users():
             user.role = u["role"]
             db.session.commit()
         return "Users updated", 200
+
+@app.route("/api/v1/cameras", methods=["POST"])
+@admin_required()
+def cameras():
+    # Just an endpoint, so you don't have to manually fill the table
+    if request.method == "POST":
+        Cameras.query.delete()
+        for i in range(8):
+            cont = Cameras(
+                cell = i+1,
+            )
+            db.session.add(cont)
+        db.session.commit()
+        return "Camera table filled", 201
 
 
 if __name__ == '__main__':
