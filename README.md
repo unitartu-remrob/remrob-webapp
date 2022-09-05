@@ -38,12 +38,3 @@ pip install -r requirements.txt
 ```
 python app.py
 ```
-## Keycloak setup
-
-Import json files from keycloak_realms folder
-
-## Run keycloak
-
-```
-./keycloak-18.0.0/bin/kc.sh start-dev
-```

@@ -25,15 +25,7 @@ Vue.component('CircleFill', BIconCircleFill)
 Vue.component('PersonFill', BIconPersonFill)
 Vue.component('Exclamation', BIconExclamationLg)
 Vue.component('Screen', BIconTv)
-// Vue.use(authentication)
 
-// Vue.$keycloak.init({ onload: 'login-required' }).then(() => {
-//   new Vue({
-//     router,
-//     store,
-//     render: h => h(App),
-//   }).$mount('#app')
-// })
 window.eventBus = new Vue({
   router,
   store,
