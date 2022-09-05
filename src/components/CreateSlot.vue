@@ -2,10 +2,10 @@
     <b-container fluid>
         <b-modal title="Create slot" @ok="createSlot" id="slot-modal">
             <b-form-group label="Start time">
-                <b-form-timepicker v-model="start" locale="est"></b-form-timepicker>
+                <VueTimepicker manual-input v-model="start"></VueTimepicker>
             </b-form-group>
             <b-form-group label="End time">
-                <b-form-timepicker v-model="end" locale="est"></b-form-timepicker>
+                <VueTimepicker manual-input v-model="end"></VueTimepicker>
             </b-form-group>
             <b-form-group label="Item">
                 <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
@@ -28,11 +28,13 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from 'axios';
 import { mapGetters } from 'vuex';
+import VueTimepicker from 'vue2-timepicker/src/vue-timepicker.vue';
 
 export default {
     name: "CreateSlot",
     components: {
         FullCalendar,
+        VueTimepicker
     },
     data() {
         return {
