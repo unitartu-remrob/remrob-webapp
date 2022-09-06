@@ -8,9 +8,14 @@
 			</b-tab>
 		</b-tabs>
 		<div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
-		<b-table striped v-else :items="containerStatus" :fields="fields">
+		<b-table striped v-else :items="containerStatus" :fields="filteredFields">
 			<template v-slot:cell(status)="{ item: { running, disconnected } }">
 				<CircleFill :variant="running ? 'success' : disconnected ? 'danger' : 'warning'" font-scale="1.5" />
+			</template>
+			<template v-slot:cell(robotStatus)="{ item: { robot_status } }">
+				<div v-if="true" class="d-flex align-items-center justify-content-center">
+					<Broadcast font-scale="2" :variant="robot_status ? 'success' : 'danger'"/>
+				</div>	
 			</template>
 			<template v-slot:cell(user)="{ item: { user } }">
 				<div v-if="user.isActive" class="d-flex align-items-center">
@@ -43,13 +48,14 @@ export default {
             inventory: [],
 			fields: [
                 { key: "id", label: "Container ID", tdClass: 'align-middle', thClass: "", },
+				{ key: "robotStatus", label: "Robot status", tdClass: 'align-middle', thClass: "text-center", },
 				{ key: "user", label: "", tdClass: 'align-middle text-center', thClass: "", },
 				{ key: "alarm", label: "", tdClass: 'align-middle', thClass: "", },
-                { key: "status", label: "State", tdClass: 'align-middle text-center', thClass: "text-center", },
-				{ key: "ip", label: "IP address", tdClass: 'align-middle', thClass: "", },
+				{ key: "ip", label: "Container IP", tdClass: 'align-middle', thClass: "", },
 				{ key: "uptime", label: "Uptime", tdClass: 'align-middle', thClass: "", },
 				{ key: "cpu", label: "%CPU", tdClass: 'align-middle', thClass: "", },
 				{ key: "actions", label: "", thClass: 'text-center'},
+				{ key: "status", label: "Container status", tdClass: 'align-middle text-center', thClass: "text-center", },
 				{ key: "connection", label: "", tdClass: 'text-left', thClass: "text-center"},
             ],
 			containerList: [],
@@ -61,12 +67,24 @@ export default {
     },   
     computed: {
         ...mapGetters(["getUser"]),
+		filteredFields: function () {
+			return this.fields.filter(field => {
+				if (this.is_sim) {
+					// return those that are not status
+					return field.key !== 'robotStatus'
+				} else {
+					return true
+				}		
+			})
+		},
 		containerStatus: function() {
 			const items = this.containerList.map(container => {
-				const { data, slug, booking: { end_time, issue } } = container;
+				const { data, slug, robot_id, robot_status, booking: { end_time, issue } } = container;
 				let Status,
 					StartedAt,
 					IPAddress
+				
+				// let id = (robot_id) ? `robotont-${robot_id}` : slug;
 
 				if (data === 404) {
 					Status = "inactive";
@@ -80,15 +98,16 @@ export default {
 				const inactive = (Status === "exited" || disconnected); // start active
 
 				return {
+					id: slug,
 					running, disconnected, inactive,
 					ip: IPAddress,
 					uptime: !inactive ? getUptime(StartedAt) : '-',
 					status: Status,
 					cpu: data.cpu_percent,
 					vnc_uri: `${this.$store.state.rootURL}${data.vnc_uri}`, // can add &view_only=true for spying
-					id: slug,
 					user: getTimeLeft(end_time),
-					issue
+					issue,
+					robot_status
 				}
 			})
 			return items
@@ -131,9 +150,10 @@ export default {
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)
-				const data = results.map(({ slug, status, value, booking }) => {
+				const data = results.map(({ robot_id, slug, status, robot_status, value, booking }) => {
 					return {
-						slug,
+						robot_id, slug,
+						robot_status,
 						booking,
 						data: (status === 'fulfilled') 
 							?  value

@@ -7,7 +7,9 @@ import {
   BIconCircleFill,
   BIconPersonFill,
   BIconExclamationLg,
-  BIconTv
+  BIconTv,
+  BIconBroadcast,
+  BIconLink45deg
 } from 'bootstrap-vue'
 import router from './router/router'
 import store from './store/store'
@@ -25,6 +27,8 @@ Vue.component('CircleFill', BIconCircleFill)
 Vue.component('PersonFill', BIconPersonFill)
 Vue.component('Exclamation', BIconExclamationLg)
 Vue.component('Screen', BIconTv)
+Vue.component('Broadcast', BIconBroadcast)
+Vue.component('Link', BIconLink45deg)
 
 window.eventBus = new Vue({
   router,

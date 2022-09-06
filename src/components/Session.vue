@@ -50,6 +50,7 @@
                     <b-button>Link to camera</b-button>
                 </b-card>
                 <b-img style="max-width: 20vw" :src="require('../assets/robotont.png')"></b-img>
+                <RobotStatus :robotID="this.container.robot_id"/>
             </div>
         </div>
         <div class="session">
@@ -62,8 +63,9 @@
 import { mapGetters } from 'vuex';
 import { getCountdown } from '../util/helpers'
 import Desktop from './Desktop.vue'
-
+import RobotStatus from './RobotStatus.vue'
 import axios from 'axios';
+
 export default {
     data() {
         return {
@@ -81,7 +83,8 @@ export default {
         }
     },
     components: {
-        Desktop
+        Desktop,
+        RobotStatus
     },
     computed: {
         ...mapGetters(["getUser"]),
