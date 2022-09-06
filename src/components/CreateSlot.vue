@@ -14,9 +14,9 @@
             <b-form-group label="End time">
                 <VueTimepicker manual-input v-model="end"></VueTimepicker>
             </b-form-group>
-            <!--<b-form-group label="Time interval">
-                <b-form-input type="number" v-model="interval"></b-form-input>
-            </b-form-group>-->
+            <b-form-group label="Time interval (hour)">
+                <b-form-input type="number" placeholder="1" v-model="interval"></b-form-input>
+            </b-form-group>
             <b-form-group label="Item">
                 <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
             </b-form-group>
@@ -91,7 +91,7 @@ export default {
             selectedDate: null,
             selectedSlot: null,
             inventory: [],
-            interval: 0
+            interval: 1
         };
     },
     computed: {
