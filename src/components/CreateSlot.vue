@@ -1,8 +1,29 @@
 <template>
     <b-container fluid>
-        <b-modal title="Create slot" @ok="createSlot" id="slot-modal">
+        <b-modal centered hide-footer title="Choose creation type" id="type-modal">
+            <div class="text-center">
+                <b-button @click="$bvModal.hide('type-modal'); $bvModal.show('slot-modal')" class="m-3">Single slot creation</b-button>
+                <br>
+                <b-button @click="$bvModal.hide('type-modal'); $bvModal.show('bulk-modal')" class="m-3">Bulk slot creations</b-button>
+            </div>
+        </b-modal>
+        <b-modal title="Create slots" @ok="createSlotsBulk" id="bulk-modal">
             <b-form-group label="Start time">
                 <VueTimepicker manual-input v-model="start"></VueTimepicker>
+            </b-form-group>
+            <b-form-group label="End time">
+                <VueTimepicker manual-input v-model="end"></VueTimepicker>
+            </b-form-group>
+            <!--<b-form-group label="Time interval">
+                <b-form-input type="number" v-model="interval"></b-form-input>
+            </b-form-group>-->
+            <b-form-group label="Item">
+                <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
+            </b-form-group>
+        </b-modal>
+        <b-modal title="Create slot" @ok="createSlot" id="slot-modal">
+            <b-form-group label="Start time">
+                <VueTimepicker format="HH:mm" manual-input v-model="start"></VueTimepicker>
             </b-form-group>
             <b-form-group label="End time">
                 <VueTimepicker manual-input v-model="end"></VueTimepicker>
@@ -64,12 +85,13 @@ export default {
                     hour12: false,
                 },
             },
-            start: null,
-            end: null,
+            start: '',
+            end: '',
             selectedInventory: null,
             selectedDate: null,
             selectedSlot: null,
-            inventory: []
+            inventory: [],
+            interval: 0
         };
     },
     computed: {
@@ -113,7 +135,8 @@ export default {
         },
         handleDateSelect: function (info) {
             this.selectedDate = info.startStr;
-            this.$bvModal.show("slot-modal");
+            this.$bvModal.show("type-modal")
+            //this.$bvModal.show("slot-modal");
         },
         createSlot: function () {
             var slotData = {
@@ -126,6 +149,21 @@ export default {
             axios.post(this.$store.state.baseURL + "/bookings", slotData, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             });
+        },
+
+        createSlotsBulk: function() {
+            var slotData = {
+                "start": this.selectedDate + "T" + this.start,
+                "end": this.selectedDate + "T" + this.end,
+                "interval": this.interval,
+                "project": this.selectedInventory.project,
+                "is_simulation": this.selectedInventory.simulation
+            }
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            axios.post(this.$store.state.baseURL + "/bookings/bulk", slotData, {headers: this.$store.state.header}).then((res) => {
+                this.getAllSlots()
+            });
+
         },
 
         deleteSlot: function() {

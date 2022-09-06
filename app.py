@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request
 import bcrypt
 from functools import wraps
-from datetime import timezone, datetime
+from datetime import timedelta, timezone, datetime
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
@@ -14,6 +14,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhos
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["JWT_SECRET_KEY"] = "super-secret"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 100000
+
 
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
@@ -135,6 +136,28 @@ def bookings():
             }
             results.append(slot_object)
         return jsonify({"bookings": results}), 200
+
+@app.route('/api/v1/bookings/bulk', methods=["POST"])
+@admin_required()
+def bookings_bulk():
+    data = request.json
+    date_format = "%Y-%m-%dT%H:%M"
+    start_time = datetime.strptime(data["start"], date_format)
+    end_time = datetime.strptime(data["end"], date_format)
+    while start_time <= end_time:
+        end = start_time + timedelta(hours=1)
+        booking = Bookings(
+            start_time=datetime.strftime(start_time, date_format),
+            end_time=datetime.strftime(end, date_format),
+            simulation=data["is_simulation"],
+            project=data["project"]
+        )
+        db.session.add(booking)
+        db.session.commit()
+        #print((datetime.strftime(start_time, date_format), datetime.strftime(end, date_format)))
+        start_time = end
+    return "Slots created", 200
+
 
 @app.route('/api/v1/bookings/<user_id>', methods=["GET"])
 @jwt_required()
