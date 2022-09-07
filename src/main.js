@@ -4,6 +4,7 @@ import { BootstrapVue } from 'bootstrap-vue';
 // import ErrorPage from 'vue-error-page';
 
 import {
+  BIconJustify,
   BIconCircleFill,
   BIconPersonFill,
   BIconExclamationLg,
@@ -23,6 +24,7 @@ Vue.config.productionTip = false
 // Vue.use(ErrorPage);
 
 Vue.use(BootstrapVue)
+Vue.component('Justify', BIconJustify)
 Vue.component('CircleFill', BIconCircleFill)
 Vue.component('PersonFill', BIconPersonFill)
 Vue.component('Exclamation', BIconExclamationLg)
