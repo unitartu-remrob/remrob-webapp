@@ -6,6 +6,7 @@
         <b-modal ok-title="Confirm" @ok="bookSlot" title="Book the slot" id="booking-modal">
             <h4>Are you sure you want to book this slot?</h4>
         </b-modal>
+        <b-alert class="m-2" :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged" variant="danger">Limit of booked slots reached</b-alert>
         <b-row class="text-center m-3">
             <b-col>
                 <FullCalendar :options="calendarOptions" />
@@ -62,7 +63,10 @@ export default {
             end: null,
             selectedInventory: null,
             selectedDate: null,
-            selectedSlot: null,      
+            selectedSlot: null,  
+            showAlert: false,
+            dismissSec: 5,
+            dismissCountDown: 0    
         };
     },
     computed: {
@@ -81,10 +85,18 @@ export default {
         handleDateSelect: function (info) {
             console.log(info);
         },
+        countDownChanged(dismissCountDown) {
+            this.dismissCountDown = dismissCountDown
+        },
+
         bookSlot: function () {
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {"userId": this.getUser.user_id}, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
+            }).catch((error) => {
+                if (error.response.data == "Booked slots limit reached") {
+                    this.dismissCountDown = this.dismissSec
+                }
             })
         },
         deleteBooking: function() {
@@ -97,13 +109,11 @@ export default {
             this.calendarOptions.events = []
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.get(this.$store.state.baseURL + "/bookings", {headers: this.$store.state.header}).then((res) => {
-                console.log(res.data.bookings)
                 for (let i = 0; i < res.data.bookings.length; i++) {
                     this.calendarOptions.events.push(res.data.bookings[i]) 
                 }
             });
             axios.get(this.$store.state.baseURL + "/bookings/" + this.getUser.user_id, {headers: this.$store.state.header}).then((res) => {
-                console.log(res.data.user_bookings)
                 for (let i = 0; i < res.data.user_bookings.length; i++) {
                     this.calendarOptions.events.push(res.data.user_bookings[i]) 
                 }

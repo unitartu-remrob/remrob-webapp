@@ -194,16 +194,25 @@ def user_bookings(user_id):
 def book_slot(id):
     data = request.json
     current_user = get_jwt_identity()
-    if int(data["userId"]) == current_user:
-        slot = Bookings.query.get(id)
-        if slot.user_id == None:
-            slot.user_id = data["userId"]
-            db.session.commit()
-            return "Slot booked", 200
+    user_bookings = Bookings.query.filter_by(user_id = str(current_user));
+    upcoming_bookings = 0
+    date_format = "%Y-%m-%dT%H:%M"
+    for slot in user_bookings:
+        if datetime.now() < datetime.strptime(slot.start_time, date_format):
+            upcoming_bookings += 1
+    if upcoming_bookings < 3:
+        if int(data["userId"]) == current_user:
+            slot = Bookings.query.get(id)
+            if slot.user_id == None:
+                slot.user_id = data["userId"]
+                db.session.commit()
+                return "Slot booked", 200
+            else:
+                return "Slot is already booked", 400
         else:
-            return "Slot is already booked", 400
+            return "Wrong user", 403
     else:
-        return "Wrong user", 403
+        return "Booked slots limit reached", 400
 
 @app.route("/api/v1/bookings/delete/<id>", methods=["DELETE"])
 @admin_required()
