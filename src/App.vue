@@ -59,7 +59,18 @@ export default {
 </script>
 
 <style>
- #app {
-  overflow-x: hidden;
- }
+  #app {
+    overflow-x: hidden;
+  }
+
+  .nav-item > a {
+    color: white !important;
+  }
+
+
+  .nav-item > a:hover {
+    color: gray !important;
+  }
+
+ 
 </style>
