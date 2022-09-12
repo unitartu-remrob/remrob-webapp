@@ -4,6 +4,7 @@
       <b-col style="max-width: 35rem; margin-top: 10%">
         <b-card>
           <b-form>
+            <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">Register failed</b-alert>
             <b-form-group>
               <h3 class="text-center">Register</h3>
             </b-form-group>
@@ -35,6 +36,9 @@ export default {
     return {
       email: null,
       password: null,
+      showAlert: false,
+      dismissSec: 5,
+      dismissCountDown: 0
     }
   },
   methods: {
@@ -46,7 +50,12 @@ export default {
         if (res.status == 200) {
           this.$router.push({name: "Login"})
         }
+      }).catch((error) => {
+        this.dismissCountDown = this.dismissSec
       })
+    },
+    countDownChanged(dismissCountDown) {
+      this.dismissCountDown = dismissCountDown
     }
   },
 }
