@@ -12,7 +12,8 @@ from dotenv import load_dotenv, find_dotenv
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
 
-load_dotenv(find_dotenv())
+env_file = '.env.production' if (os.environ.get('FLASK_ENV') == 'production') else '.env'
+load_dotenv(find_dotenv(env_file))
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
