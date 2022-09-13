@@ -7,19 +7,22 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 import bcrypt, os
 from functools import wraps
 from datetime import timedelta, timezone, datetime
+from dotenv import load_dotenv, find_dotenv
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
 
+load_dotenv(find_dotenv())
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/remrob'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config["JWT_SECRET_KEY"] = "super-secret"
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 100000
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 465
 app.config["MAIL_USE_SSL"] = True
-app.config["MAIL_USERNAME"] = "testimisemail@gmail.com"
-app.config["MAIL_PASSWORD"] = "knuvjxvrpdkdvnnj"
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
@@ -46,7 +49,7 @@ def admin_required():
 
 
 def send_email(user):
-    url = "http://localhost:8080/password_reset/"
+    url = os.getenv("FRONTEND_BASE_URL") + "password_reset/"
     token = create_access_token(identity=user.id)
     msg = Message()
     msg.subject = "Password reset"
