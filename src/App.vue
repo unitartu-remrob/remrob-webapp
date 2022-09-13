@@ -63,12 +63,12 @@ export default {
     overflow-x: hidden;
   }
 
-  .nav-item > a {
+  .b-sidebar .nav-item > a {
     color: white !important;
   }
 
 
-  .nav-item > a:hover {
+  .b-sidebar .nav-item > a:hover {
     color: gray !important;
   }
 

@@ -45,4 +45,5 @@ export default {
     max-width: 50%;
     margin-left: 30%;
 }
+
 </style>
