@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request
-import bcrypt
+from flask_mail import Message, Mail
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request, decode_token
+import bcrypt, os
 from functools import wraps
 from datetime import timedelta, timezone, datetime
 
@@ -14,11 +15,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhos
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["JWT_SECRET_KEY"] = "super-secret"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 100000
-
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = "testimisemail@gmail.com"
+app.config["MAIL_PASSWORD"] = "knuvjxvrpdkdvnnj"
 
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+mail = Mail(app)
+
 
 from models import *
 
@@ -36,6 +43,18 @@ def admin_required():
         return decorator
 
     return wrapper
+
+
+def send_email(user):
+    url = "http://localhost:8080/password_reset/"
+    token = create_access_token(identity=user.id)
+    msg = Message()
+    msg.subject = "Password reset"
+    msg.sender = "testimisemail@gmail.com"
+    msg.recipients = [user.email]
+    msg.html = render_template("reset_email.html", url=url+token)
+    mail.send(msg)
+
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
@@ -93,6 +112,30 @@ def modify_token():
     db.session.add(TokenBlocklist(jti=jti, created_at=now))
     db.session.commit()
     return jsonify(msg="JWT revoked")
+
+@app.route('/api/v1/password_reset', methods=['POST'])
+def reset():
+    data = request.json
+    email = data['email']
+    user = User.query.filter_by(email = email).first()
+
+    if user:
+        send_email(user)
+        return "Email sent", 200
+    return "No user found", 403
+
+@app.route('/api/v1/password_reset_verified/<token>', methods=['POST'])
+def reset_verified(token):
+    user_id = decode_token(token)["sub"]
+    user = User.query.get(user_id)
+    if not user:
+        return "No user found", 403
+
+    password = request.json["password"]
+    if password:
+        user.password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        db.session.commit()
+        return "Password changed", 200
 
 @app.route("/api/v1/slots", methods=["GET"])
 @admin_required()

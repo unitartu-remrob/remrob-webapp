@@ -18,6 +18,7 @@
               <b-button block @click="login">Login</b-button>
             </b-form-group>
             <b-form-text class="text-center">No account? <router-link to="/register">Register</router-link></b-form-text>
+            <b-form-text class="text-center">Forgot password? <router-link to="/forgot">Reset</router-link></b-form-text>
           </b-form>
         </b-card>
       </b-col>

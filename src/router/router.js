@@ -10,6 +10,8 @@ import AdminPanel from  '../components/AdminPanel'
 import UserPanel from '../components/UserPanel'
 import Session from '../components/Session'
 import Users from '../components/Users.vue'
+import ForgotPassword from '../components/ForgotPassword.vue'
+import ResetPassword from '../components/ResetPassword.vue'
 import NotFound from '../components/Errors/404'
 import store from '../store/store.js'
 Vue.use(VueRouter)
@@ -96,6 +98,22 @@ const routes = [
     component: AdminPanel,
     meta: {
       isAuthenticated: true
+    }
+  },
+  {
+    path: '/forgot',
+    name: 'ForgotPassword',
+    component: ForgotPassword,
+    meta: {
+      isAuthenticated: false
+    }
+  },
+  {
+    path: '/password_reset/:token',
+    name: 'ResetPassword',
+    component: ResetPassword,
+    meta: {
+      isAuthenticated: false
     }
   },
   { 

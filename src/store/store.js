@@ -9,7 +9,7 @@ const protocolWs = (process.env.VUE_APP_PROTOCOL === "http") ? "ws" : "wss";
 
 const state = {
     user: null,
-    baseURL: `${protocol}://` + domain + "/api/v1",
+    baseURL: `${protocol}://` + domain + ":5000/api/v1",
     containerAPI: `${protocol}://` + domain + "/containers",
     rootURL: `${protocol}://` + domain,
     wsRootURL: `${protocolWs}://` + domain,
