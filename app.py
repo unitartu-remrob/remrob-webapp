@@ -174,12 +174,17 @@ def bookings():
         results = []
         bookings = Bookings.query.filter_by(user_id=None).all()
         for booking in bookings: 
+            if datetime.strptime(booking.start_time, "%Y-%m-%dT%H:%M") < datetime.now():
+                color = "gray"
+            else:
+                color = "blue" 
             #inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
                 "title": booking.project.title(),
                 "start": booking.start_time,
                 "end": booking.end_time,
-                "id": booking.id
+                "id": booking.id,
+                "color": color
             }
             results.append(slot_object)
         return jsonify({"bookings": results}), 200

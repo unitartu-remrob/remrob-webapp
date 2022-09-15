@@ -74,6 +74,10 @@ export default {
     },
     methods: {
         handleEventClick: function (info) {
+            if (new Date(info.event.startStr) < new Date()) {
+                return;
+            }
+
             this.selectedSlot = info.event.id
             if (info.event.backgroundColor === "green") {
                 this.$bvModal.show("delete-booking-modal")
