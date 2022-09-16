@@ -48,8 +48,7 @@ export default {
       axios.post(this.$store.state.baseURL + "/login", {
         "email": this.email,
         "password": this.password,
-      }).then((res) => {
-        console.log(res)
+      }, {withCredentials: true}).then((res) => {
         this.setCurrentUser(res.data)
         this.$router.push({name:"Home"})
       }).catch((error) => {

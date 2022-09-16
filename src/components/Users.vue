@@ -23,6 +23,9 @@
 <script>
 import { mapGetters } from 'vuex';
 import axios from 'axios';
+axios.defaults.withCredentials = true
+
+
 export default {
     data() {
         return {
@@ -40,13 +43,13 @@ export default {
     },
     methods: {
         getUsers: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            
             axios.get(this.$store.state.baseURL + "/users", {headers: this.$store.state.header}).then((res) => {
                 this.users = res.data
             })
         },
         updateUsers: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+            
             axios.put(this.$store.state.baseURL + "/users", this.users ,{headers: this.$store.state.header}).then((res) => {
                 this.getUsers();
             })

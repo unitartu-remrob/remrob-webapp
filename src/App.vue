@@ -48,7 +48,6 @@ export default {
     ...mapActions(["setCurrentUser"]),
 
     logout: function() {
-      this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
       axios.delete(this.$store.state.baseURL + "/logout", {headers: this.$store.state.header}).then((res) => {
         this.setCurrentUser(null)
         this.$router.push({name: "Login"})

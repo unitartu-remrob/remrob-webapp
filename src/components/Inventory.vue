@@ -36,6 +36,8 @@
 import { mapGetters } from 'vuex';
 import axios from 'axios';
 import InventoryInput from './InputForm.vue'
+axios.defaults.withCredentials = true
+
 export default {
     data() {
         return {
@@ -94,8 +96,7 @@ export default {
 		}
     },
     created() {
-        this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-        this.getInventory()
+          this.getInventory()
     }
 }
 </script>

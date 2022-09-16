@@ -14,8 +14,8 @@ const state = {
     rootURL: `${protocol}://` + domain,
     wsRootURL: `${protocolWs}://` + domain,
     header: {
-        'Authorization': '',
         'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
     }
 }
 const getters = {

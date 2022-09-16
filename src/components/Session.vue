@@ -65,6 +65,8 @@ import { getCountdown } from '../util/helpers'
 import Desktop from './Desktop.vue'
 import RobotStatus from './RobotStatus.vue'
 import axios from 'axios';
+axios.defaults.withCredentials = true
+
 
 export default {
     data() {
@@ -216,7 +218,7 @@ export default {
         }
     },
     created() {
-		this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+		
         this.sesssionID = this.$route.params.session;
         // Retrieve data about the specific booking being accessed
         this.getBookingInfo()
