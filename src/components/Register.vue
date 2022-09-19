@@ -4,9 +4,16 @@
       <b-col style="max-width: 35rem; margin-top: 10%">
         <b-card>
           <b-form>
-            <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">Register failed</b-alert>
+            <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
+            <b-alert :show="showAlert" dismissible variant="success">Register successful. Check your email for confirmation.</b-alert>
             <b-form-group>
               <h3 class="text-center">Register</h3>
+            </b-form-group>
+            <b-form-group label="First Name">
+              <b-form-input v-model="firstName"/>
+            </b-form-group>
+            <b-form-group label="Last Name">
+              <b-form-input v-model="lastName"/>
             </b-form-group>
             <b-form-group label="Email">
               <b-form-input v-model="email"/>
@@ -36,22 +43,29 @@ export default {
     return {
       email: null,
       password: null,
+      firstName: null,
+      lastName: null,
       showAlert: false,
       dismissSec: 5,
-      dismissCountDown: 0
+      dismissCountDown: 0,
+      errorMessage: null
     }
   },
   methods: {
     register: function () {
       axios.post(this.$store.state.baseURL + "/register", {
         "email": this.email,
+        "first_name": this.firstName,
+        "last_name": this.lastName,
         "password": this.password,
       }).then((res) => {
         if (res.status == 200) {
-          this.$router.push({name: "Login"})
+          this.showAlert = true;
+          setTimeout(() => this.$router.push({name: "Login"}), 2000)
         }
       }).catch((error) => {
         this.dismissCountDown = this.dismissSec
+        this.errorMessage = error.response.data
       })
     },
     countDownChanged(dismissCountDown) {

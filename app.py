@@ -54,19 +54,19 @@ def admin_required():
 
     return wrapper
 
-# @app.after_request
-# def refresh_expiring_jwts(response):
-#     try:
-#         exp_timestamp = get_jwt()["exp"]
-#         now = datetime.now(timezone.utc)
-#         target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
-#         if target_timestamp > exp_timestamp:
-#             access_token = create_access_token(identity=get_jwt_identity())
-#             set_access_cookies(response, access_token)
-#         return response
-#     except (RuntimeError, KeyError):
-#         # Case where there is not a valid JWT. Just return the original response
-#         return response
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original response
+        return response
 
 def send_email(user):
     url = os.getenv("FRONTEND_BASE_URL") + "password_reset/"
@@ -76,6 +76,14 @@ def send_email(user):
     msg.sender = "testimisemail@gmail.com"
     msg.recipients = [user.email]
     msg.html = render_template("reset_email.html", url=url+token)
+    mail.send(msg)
+
+def send_confirmation(email):
+    msg = Message()
+    msg.subject = "Register confirmation"
+    msg.sender = "testimisemail@gmail.com"
+    msg.recipients = [email]
+    msg.html = render_template("confirmation_email.html")
     mail.send(msg)
 
 
@@ -95,13 +103,28 @@ def register():
 
     email = data["email"]
     password = data["password"]
-    #first_name = data["first_name"]
-    #last_name = data["last_name"]
+    first_name = data["first_name"]
+    last_name = data["last_name"]
 
-    user = User(email=email, password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"), active=True, role="ROLE_ADMIN")
-    db.session.add(user)
-    db.session.commit()
-    return "User created", 200
+    if not email:
+        return "Missing email", 400
+    if not password:
+        return "Missing password", 400
+    if not first_name:
+        return "Missing firstname", 400
+    if not last_name:
+        return "Missing lastname", 400
+
+    user = User.query.filter_by(email=email).first()
+    
+    if user:
+        return "There already is a user with this email", 400
+    else:
+        user = User(email=email, first_name=first_name, last_name=last_name, password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"), active=False, role="ROLE_LEARNER")
+        db.session.add(user)
+        db.session.commit()
+        send_confirmation(email)
+        return "User created", 200
 
 
 @app.route("/api/v1/login", methods=["POST"])
@@ -437,6 +460,8 @@ def users():
             {
                 "id": user.id,
                 "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
                 "active": user.active,
                 "role": user.role
             } for user in users

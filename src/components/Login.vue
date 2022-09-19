@@ -4,7 +4,7 @@
       <b-col style="max-width: 35rem; margin-top: 10%;">
         <b-card>
           <b-form>
-            <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">Login failed</b-alert>
+            <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
             <b-form-group>
               <h3 class="text-center">Login</h3>
             </b-form-group>
@@ -38,7 +38,8 @@ export default {
       password: null,
       showAlert: false,
       dismissSec: 5,
-      dismissCountDown: 0
+      dismissCountDown: 0,
+      errorMessage: null
     }
   },
   methods: {
@@ -52,6 +53,7 @@ export default {
         this.setCurrentUser(res.data)
         this.$router.push({name:"Home"})
       }).catch((error) => {
+        this.errorMessage = error.response.data
         this.dismissCountDown = this.dismissSec
       })
     },

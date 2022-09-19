@@ -7,8 +7,8 @@ class TokenBlocklist(db.Model):
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    #first_name = db.Column(db.String(100))
-    #last_name = db.Column(db.String(100))
+    first_name = db.Column(db.String(255))
+    last_name = db.Column(db.String(255))
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean)

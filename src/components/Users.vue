@@ -32,6 +32,8 @@ export default {
             users: null,
             fields: [
                 { key: "id", label: "User ID" },
+                { key: "first_name", label: "First Name" },
+                { key: "last_name", label: "Last Name" },
                 { key: "email", label: "Email" },
                 { key: "role", label: "Role" },
                 { key: "active", label: "Active" },
