@@ -5,6 +5,7 @@ After=network.target
 [Service]
 User=remrob
 WorkingDirectory=/home/remrob/dev/remrob-webapp
+Environment="FLASK_ENV=production"
 ExecStart=/home/remrob/.local/bin/gunicorn --bind 0.0.0.0:5000 app:app --workers 4
 Restart=always
 
