@@ -28,7 +28,7 @@
 
 <script>
 import axios from 'axios'
-import { mapActions, mapGetters } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'Login',
@@ -44,7 +44,6 @@ export default {
   },
   methods: {
     ...mapActions(["setCurrentUser"]),
-    ...mapGetters(["getUser"]),
 
     login: function() {
       axios.post(this.$store.state.baseURL + "/login", {
