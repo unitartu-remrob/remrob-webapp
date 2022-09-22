@@ -23,7 +23,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from 'axios';
 import { mapGetters } from 'vuex';
-axios.defaults.withCredentials = true
 
 export default {
     name: "Booking",
@@ -95,6 +94,7 @@ export default {
         },
 
         bookSlot: function () {
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings/book/" + this.selectedSlot, {"userId": this.getUser.user_id}, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             }).catch((error) => {
@@ -104,20 +104,20 @@ export default {
             })
         },
         deleteBooking: function() {
-            
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.delete(this.$store.state.baseURL + "/bookings/unbook/" + this.getUser.user_id + "/" + this.selectedSlot, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             })
         },
         getAllSlots: function() {
             this.calendarOptions.events = []
-            
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.get(this.$store.state.baseURL + "/bookings", {headers: this.$store.state.header}).then((res) => {
                 for (let i = 0; i < res.data.bookings.length; i++) {
                     this.calendarOptions.events.push(res.data.bookings[i]) 
                 }
             });
-            axios.get(this.$store.state.baseURL + "/bookings/" + this.getUser.user_id, {withCredentials: true}, {headers: this.$store.state.header}).then((res) => {
+            axios.get(this.$store.state.baseURL + "/bookings/" + this.getUser.user_id, {headers: this.$store.state.header}).then((res) => {
                 for (let i = 0; i < res.data.user_bookings.length; i++) {
                     this.calendarOptions.events.push(res.data.user_bookings[i]) 
                 }

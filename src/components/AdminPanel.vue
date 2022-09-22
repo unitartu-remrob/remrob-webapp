@@ -170,7 +170,7 @@ export default {
 		}
     },
     created() {
-		
+		this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
 		this.connectWs()
     },
 	beforeDestroy() {  

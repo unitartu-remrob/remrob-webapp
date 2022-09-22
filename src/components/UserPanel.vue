@@ -27,7 +27,6 @@
 import { mapGetters } from 'vuex';
 import axios from 'axios';
 import { getCountdown } from '../util/helpers'
-axios.defaults.withCredentials = true
 
 export default {
     data() {
@@ -72,7 +71,8 @@ export default {
         }
     },
     created() {
-          this.getBookings();
+        this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+        this.getBookings();
     },
     mounted() {
         this.timer = setInterval(this.updateTime, 1000);

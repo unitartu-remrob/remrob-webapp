@@ -3,28 +3,22 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_mail import Message, Mail
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request, decode_token, set_access_cookies
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request, decode_token
 import bcrypt, os
 from functools import wraps
 from datetime import timedelta, timezone, datetime
 from dotenv import load_dotenv, find_dotenv
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
-CORS(app, supports_credentials=True)
+CORS(app)
 
 env_file = '.env.production' if (os.environ.get('FLASK_ENV') == 'production') else '.env'
 load_dotenv(find_dotenv(env_file))
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
-app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-app.config['JWT_ACCESS_COOKIE_PATH'] = '/api/v1'
-app.config['JWT_COOKIE_CSRF_PROTECT'] = False
-app.config['JWT_COOKIE_SECURE'] = False #Change in production to True (use over https)
-
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 100000
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 465
 app.config["MAIL_USE_SSL"] = True
@@ -54,19 +48,6 @@ def admin_required():
 
     return wrapper
 
-@app.after_request
-def refresh_expiring_jwts(response):
-    try:
-        exp_timestamp = get_jwt()["exp"]
-        now = datetime.now(timezone.utc)
-        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
-        if target_timestamp > exp_timestamp:
-            access_token = create_access_token(identity=get_jwt_identity())
-            set_access_cookies(response, access_token)
-        return response
-    except (RuntimeError, KeyError):
-        # Case where there is not a valid JWT. Just return the original response
-        return response
 
 def send_email(user):
     url = os.getenv("FRONTEND_BASE_URL") + "password_reset/"
@@ -146,10 +127,7 @@ def login():
             access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": True})
         else:
             access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": False})
-        #return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
-        resp = jsonify(user_id=user.id, role=user.role)
-        set_access_cookies(resp, access_token)
-        return resp, 200
+        return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
     else:
         return "User not active or wrong credentials", 400
 

@@ -50,7 +50,6 @@ import interactionPlugin from "@fullcalendar/interaction";
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 import VueTimepicker from 'vue2-timepicker/src/vue-timepicker.vue';
-axios.defaults.withCredentials = true
 
 export default {
     name: "CreateSlot",
@@ -115,7 +114,7 @@ export default {
             return optionCount
         },
         getInventory: function() {
-            
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
                 const options = this.getOptions(res.data);
                 for (let i = 0; i < options.length; i++) {
@@ -146,7 +145,7 @@ export default {
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation
             }
-            
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings", slotData, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             });
@@ -160,7 +159,7 @@ export default {
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation
             }
-            
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings/bulk", slotData, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             });
@@ -168,13 +167,13 @@ export default {
         },
 
         deleteSlot: function() {
-            
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.delete(this.$store.state.baseURL + "/bookings/delete/" + this.selectedSlot, {headers: this.$store.state.header}).then((res) => {
                 this.getAllSlots()
             });
         },
         getAllSlots: function() {
-            
+            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.get(this.$store.state.baseURL + "/slots", {headers: this.$store.state.header}).then((res) => {
                 this.calendarOptions.events = res.data.bookings
             });
