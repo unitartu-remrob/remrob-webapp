@@ -147,7 +147,7 @@ def login():
         else:
             access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": False})
         #return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
-        resp = jsonify(user_id=user.id, role=user.role)
+        resp = jsonify(access_token=access_token, user_id=user.id, role=user.role)
         set_access_cookies(resp, access_token)
         return resp, 200
     else:
@@ -261,6 +261,7 @@ def bookings_bulk():
 def user_bookings(user_id):
     current_user = get_jwt_identity()
     _filter = request.args.get('booking')
+
     if current_user == int(user_id):
         results = []
         if _filter:

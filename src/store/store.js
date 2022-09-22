@@ -15,7 +15,8 @@ const state = {
     wsRootURL: `${protocolWs}://` + domain,
     header: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        //'Access-Control-Allow-Origin': '*',
+        'Authorization': '',
     }
 }
 const getters = {
@@ -27,6 +28,8 @@ const mutations = {
 const actions = {
     async setCurrentUser({commit}, user) {
         commit("SET_CURRENT_USER", user)
+        state.header.Authorization = "Bearer " + user.access_token
+        console.log(state)
     }
 }
 
