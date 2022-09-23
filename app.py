@@ -233,7 +233,6 @@ def bookings_bulk():
         start_time = end
     return "Slots created", 200
 
-
 @app.route('/api/v1/bookings/<user_id>', methods=["GET"])
 @jwt_required()
 def user_bookings(user_id):
@@ -264,6 +263,12 @@ def user_bookings(user_id):
     else:
         return "Wrong user", 403
 
+def overlaps(slot, booked_time_list):
+    for times in booked_time_list:
+        if slot[1] >= times[0] and times[1] >= slot[0]:
+            return True
+    return False 
+
 @app.route("/api/v1/bookings/book/<id>", methods=["POST"])
 @jwt_required()
 def book_slot(id):
@@ -272,8 +277,14 @@ def book_slot(id):
     slot = Bookings.query.get(id)
     user_bookings = Bookings.query.filter_by(user_id = str(current_user))
     date_format = "%Y-%m-%dT%H:%M"
-    if Bookings.query.filter_by(user_id = str(current_user)).filter_by(start_time = slot.start_time).all():
-        return "Cannot book slots on the same time", 400
+    user_booking_times = []
+    for i in user_bookings:
+        start = datetime.strptime(i.start_time, date_format)
+        end = datetime.strptime(i.end_time, date_format)
+        user_booking_times.append((start, end))
+
+    if overlaps((datetime.strptime(slot.start_time, date_format), datetime.strptime(slot.end_time, date_format)), user_booking_times):
+        return "Cannot book overlapping slots", 400
 
     is_simulations = False
     is_defaults = False
@@ -290,7 +301,6 @@ def book_slot(id):
         return "Simulation already booked for the day", 400
     if is_defaults and not slot.simulation:
         return "Default booked already for the day", 400
-        
     if int(data["userId"]) == current_user:
         if slot.user_id == None:
             slot.user_id = data["userId"]
