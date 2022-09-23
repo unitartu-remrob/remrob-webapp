@@ -265,7 +265,7 @@ def user_bookings(user_id):
 
 def overlaps(slot, booked_time_list):
     for times in booked_time_list:
-        if slot[1] >= times[0] and times[1] >= slot[0]:
+        if slot[1] >= times[0] and times[1] > slot[0]:
             return True
     return False 
 
