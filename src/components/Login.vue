@@ -9,10 +9,10 @@
               <h3 class="text-center">Login</h3>
             </b-form-group>
             <b-form-group label="E-mail">
-              <b-form-input v-model="email" />
+              <b-form-input @keyup.enter="login" v-model="email" />
             </b-form-group>
             <b-form-group label="Password">
-              <b-form-input v-model="password" type="password" />
+              <b-form-input @keyup.enter="login" v-model="password" type="password" />
             </b-form-group>
             <b-form-group>
               <b-button block @click="login">Login</b-button>
