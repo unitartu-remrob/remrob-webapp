@@ -6,7 +6,7 @@ from flask_mail import Message, Mail
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request, decode_token
 import bcrypt, os
 from functools import wraps
-from datetime import timedelta, timezone, datetime
+from datetime import date, timedelta, timezone, datetime
 from dotenv import load_dotenv, find_dotenv
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
@@ -269,25 +269,37 @@ def user_bookings(user_id):
 def book_slot(id):
     data = request.json
     current_user = get_jwt_identity()
-    user_bookings = Bookings.query.filter_by(user_id = str(current_user));
-    upcoming_bookings = 0
+    slot = Bookings.query.get(id)
+    user_bookings = Bookings.query.filter_by(user_id = str(current_user))
     date_format = "%Y-%m-%dT%H:%M"
-    for slot in user_bookings:
-        if datetime.now() < datetime.strptime(slot.start_time, date_format):
-            upcoming_bookings += 1
-    if upcoming_bookings < 3:
-        if int(data["userId"]) == current_user:
-            slot = Bookings.query.get(id)
-            if slot.user_id == None:
-                slot.user_id = data["userId"]
-                db.session.commit()
-                return "Slot booked", 200
+    if Bookings.query.filter_by(user_id = str(current_user)).filter_by(start_time = slot.start_time).all():
+        return "Cannot book slots on the same time", 400
+
+    is_simulations = False
+    is_defaults = False
+    for booking in user_bookings:
+        if datetime.strptime(booking.start_time, date_format).date() == datetime.strptime(slot.start_time, date_format).date():
+            if booking.simulation:
+                is_simulations = True
             else:
-                return "Slot is already booked", 400
+                is_defaults = True
+
+    if is_simulations and is_defaults:
+        return "You have already booked both types for the day", 400
+    if is_simulations and slot.simulation:
+        return "Simulation already booked for the day", 400
+    if is_defaults and not slot.simulation:
+        return "Default booked already for the day", 400
+        
+    if int(data["userId"]) == current_user:
+        if slot.user_id == None:
+            slot.user_id = data["userId"]
+            db.session.commit()
+            return "Slot booked", 200
         else:
-            return "Wrong user", 403
+            return "Slot is already booked", 400
     else:
-        return "Booked slots limit reached", 400
+        return "Wrong user", 403
 
 @app.route("/api/v1/bookings/delete/<id>", methods=["DELETE"])
 @admin_required()
