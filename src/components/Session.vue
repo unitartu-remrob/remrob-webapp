@@ -9,17 +9,18 @@
         <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
         </b-modal>
-		<b-row>
+        <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
+		<b-row v-if="this.is_loaded">
             <b-col class="info text-center">
                 <h1>{{message}}</h1>
                 <div :key="timerKey">
                     <h3 class="mt-4">Time left: <strong>{{ this.booking.displayTime }}</strong></h3>
                 </div>
                 <div class="controls">
-                    <p class="h2 mb-3">Status: <strong>{{containerState.Status}}</strong></p>
-                    <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
+                    <p class="h2 mb-5">Status: <strong>{{containerState.Status}}</strong></p>
+                    <!-- <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
-                    </b-form-checkbox>
+                    </b-form-checkbox> -->
                     <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
                         <b-spinner v-if="starting" small></b-spinner>
                         Start
@@ -29,22 +30,27 @@
                         Stop
                     </b-button>
                     <b-button class="mr-2" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
-                    <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
+                    <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
+                        <b-spinner v-if="submitting" small></b-spinner>
+                        Submit code
+                    </b-button>                   
+                    <!-- <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
                         <b-spinner v-if="saving" small></b-spinner>
                         Save environment
                     </b-button>
-                    <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer">Delete environment</b-button>
-                    <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button>
+                    <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer">Delete environment</b-button> -->
+                    <!-- <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button> -->
                 </div>
+                
             </b-col>
             <b-col>
                 
             </b-col>
         </b-row>
-        <b-row>
+        <!-- <b-row v-if="this.is_loaded">
             <b-button class="ml-2 yield" variant="light" size="md" @click="$bvModal.show('yield-modal')">Yield slot</b-button>  
-        </b-row>
-        <div class="room">
+        </b-row> -->
+        <div class="room" v-if="this.is_loaded">
             <div v-if="!is_sim" class="room-items">
                 <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
                     <b-button>Link to camera</b-button>
@@ -53,7 +59,7 @@
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
         </div>
-        <div class="session">
+        <div class="session" v-if="this.is_loaded">
             <Desktop :started="started" :source="vnc_uri" />
         </div>
     </b-container>
@@ -74,12 +80,14 @@ export default {
             booking: {},
             freshImage: false,
             sesssionID: '',
+            is_loaded: false,
             timerKey: 0,
             loading: true,
             saving: false,
             starting: false,
             started: false,
-            stopping: false
+            stopping: false,
+            submitting: false
         }
     },
     components: {
@@ -175,6 +183,14 @@ export default {
                 this.saving = false;
             })
 		},
+        commitCode: function() {
+            this.submitting = true;
+            // This will find the user in DB and make a push for its corresponding repository
+			axios.get(`${this.$store.state.baseURL}/commit_push_jwt`, {headers: this.$store.state.header}).then((res) => {
+                console.log("Code successfully pushed")
+                this.submitting = false;
+            })
+		},
         raiseIssue: function() {
             const { slug } = this.container;
 			axios.put(`${this.$store.state.baseURL}/inventory/${slug}`, { issue: true }, {headers: this.$store.state.header}).then((res) => {
@@ -196,6 +212,7 @@ export default {
         requestContainer: function() {
             axios.get(`${this.$store.state.containerAPI}/assign`, {headers: this.$store.state.header}).then((res) => {
                 console.log("Assigned container", res.data)
+                this.is_loaded = true;
                 this.container = res.data
                 this.inspectContainer()
             }).catch(e => {
