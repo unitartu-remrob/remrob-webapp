@@ -9,6 +9,15 @@ from functools import wraps
 from datetime import timedelta, timezone, datetime
 from dotenv import load_dotenv, find_dotenv
 
+##########################################
+# git module imports
+##########################################
+import requests, json
+# How do you even python module?
+from communication import git_clone
+from communication import git_commit_push
+##########################################
+
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
 
@@ -468,6 +477,142 @@ def cameras():
             db.session.add(cont)
         db.session.commit()
         return "Camera table filled", 201
+
+
+############################################
+##                  GIT                   ##
+############################################
+
+load_dotenv("communication/.env")
+print(os.getenv("REPOS_ROOT"))
+REPOS_ROOT = os.getenv("REPOS_ROOT")
+CLONING_ROOT = os.getenv("CLONING_ROOT")
+TOKEN_NAME = os.getenv("TOKEN_NAME")
+TOKEN = os.getenv("TOKEN")
+
+
+@app.route('/api/v1/check_user', methods=['GET'])
+@jwt_required()
+def api_check_user():
+    if 'user_name' in request.args:
+        user_name = request.args['user_name']
+    else:
+        return 'error: no user specified'
+    return check_project(user_name)
+
+@app.route('/api/v1/commit_push', methods=['GET'])
+def api_repo_commit_push():
+    # This one is for committing from within the container
+    if 'token' in request.args:
+        session_token = request.args['token']
+    else:
+        return 'error: no session token provided'
+
+    user = User.query.filter_by(git_token=session_token).first()
+
+    if not user:
+        return "No user found", 403
+    else:
+        user_name = user.user_repo
+
+    path = os.path.join(REPOS_ROOT, user_name)
+
+    return git_commit_push.commit_push(path)
+
+@app.route('/api/v1/reclone', methods=['GET'])
+def api_repo_reclone():
+    # This one is for recloning from within the container
+    """This function takes token as the request argument parses to get username after which it removes the repo and clones it again 
+
+    Returns:
+        _type_: _description_
+    """
+
+    if 'token' in request.args:
+        session_token = request.args['token']
+    else:
+        return 'error: no session token provided'
+
+    user = User.query.filter_by(git_token=session_token).first()
+
+    if not user:
+        return "No user found", 403
+    else:
+        user_name = user.user_repo
+
+    path = os.path.join(REPOS_ROOT, user_name)
+
+    force = False
+    if 'force' in request.args:
+        if 'true' == request.args['force'].lower():
+            force = True  
+
+    return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
+    
+
+@app.route('/api/v1/clone_jwt', methods=['GET'])
+@jwt_required()
+def api_repo_clone_jwt():
+    # @ user_name
+    # @ [force]
+    if 'user_name' in request.args:
+        user_name = request.args['user_name']
+    else:
+        return 'error: no user specified'
+
+    force = False
+    if 'force' in request.args:
+        if 'true' == request.args['force'].lower():
+            force = True        
+
+    return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
+
+@app.route('/api/v1/commit_push_jwt', methods=['GET'])
+@jwt_required()
+def api_repo_commit_push_jwt():
+    # This one is for committing from the web
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(id=current_user).first()
+    path = os.path.join(REPOS_ROOT, user.user_repo)
+    
+    return git_commit_push.commit_push(path)
+
+def check_project(project_name: str):
+    """Checks if repo exists, if not then creating it
+
+    Args:
+        project_name (str): user name
+
+    Returns:
+        str: status
+    """
+    url = "https://gitlab.ut.ee/api/v4/projects"
+    project_path = project_name
+    description = f"Project of the user: {project_name}"
+
+    payload = json.dumps({
+        "name": project_name,
+        "description": description,
+        "path": project_path,
+        "initialize_with_readme": "true"
+    })
+    headers = {
+        'Authorization': f'Bearer {TOKEN}',
+        'Content-Type': 'application/json',
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.json())
+
+    if isinstance(response.json(), dict):
+        resp = 'User exists' if response.json().get('message', 0) else 'User repo was created'
+    else:
+        resp = 'User exists'
+
+    return resp
+
+## Git end
+############################################
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")
