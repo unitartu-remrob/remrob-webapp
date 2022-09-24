@@ -20,11 +20,11 @@
                     <h3 class="mt-4">Time left: <strong>{{ this.booking.displayTime }}</strong></h3>
                 </div>
                 <div class="controls">
-                    <p class="h2 mb-5">Status: <strong>{{containerState.Status}}</strong></p>
+                    <p class="h2 mb-5">Session status: <strong>{{containerState.Status}}</strong></p>
                     <!-- <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
                     </b-form-checkbox> -->
-                    <b-button class="mr-3" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
+                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
                         <b-spinner v-if="starting" small></b-spinner>
                         Start session
                     </b-button>
@@ -32,12 +32,13 @@
                         <b-spinner v-if="stopping" small></b-spinner>
                         Stop
                     </b-button> -->
-                    <b-button class="mr-3" variant="warning" size="lg" :disabled="containerState.inactive" @click="$bvModal.show('restart-modal')">
+                    <b-button class="mr-3" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">
+                        <Link font-scale="1" />
+                        Connect to session!
+                    </b-button>
+                    <b-button class="mr-3" variant="warning" size="md" :disabled="containerState.inactive" @click="$bvModal.show('restart-modal')">
                         <b-spinner v-if="purging" small></b-spinner>
                         Delete session
-                    </b-button>
-                    <b-button class="mr-2" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">
-                        Connect to session!
                     </b-button>
                     <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
                         <b-spinner v-if="submitting" small></b-spinner>
@@ -61,10 +62,10 @@
         </b-row> -->
         <div class="room" v-if="this.is_loaded">
             <div v-if="!is_sim" class="room-items">
-                <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
+                <!-- <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
                     <b-button>Link to camera</b-button>
-                </b-card>
-                <b-img style="max-width: 20vw" :src="require('../assets/robotont.png')"></b-img>
+                </b-card> -->
+                <iframe class="camera-stream" src="/cam/webrtcstreamer.html?video=C922%20Pro%20Stream%20Webcam&audio=audiocap%3A%2F%2F2&options=rtptransport%3Dtcp%26timeout%3D60"></iframe>
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
         </div>
@@ -294,13 +295,22 @@ export default {
     height: 22rem;
     margin: 2rem 4rem;
     width: 42vw;
-    border: 2px solid black;
+    /* border: 2px solid black; */
 }
 
 .room-items {
     display: flex;
+    position: relative;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
+    gap: 4rem;
+    padding: 2rem 0;
+}
+
+.camera-stream {
+    height: 18rem;
+    width: 100%;
+    top: 0;
 }
 
 </style>

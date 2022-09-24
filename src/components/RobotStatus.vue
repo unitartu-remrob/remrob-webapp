@@ -1,10 +1,11 @@
 <template>
-	<div>
-		<div class="robot-status mt-5">Robot status</div>
-    <div class="d-flex justify-content-center mt-3">
-      <CircleFill v-if="this.robotStatus === 'true'" class="status-indicator" variant="success" font-scale="2" />
-      <CircleFill v-else variant="danger" font-scale="2" />
+	<div class="robot-status mt-3">
+		<div>Robot status</div>
+    <div class="d-flex justify-content-center mt-3 mb-3">
+      <CircleFill v-if="this.robotStatus === 'true'" class="status-indicator" variant="success" font-scale="1.5" />
+      <CircleFill v-else variant="danger" font-scale="1.5" />
     </div>
+    <b-img style="max-width: 12vw" :src="require('../assets/robotont.png')"></b-img>
 	</div>
 </template>
 
@@ -46,8 +47,11 @@ export default {
 
 <style>
 .robot-status {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
 	font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
 }
 
 .status-indicator {
