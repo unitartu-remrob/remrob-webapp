@@ -15,7 +15,7 @@ export const getUptime = (date) => {
 
 export const getCountdown = (start, end) => {
 	var now = new Date().getTime();
-	
+
 	start = new Date(start)
 	end = new Date(end)
 

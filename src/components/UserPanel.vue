@@ -9,6 +9,12 @@
                     <template v-slot:cell(join)="{ item }">
                         <b-button :disabled="!item.isActive" @click="$router.push({ name: 'Session', params: {session: item.id} })">Session dashboard</b-button>
                     </template>
+                    <template v-slot:cell(start)="{ item }">
+                        {{parseDate(item.start)}}
+                    </template>
+                    <template v-slot:cell(end)="{ item }">
+                        {{parseDate(item.end)}}
+                    </template>
                     <template v-slot:cell(countdown)="{ item }">
                         <div :key="timerKey">                   
                             <p v-if="!item.isActive && !item.isExpired">Starts in: {{ item.displayTime }}</p>
@@ -52,13 +58,16 @@ export default {
         getBookings: function() {
             axios.get(`${this.$store.state.baseURL}/bookings/${this.getUser.user_id}`, {headers: this.$store.state.header}).then((res) => {
                 this.bookings = res.data.user_bookings
-                this.bookings.forEach(item => {
-                    item.start = item.start.slice(0, 16).replace("T", "  ")
-                    item.end = item.end.slice(0, 16).replace("T", "  ")
-                })
+                // this.bookings.forEach(item => {
+                //     item.start_time = item.start.slice(0, 16).replace("T", "  ")
+                //     item.end_time = item.end.slice(0, 16).replace("T", "  ")
+                // })
                 this.bookings.sort((a, b) => (b.id - a.id))
                 console.log(res.data)
             })			
+        },
+        parseDate: function(date) {
+            return date.slice(0, 16).replace("T", "  ")
         },
         updateTime() {
             this.bookings.forEach(booking => {
