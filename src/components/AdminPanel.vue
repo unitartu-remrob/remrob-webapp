@@ -17,10 +17,11 @@
 					<Broadcast font-scale="2" :variant="robot_status ? 'success' : 'danger'"/>
 				</div>	
 			</template>
-			<template v-slot:cell(user)="{ item: { user } }">
-				<div v-if="user.isActive" class="d-flex align-items-center">
-					<div class="mr-2">{{user.displayTime}}</div>
+			<template v-slot:cell(user)="{ item: { user, user_time } }">
+				<div v-if="user_time.isActive" class="d-flex align-items-center">
+					<div class="mr-2">{{user_time.displayTime}}</div>
 					<PersonFill font-scale="3" />
+					<div class="ml-2">{{user}}</div>
 				</div>	
 			</template>
 			<template v-slot:cell(alarm)="{ item: { issue, id } }">
@@ -79,7 +80,7 @@ export default {
 		},
 		containerStatus: function() {
 			const items = this.containerList.map(container => {
-				const { data, slug, robot_id, robot_status, booking: { end_time, issue } } = container;
+				const { data, slug, robot_id, robot_status, booking: { end_time, issue }, user } = container;
 				let Status,
 					StartedAt,
 					IPAddress
@@ -105,7 +106,8 @@ export default {
 					status: Status,
 					cpu: data.cpu_percent,
 					vnc_uri: `${this.$store.state.rootURL}${data.vnc_uri}`, // can add &view_only=true for spying
-					user: getTimeLeft(end_time),
+					user_time: getTimeLeft(end_time),
+					user,
 					issue,
 					robot_status
 				}
@@ -150,11 +152,11 @@ export default {
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)
-				const data = results.map(({ robot_id, slug, status, robot_status, value, booking }) => {
+				const data = results.map(({ robot_id, slug, status, robot_status, value, booking, user }) => {
 					return {
 						robot_id, slug,
 						robot_status,
-						booking,
+						booking, user,
 						data: (status === 'fulfilled') 
 							?  value
 							:  404,
