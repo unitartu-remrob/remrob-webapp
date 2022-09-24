@@ -9,6 +9,9 @@
         <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
         </b-modal>
+        <b-modal ok-title="Confirm" @ok="purgeContainer" title="Restart session?" id="restart-modal">
+            <h4>This will delete any unsaved work and give you a fresh start opportunity</h4>
+        </b-modal>
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
 		<b-row v-if="this.is_loaded">
             <b-col class="info text-center">
@@ -21,15 +24,21 @@
                     <!-- <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
                     </b-form-checkbox> -->
-                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
+                    <b-button class="mr-3" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
                         <b-spinner v-if="starting" small></b-spinner>
-                        Start
+                        Start session
                     </b-button>
-                    <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">
+                    <!-- <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">
                         <b-spinner v-if="stopping" small></b-spinner>
                         Stop
+                    </b-button> -->
+                    <b-button class="mr-3" variant="warning" size="lg" :disabled="containerState.inactive" @click="$bvModal.show('restart-modal')">
+                        <b-spinner v-if="purging" small></b-spinner>
+                        Delete session
                     </b-button>
-                    <b-button class="mr-2" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">Connect</b-button>
+                    <b-button class="mr-2" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">
+                        Connect to session!
+                    </b-button>
                     <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
                         <b-spinner v-if="submitting" small></b-spinner>
                         Submit code
@@ -37,8 +46,8 @@
                     <!-- <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
                         <b-spinner v-if="saving" small></b-spinner>
                         Save environment
-                    </b-button>
-                    <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer">Delete environment</b-button> -->
+                    </b-button> -->
+                    <!-- <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer"></b-button> -->
                     <!-- <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button> -->
                 </div>
                 
@@ -87,7 +96,8 @@ export default {
             starting: false,
             started: false,
             stopping: false,
-            submitting: false
+            submitting: false,
+            purging: false,
         }
     },
     components: {
@@ -101,7 +111,7 @@ export default {
             if (container_id) {
                 return `Your simulation environment is ready`;
             } else {
-                return `You have been assigned Robotont nr. ${robot_id} at the ${project} location`;
+                return `You have been assigned Robotont nr. ${robot_id}`;
             }
         },
         containerState: function() {
@@ -174,6 +184,19 @@ export default {
                 this.started = false
 				// this.ws.send("update")
             })
+		},
+        purgeContainer: function() {
+            const { slug } = this.container;
+            this.purging = true;
+			axios.post(`${this.$store.state.containerAPI}/stop/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
+                axios.post(`${this.$store.state.containerAPI}/remove/${slug}`, {}, {headers: this.$store.state.header}).then((res) => {
+                    console.log(`${slug} purged`)
+                    this.started = false
+                    // this.ws.send("update")
+                    this.purging = false;
+                    this.inspectContainer()
+                })
+            })	
 		},
         commitContainer: function() {
             const { slug } = this.container;
