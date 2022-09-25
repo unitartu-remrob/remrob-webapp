@@ -38,7 +38,7 @@
                 </b-card>
             </b-col>
         </b-row>
-        <canvas id='canvas'>h264Preview_01_main</canvas>
+        <!-- <canvas id='canvas'>h264Preview_01_main</canvas> -->
     </b-container>
 </template>
 
@@ -51,13 +51,13 @@ export default {
         ...mapGetters(["getUser"])
     },
     mounted() {
-		loadPlayer({
-            url: `${this.$store.state.wsRootURL}/containers/api/stream/2`,
-            canvas: document.getElementById('canvas'),
+		// loadPlayer({
+        //     url: `${this.$store.state.wsRootURL}/containers/api/stream/2`,
+        //     canvas: document.getElementById('canvas'),
 
-            // optional
-            onDisconnect: () => console.log('Camera connection lost!'),
-        });
+        //     // optional
+        //     onDisconnect: () => console.log('Camera connection lost!'),
+        // });
     },
     
 }
