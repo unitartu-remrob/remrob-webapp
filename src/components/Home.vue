@@ -1,6 +1,6 @@
 <template>
     <b-container fluid>
-        <b-row class="m-2">
+        <b-row class="m-5">
             <b-col v-if="getUser.role == 'ROLE_LEARNER'">
                 <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Book a slot">
                     <b-card-text>Book a robot or a container</b-card-text>
@@ -39,16 +39,21 @@
             </b-col>
         </b-row>
         <!-- <canvas id='canvas'>h264Preview_01_main</canvas> -->
+        <UserPanel/>
     </b-container>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import UserPanel from './UserPanel';
 import { loadPlayer } from 'rtsp-relay/browser';
 export default {
     name: "Home",
     computed: {
         ...mapGetters(["getUser"])
+    },
+    components: {
+        UserPanel
     },
     mounted() {
 		// loadPlayer({

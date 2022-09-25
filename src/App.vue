@@ -24,7 +24,6 @@
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/createSlot">Create slots</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/inventory">Create inventory</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/users">Users</b-nav-item>
-            <b-nav-item to="/user-panel">User panel</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/admin-panel">Admin panel</b-nav-item>
           </b-nav>
         </nav>

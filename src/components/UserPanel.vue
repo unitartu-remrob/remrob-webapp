@@ -1,11 +1,10 @@
 <template>
-    <b-container fluid>
-		<br><br><br>
-        <br><br><br><br>
-        <b-row>
+    <b-container fluid class="mb-5">
+        <div class="text-center panel-title">My sessions</div>
+        <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 4rem; height: 4rem;" type="grow" variant="info"></b-spinner></div>
+        <b-row v-else>
             <b-col>
-                <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
-                <b-table v-else striped :items="bookings" :fields="fields">
+                <b-table striped :items="bookings" :fields="fields">
                     <template v-slot:cell(join)="{ item }">
                         <b-button :disabled="!item.isActive" @click="$router.push({ name: 'Session', params: {session: item.id} })">Session dashboard</b-button>
                     </template>
@@ -39,7 +38,7 @@ export default {
         return {
             fields: [
                 // { key: "id", label: "Booking ID" },
-                { key: "title", label: "Project" },
+                { key: "title", label: "" },
 				{ key: "start", label: "Start" },
 				{ key: "end", label: "End" },
                 { key: "countdown", label: "" },
@@ -93,5 +92,13 @@ export default {
 </script>
 
 <style scoped>
+.panel-title {
+    font-size: 2rem;
+    margin: 4rem 1rem 1.5rem;
+    text-decoration: underline;
+}
 
+.loader {
+    height: 15vh;
+}
 </style>
