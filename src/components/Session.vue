@@ -65,9 +65,9 @@
                 <!-- <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
                     <b-button>Link to camera</b-button>
                 </b-card> -->
-                <iframe class="camera-stream"
+                <!-- <iframe class="camera-stream"
                     :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
-                </iframe>
+                </iframe> -->
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
         </div>
