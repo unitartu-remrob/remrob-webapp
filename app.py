@@ -63,7 +63,7 @@ def send_email(user):
     token = create_access_token(identity=user.id)
     msg = Message()
     msg.subject = "Password reset"
-    msg.sender = "testimisemail@gmail.com"
+    msg.sender = os.getenv("MAIL_USERNAME")
     msg.recipients = [user.email]
     msg.html = render_template("reset_email.html", url=url+token)
     mail.send(msg)
@@ -71,7 +71,7 @@ def send_email(user):
 def send_confirmation(email):
     msg = Message()
     msg.subject = "Register confirmation"
-    msg.sender = "testimisemail@gmail.com"
+    msg.sender = os.getenv("MAIL_USERNAME")
     msg.recipients = [email]
     msg.html = render_template("confirmation_email.html")
     mail.send(msg)
@@ -485,6 +485,15 @@ def users():
             user.role = u["role"]
             db.session.commit()
         return "Users updated", 200
+
+@app.route("/api/v1/admins", methods=["GET"])
+@admin_required()
+def admins():
+    admins = User.query.filter_by(role="ROLE_ADMIN")
+    result = []
+    for admin in admins:
+        result.append(admin.first_name + " " + admin.last_name)
+    return jsonify(result), 200
 
 @app.route("/api/v1/cameras", methods=["POST"])
 @admin_required()
