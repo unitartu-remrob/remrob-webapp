@@ -21,7 +21,7 @@
             <b-form-group label="Password">
               <b-form-input required v-model="password" type="password"/>
             </b-form-group>
-            <b-form-group label="Confrim Password">
+            <b-form-group label="Confirm Password">
               <b-form-input required v-model="confirmPassword" type="password"/>
               <b-form-text v-if="password !== confirmPassword" style="color: red !important">Passwords don't match</b-form-text>
             </b-form-group>
