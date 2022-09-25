@@ -1,8 +1,8 @@
 <template>
     <b-container fluid>
-        <b-row class="m-5">
-            <b-col v-if="getUser.role == 'ROLE_LEARNER'">
-                <b-card style="max-width: 25vw" img-fluid class="text-center booking-card" :img-src="require('../assets/calendar.png')" title="Session reservation">
+        <b-row class="m-2">
+            <b-col sm v-if="getUser.role == 'ROLE_LEARNER'">
+                <b-card img-fluid class="text-center booking-card" :img-src="require('../assets/calendar.png')" title="Session reservation">
                     <b-card-text>Find a time to access our robots or simulation environments</b-card-text>
                     <b-button @click="$router.push({name: 'Booking'})" size="lg">Go to reservation</b-button>
                 </b-card>
@@ -13,26 +13,26 @@
                     <b-button @click="$router.push({name: 'UserPanel'})">View panel</b-button>
                 </b-card>
             </b-col> -->
-            <b-col v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots slot">
+            <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
+                <b-card img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots slot">
                     <b-card-text>Create slots for booking system</b-card-text>
                     <b-button @click="$router.push({name: 'CreateSlot'})">Go create</b-button>
                 </b-card>
             </b-col>
-            <b-col v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/inventory.png')" title="Create inventory">
+            <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
+                <b-card img-fluid class="text-center" :img-src="require('../assets/inventory.png')" title="Create inventory">
                     <b-card-text>Create inventory for robots and containers</b-card-text>
                     <b-button @click="$router.push({name: 'Inventory'})">View inventory</b-button>
                 </b-card>
             </b-col>  
-            <b-col v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/users.png')" title="Users">
+            <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
+                <b-card img-fluid class="text-center" :img-src="require('../assets/users.png')" title="Users">
                     <b-card-text>Edit users roles or activate/deactivate accounts</b-card-text>
                     <b-button @click="$router.push({name: 'Users'})">View users</b-button>
                 </b-card>
             </b-col>
-            <b-col v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/admin_panel.png')" title="Admin Panel">
+            <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
+                <b-card img-fluid class="text-center" :img-src="require('../assets/admin_panel.png')" title="Admin Panel">
                     <b-card-text>Admin Panel</b-card-text>
                     <b-button @click="$router.push({name: 'AdminPanel'})">View panel</b-button>
                 </b-card>
