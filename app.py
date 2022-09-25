@@ -178,9 +178,13 @@ def reset_verified(token):
 def all_slots():
     results = []
     slots = Bookings.query.all()
-    for slot in slots: 
+    for slot in slots:
+        if slot.simulation:
+            title = "Simulation"
+        else:
+            title = "Robot"
         slot_object = {
-            "title": slot.project.title(),
+            "title": title,
             "start": slot.start_time,
             "end": slot.end_time,
             "id": slot.id,
@@ -215,8 +219,13 @@ def bookings():
             else:
                 color = "blue" 
             #inv = Inventory.query.get(booking.inventory_id)
+
+            if booking.simulation:
+                title = "Simulation"
+            else:
+                title = "Robot"
             slot_object = {
-                "title": booking.project.title(),
+                "title": title,
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id,
@@ -264,10 +273,14 @@ def user_bookings(user_id):
         else:
             bookings = Bookings.query.filter_by(user_id=user_id).all()
         
-        for booking in bookings: 
+        for booking in bookings:
+            if booking.simulation:
+                title = "Simulation"
+            else:
+                title = "Robot"
             #inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
-                "title": booking.project.title(),
+                "title": title,
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id,
