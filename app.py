@@ -183,7 +183,10 @@ def all_slots():
             "title": slot.project.title(),
             "start": slot.start_time,
             "end": slot.end_time,
-            "id": slot.id
+            "id": slot.id,
+            "extendedProps": {
+                "admin": slot.admin
+            }
         }
         results.append(slot_object)
     return jsonify({"bookings": results}), 200
@@ -197,7 +200,8 @@ def bookings():
             start_time=data["start"],
             end_time=data["end"],
             simulation=data["is_simulation"],
-            project=data["project"]
+            project=data["project"],
+            admin=data["admin"]
         )
         db.session.add(booking)
         db.session.commit()
@@ -216,7 +220,10 @@ def bookings():
                 "start": booking.start_time,
                 "end": booking.end_time,
                 "id": booking.id,
-                "color": color
+                "color": color,
+                "extendedProps": {
+                    "admin": booking.admin
+                }
             }
             results.append(slot_object)
         return jsonify({"bookings": results}), 200
@@ -234,7 +241,8 @@ def bookings_bulk():
             start_time=datetime.strftime(start_time, date_format),
             end_time=datetime.strftime(end, date_format),
             simulation=data["is_simulation"],
-            project=data["project"]
+            project=data["project"],
+            admin=data["admin"]
         )
         db.session.add(booking)
         db.session.commit()
@@ -265,7 +273,10 @@ def user_bookings(user_id):
                 "id": booking.id,
                 "is_simulation": booking.simulation,
                 "project": booking.project,
-                "color": "green"
+                "color": "green",
+                "extendedProps": {
+                    "admin": booking.admin
+                }
             }
             results.append(slot_object)
         return jsonify({"user_bookings": results}), 200
