@@ -7,6 +7,9 @@
                     <b-button @click="$router.push({name: 'Booking'})" size="lg">Go to reservation</b-button>
                 </b-card>
             </b-col>
+            <b-col v-if="getUser.role == 'ROLE_LEARNER'">
+                <b-img class="robotont-swarm" :src="require('../assets/robotonts.png')"></b-img>
+            </b-col>
             <!-- <b-col v-if="getUser.role == 'ROLE_LEARNER'">
                 <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/user_panel.png')" title="User Panel">
                     <b-card-text>View and start booked sessions</b-card-text>
@@ -78,6 +81,11 @@ export default {
 
 .booking-card {
     border: 0 !important;
+}
+
+.robotont-swarm {
+    padding-top: 5rem;
+    max-width: 60vw;
 }
 
 #canvas {
