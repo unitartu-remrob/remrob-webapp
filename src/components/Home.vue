@@ -2,17 +2,17 @@
     <b-container fluid>
         <b-row class="m-5">
             <b-col v-if="getUser.role == 'ROLE_LEARNER'">
-                <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Book a slot">
-                    <b-card-text>Book a robot or a container</b-card-text>
-                    <b-button @click="$router.push({name: 'Booking'})">Go to booking</b-button>
+                <b-card style="max-width: 25vw" img-fluid class="text-center booking-card" :img-src="require('../assets/calendar.png')" title="Session reservation">
+                    <b-card-text>Find a time to access our robots or simulation environments</b-card-text>
+                    <b-button @click="$router.push({name: 'Booking'})" size="lg">Go to reservation</b-button>
                 </b-card>
             </b-col>
-            <b-col v-if="getUser.role == 'ROLE_LEARNER'">
+            <!-- <b-col v-if="getUser.role == 'ROLE_LEARNER'">
                 <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/user_panel.png')" title="User Panel">
                     <b-card-text>View and start booked sessions</b-card-text>
                     <b-button @click="$router.push({name: 'UserPanel'})">View panel</b-button>
                 </b-card>
-            </b-col>
+            </b-col> -->
             <b-col v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots slot">
                     <b-card-text>Create slots for booking system</b-card-text>
@@ -74,6 +74,10 @@ export default {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+}
+
+.booking-card {
+    border: 0 !important;
 }
 
 #canvas {

@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="mb-5">
+    <b-container fluid class="panel">
         <div class="text-center panel-title">My sessions</div>
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 4rem; height: 4rem;" type="grow" variant="info"></b-spinner></div>
         <b-row v-else>
@@ -24,7 +24,9 @@
                 </b-table>
             </b-col>
         </b-row>
-
+        <b-row v-if="this.is_loaded && this.bookings.length === 0" class="no-session-message">
+            You haven't reserved any time slots yet!
+        </b-row>
     </b-container>
 </template>
 
@@ -92,13 +94,23 @@ export default {
 </script>
 
 <style scoped>
+.panel {
+    margin-bottom: 5rem;
+}
+
 .panel-title {
     font-size: 2rem;
-    margin: 4rem 1rem 1.5rem;
+    margin: 3.2rem 1rem 1.5rem;
     text-decoration: underline;
 }
 
 .loader {
     height: 15vh;
+}
+
+.no-session-message {
+    font-size: 1.6rem;
+    padding: 1rem;
+    justify-content: center;
 }
 </style>
