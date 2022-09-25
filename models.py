@@ -24,6 +24,7 @@ class Bookings(db.Model):
     project = db.Column('project', db.String(100))
     start_time = db.Column('start_time', db.String(100))
     end_time = db.Column('end_time', db.String(100))
+    admin = db.Column("admin", db.String(255))
 
 class Inventory(db.Model):
     __tablename__ = "inventory"
