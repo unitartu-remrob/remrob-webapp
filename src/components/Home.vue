@@ -2,7 +2,7 @@
     <b-container fluid>
         <b-row class="m-2">
             <b-col sm v-if="getUser.role == 'ROLE_LEARNER'">
-                <b-card img-fluid class="text-center booking-card" :img-src="require('../assets/calendar.png')" title="Session reservation">
+                <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('../assets/calendar.png')" title="Session reservation">
                     <b-card-text>Find a time to access our robots or simulation environments</b-card-text>
                     <b-button @click="$router.push({name: 'Booking'})" size="lg">Go to reservation</b-button>
                 </b-card>
@@ -84,5 +84,18 @@ export default {
     max-width: 50%;
     margin-left: 30%;
 }
+
+@media screen and (min-width: 601px) {
+        .cardClass {
+            max-width: 30vw;
+        }
+    }
+
+    @media screen and (max-width: 600px) {
+        .cardClass {
+            max-width: 100%;
+        }
+    }
+
 
 </style>

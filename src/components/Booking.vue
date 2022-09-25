@@ -21,6 +21,7 @@ import FullCalendar /*{ CalendarOptions, EventApi, DateSelectArg, EventClickArg 
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { Tooltip } from 'bootstrap'
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 
@@ -46,6 +47,7 @@ export default {
                 selectMirror: true,
                 dayMaxEvents: false,
                 weekends: true,
+                eventDidMount: this.eventRender,
                 eventDisplay: "block",
                 select: this.handleDateSelect,
                 eventClick: this.handleEventClick,
@@ -86,6 +88,16 @@ export default {
                 this.$bvModal.show("booking-modal");
             }
         },
+
+        eventRender: function(info) {
+            var tooltip = new Tooltip(info.el, {
+                title: "Admin: " + info.event.extendedProps.admin,
+                placement: 'top',
+                trigger: 'hover',
+                container: 'body'
+            });
+        },
+
         handleDateSelect: function (info) {
             console.log(info);
         },
