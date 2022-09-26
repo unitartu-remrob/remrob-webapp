@@ -51,7 +51,7 @@
                     <!-- <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer"></b-button> -->
                     <!-- <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button> -->
                 </div>
-                
+
             </b-col>
             <b-col>
                 
@@ -61,6 +61,7 @@
             <b-button class="ml-2 yield" variant="light" size="md" @click="$bvModal.show('yield-modal')">Yield slot</b-button>  
         </b-row> -->
         <div class="room" v-if="this.is_loaded">
+            <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert>
             <div v-if="!is_sim" class="room-items">
                 <!-- <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
                     <b-button>Link to camera</b-button>
@@ -101,6 +102,10 @@ export default {
             stopping: false,
             submitting: false,
             purging: false,
+            successMessage: null,
+            dismissCountDown: 0,
+            dismissSec: 3,
+            showAlert: false,
         }
     },
     components: {
@@ -215,8 +220,13 @@ export default {
 			axios.get(`${this.$store.state.baseURL}/commit_push_jwt`, {headers: this.$store.state.header}).then((res) => {
                 console.log("Code successfully pushed")
                 this.submitting = false;
+                this.successMessage = "Code successfully uploaded!"
+                this.dismissCountDown = this.dismissSec
             })
 		},
+        countDownChanged(dismissCountDown) {
+            this.dismissCountDown = dismissCountDown
+        },
         raiseIssue: function() {
             const { slug } = this.container;
 			axios.put(`${this.$store.state.baseURL}/inventory/${slug}`, { issue: true }, {headers: this.$store.state.header}).then((res) => {
