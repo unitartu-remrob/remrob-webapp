@@ -12,9 +12,18 @@ export const getUptime = (date) => {
 					: minutes < 1 ? '<1 min' : `${minutes} min`
 }
 
+const adjustForLocal = (d) => {
+	const localTime = d.getTime();
+	const localoffset = d.getTimezoneOffset() * 60000; // getTimezoneOffset is in minutes
+	const utc = localTime + localoffset; // get utc time
+	const adjusted = new Date(utc + (3*3600000)) // EST is +3
+	return adjusted
+}
+
 
 export const getCountdown = (start, end) => {
-	var now = new Date().getTime();
+	let now = new Date();
+	now = adjustForLocal(now)
 
 	start = new Date(start)
 	end = new Date(end)
