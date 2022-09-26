@@ -42,7 +42,7 @@ export default {
                 initialView: "dayGridMonth",
                 displayEventTime: true,
                 displayEventEnd: true,
-                editable: true,
+                editable: false,
                 selectable: true,
                 selectMirror: true,
                 dayMaxEvents: false,
@@ -141,4 +141,8 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style>
+.fc-event{
+    cursor: pointer;
+}
+</style>

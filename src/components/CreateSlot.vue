@@ -14,7 +14,7 @@
             <b-form-group label="End time">
                 <VueTimepicker manual-input v-model="end"></VueTimepicker>
             </b-form-group>
-            <b-form-group label="Time interval (hour)">
+            <b-form-group label="Time interval (minutes)">
                 <b-form-input type="number" placeholder="1" v-model="interval"></b-form-input>
             </b-form-group>
             <b-form-group label="Item">
@@ -76,7 +76,7 @@ export default {
                 initialView: "dayGridMonth",
                 displayEventTime: true,
                 displayEventEnd: true,
-                editable: true,
+                editable: false,
                 selectable: true,
                 selectMirror: true,
                 dayMaxEvents: false,
@@ -99,7 +99,7 @@ export default {
             selectedDate: null,
             selectedSlot: null,
             inventory: [],
-            interval: 1,
+            interval: 30,
             admins: [],
             selectedAdmin: ""
         };
@@ -217,4 +217,8 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style>
+.fc-event{
+    cursor: pointer;
+}
+</style>
