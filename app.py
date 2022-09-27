@@ -186,10 +186,15 @@ def all_slots():
     results = []
     slots = Bookings.query.all()
     color = ""
+    user_name = ""
     for slot in slots:
         if slot.user_id != None:
             color = "green"
+            user = User.query.get(slot.user_id)
+            if user:
+                user_name = user.first_name + " " + user.last_name
         else:
+            user_name = ""
             color= "blue"
         if slot.simulation:
             title = "Simulation"
@@ -202,7 +207,8 @@ def all_slots():
             "id": slot.id,
             "color": color,
             "extendedProps": {
-                "admin": slot.admin
+                "admin": slot.admin,
+                "user": user_name
             }
         }
         results.append(slot_object)

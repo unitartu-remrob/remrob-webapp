@@ -110,7 +110,7 @@ export default {
     methods: {
         eventRender: function(info) {
             var tooltip = new Tooltip(info.el, {
-                title: "Admin: " + info.event.extendedProps.admin,
+                title: "Admin: " + info.event.extendedProps.admin + "\n User: " + info.event.extendedProps.user,
                 placement: 'top',
                 trigger: 'hover',
                 container: 'body'
@@ -220,5 +220,9 @@ export default {
 <style>
 .fc-event{
     cursor: pointer;
+}
+
+.tooltip-inner {
+    white-space: pre-wrap;
 }
 </style>
