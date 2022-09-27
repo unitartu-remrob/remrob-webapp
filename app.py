@@ -324,6 +324,7 @@ def book_slot(id):
     user_bookings = Bookings.query.filter_by(user_id = str(current_user))
     date_format = "%Y-%m-%dT%H:%M"
     user_booking_times = []
+    upcoming_bookings = 0
     for i in user_bookings:
         start = datetime.strptime(i.start_time, date_format)
         end = datetime.strptime(i.end_time, date_format)
@@ -332,30 +333,22 @@ def book_slot(id):
     if overlaps((datetime.strptime(slot.start_time, date_format), datetime.strptime(slot.end_time, date_format)), user_booking_times):
         return "Cannot book overlapping slots", 400
 
-    is_simulations = False
-    is_defaults = False
     for booking in user_bookings:
-        if datetime.strptime(booking.start_time, date_format).date() == datetime.strptime(slot.start_time, date_format).date():
-            if booking.simulation:
-                is_simulations = True
+        if datetime.now() < datetime.strptime(booking.start_time, date_format):
+            upcoming_bookings += 1
+    
+    if upcoming_bookings < 2:
+        if int(data["userId"]) == current_user:
+            if slot.user_id == None:
+                slot.user_id = data["userId"]
+                db.session.commit()
+                return "Slot booked", 200
             else:
-                is_defaults = True
-
-    if is_simulations and is_defaults:
-        return "You have already booked both types for the day", 400
-    if is_simulations and slot.simulation:
-        return "Simulation already booked for the day", 400
-    if is_defaults and not slot.simulation:
-        return "Default booked already for the day", 400
-    if int(data["userId"]) == current_user:
-        if slot.user_id == None:
-            slot.user_id = data["userId"]
-            db.session.commit()
-            return "Slot booked", 200
+                return "Slot is already booked", 400
         else:
-            return "Slot is already booked", 400
+            return "Wrong user", 403
     else:
-        return "Wrong user", 403
+        return "Limit of active bookings reached", 400
 
 @app.route("/api/v1/bookings/delete/<id>", methods=["DELETE"])
 @admin_required()
