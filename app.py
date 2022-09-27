@@ -76,6 +76,13 @@ def send_confirmation(email):
     msg.html = render_template("confirmation_email.html")
     mail.send(msg)
 
+def send_activation_email(email):
+    msg = Message()
+    msg.subject = "Account has been activated"
+    msg.sender = os.getenv("MAIL_USERNAME")
+    msg.recipients = [email]
+    msg.html = render_template("activation_email.html")
+    mail.send(msg)
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
@@ -178,7 +185,12 @@ def reset_verified(token):
 def all_slots():
     results = []
     slots = Bookings.query.all()
+    color = ""
     for slot in slots:
+        if slot.user_id != None:
+            color = "green"
+        else:
+            color= "blue"
         if slot.simulation:
             title = "Simulation"
         else:
@@ -188,6 +200,7 @@ def all_slots():
             "start": slot.start_time,
             "end": slot.end_time,
             "id": slot.id,
+            "color": color,
             "extendedProps": {
                 "admin": slot.admin
             }
@@ -503,12 +516,26 @@ def users():
 
     elif request.method == "PUT":
         data = request.json
-        for u in data:
-            user = User.query.get(u["id"])
-            user.active = u["active"]
-            user.role = u["role"]
+        if "active" in data:
+            user = User.query.get(data["id"])
+            if not user.active and data["active"]:
+                 send_activation_email(user.email)
+            user.active = data["active"]
             db.session.commit()
-        return "Users updated", 200
+            return "User active status updated", 200
+        if "role" in data:
+            user = User.query.get(data["id"])
+            user.role = data["role"]
+            db.session.commit()
+            return "User role updated", 200
+
+@app.route("/api/v1/users/<id>", methods=["DELETE"])
+@admin_required()
+def delete_user(id):
+    user = User.query.get(id)
+    db.session.delete(user)
+    db.session.commit()
+    return "User deleted", 200
 
 @app.route("/api/v1/admins", methods=["GET"])
 @admin_required()
