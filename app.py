@@ -192,6 +192,10 @@ def all_slots():
             color = "green"
             user = User.query.get(slot.user_id)
             if user:
+                if user.first_name == None:
+                    user.first_name = ""
+                if user.last_name == None:
+                    user.last_name = ""
                 user_name = user.first_name + " " + user.last_name
         else:
             user_name = ""
@@ -224,7 +228,8 @@ def bookings():
             end_time=data["end"],
             simulation=data["is_simulation"],
             project=data["project"],
-            admin=data["admin"]
+            admin=data["admin"],
+            activated=False
         )
         db.session.add(booking)
         db.session.commit()
@@ -542,6 +547,10 @@ def admins():
     admins = User.query.filter_by(role="ROLE_ADMIN")
     result = []
     for admin in admins:
+        if admin.first_name == None:
+            admin.first_name = ""
+        if admin.last_name == None:
+            admin.last_name = ""
         result.append(admin.first_name + " " + admin.last_name)
     return jsonify(result), 200
 
