@@ -221,7 +221,7 @@ def all_slots():
 @app.route('/api/v1/bookings', methods=["GET", "POST"])
 @jwt_required()
 def bookings():
-    if request.method == "POST":
+    if request.method == "POST" and get_jwt()["is_administrator"]:
         data = request.json
         booking = Bookings(
             start_time=data["start"],
