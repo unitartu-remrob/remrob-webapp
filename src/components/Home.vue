@@ -41,7 +41,6 @@
                 </b-card>
             </b-col>
         </b-row>
-        <!-- <canvas id='canvas'>h264Preview_01_main</canvas> -->
         <UserPanel/>
     </b-container>
 </template>
@@ -49,7 +48,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import UserPanel from './UserPanel';
-import { loadPlayer } from 'rtsp-relay/browser';
+
 export default {
     name: "Home",
     computed: {
@@ -59,13 +58,7 @@ export default {
         UserPanel
     },
     mounted() {
-		// loadPlayer({
-        //     url: `${this.$store.state.wsRootURL}/containers/api/stream/2`,
-        //     canvas: document.getElementById('canvas'),
 
-        //     // optional
-        //     onDisconnect: () => console.log('Camera connection lost!'),
-        // });
     },
     
 }
@@ -86,11 +79,6 @@ export default {
 .robotont-swarm {
     padding-top: 5rem;
     max-width: 60vw;
-}
-
-#canvas {
-    max-width: 50%;
-    margin-left: 30%;
 }
 
 @media screen and (min-width: 601px) {

@@ -4,6 +4,7 @@
       <Justify v-b-toggle.sidebar-backdrop v-if="$store.state.user !== null" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
       <b-navbar-brand style="cursor:pointer" @click="$router.push({name:'Home'})">Remrob</b-navbar-brand>
       <b-navbar-nav class="ml-auto">
+        <UserSubmissionLink v-if="$store.state.user !== null"/>
         <b-nav-item>
           <b-button v-if="$store.state.user !== null" @click="logout">Logout</b-button>
         </b-nav-item>
@@ -36,9 +37,17 @@
 <script>
 import axios from 'axios'
 import { mapActions, mapGetters } from 'vuex';
+import UserSubmissionLink from './components/UserSubmissionLink.vue'
 export default {
   name: 'App',
+  data() {
+    return {
+      owncloud_active: false,
+      owncloud_link: null,
+    }
+  },
   components: {
+    UserSubmissionLink
   },
   computed: {
     ...mapGetters(["getUser"])
@@ -53,8 +62,20 @@ export default {
         this.setCurrentUser(null)
         this.$router.push({name: "Login"})
       })
-    }
+    },
+    // getOwncloudLink: function() {
+    //   this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
+    //   axios.get(this.$store.state.baseURL + "/owncloud_link", {headers: this.$store.state.header}).then((res) => {
+    //     this.owncloud_active = true;
+    //     // this.owncloud_link =
+    //     console.log(res) 
+    //   }).catch(e => console.log(e))
+    // }
   },
+  created() {
+    // this.getOwncloudLink();
+    // console.log(this.getUser)
+  }
 }
 </script>
 

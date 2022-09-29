@@ -180,6 +180,17 @@ def reset_verified(token):
         db.session.commit()
         return "Password changed", 200
 
+@app.route("/api/v1/owncloud_link", methods=["GET"])
+@jwt_required()
+def user_owncloud():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(id = str(current_user)).first()
+    if user.owncloud_id == None:
+        return "User does not have an owncloud folder created", 404
+    else:
+        link = os.getenv("OWNCLOUD_VIEW_URL") + user.owncloud_id
+        return link, 200
+
 @app.route("/api/v1/slots", methods=["GET"])
 @admin_required()
 def all_slots():
@@ -554,20 +565,6 @@ def admins():
         result.append(admin.first_name + " " + admin.last_name)
     return jsonify(result), 200
 
-@app.route("/api/v1/cameras", methods=["POST"])
-@admin_required()
-def cameras():
-    # Just an endpoint, so you don't have to manually fill the table
-    if request.method == "POST":
-        Cameras.query.delete()
-        for i in range(8):
-            cont = Cameras(
-                cell = i+1,
-            )
-            db.session.add(cont)
-        db.session.commit()
-        return "Camera table filled", 201
-
 
 ############################################
 ##                  GIT                   ##
@@ -609,35 +606,35 @@ def api_repo_commit_push():
 
     return git_commit_push.commit_push(path)
 
-@app.route('/api/v1/reclone', methods=['GET'])
-def api_repo_reclone():
-    # This one is for recloning from within the container
-    """This function takes token as the request argument parses to get username after which it removes the repo and clones it again 
+# @app.route('/api/v1/reclone', methods=['GET'])
+# def api_repo_reclone():
+#     # This one is for recloning from within the container
+#     """This function takes token as the request argument parses to get username after which it removes the repo and clones it again 
 
-    Returns:
-        _type_: _description_
-    """
+#     Returns:
+#         _type_: _description_
+#     """
 
-    if 'token' in request.args:
-        session_token = request.args['token']
-    else:
-        return 'error: no session token provided'
+#     if 'token' in request.args:
+#         session_token = request.args['token']
+#     else:
+#         return 'error: no session token provided'
 
-    user = User.query.filter_by(git_token=session_token).first()
+#     user = User.query.filter_by(git_token=session_token).first()
 
-    if not user:
-        return "No user found", 403
-    else:
-        user_name = user.user_repo
+#     if not user:
+#         return "No user found", 403
+#     else:
+#         user_name = user.user_repo
 
-    path = os.path.join(REPOS_ROOT, user_name)
+#     path = os.path.join(REPOS_ROOT, user_name)
 
-    force = False
-    if 'force' in request.args:
-        if 'true' == request.args['force'].lower():
-            force = True  
+#     force = False
+#     if 'force' in request.args:
+#         if 'true' == request.args['force'].lower():
+#             force = True  
 
-    return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
+#     return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
     
 
 @app.route('/api/v1/clone_jwt', methods=['GET'])
