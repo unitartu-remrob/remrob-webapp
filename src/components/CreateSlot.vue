@@ -21,7 +21,7 @@
                 <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
             </b-form-group>
             <b-form-group label="Admin">
-                <b-form-select v-model="selectedAdmin" :options="admins"></b-form-select>
+                <b-form-checkbox-group v-model="selectedAdmin" :options="admins"></b-form-checkbox-group>
             </b-form-group>
         </b-modal>
         <b-modal title="Create slot" @ok="createSlot" id="slot-modal">
@@ -35,7 +35,7 @@
                 <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
             </b-form-group>
             <b-form-group label="Admin">
-                <b-form-select v-model="selectedAdmin" :options="admins"></b-form-select>
+                <b-form-checkbox-group v-model="selectedAdmin" :options="admins"></b-form-checkbox-group>
             </b-form-group>
         </b-modal>
         <b-modal ok-title="Confirm" @ok="deleteSlot" title="Delete the slot" id="delete-modal">
@@ -101,7 +101,7 @@ export default {
             inventory: [],
             interval: 30,
             admins: [],
-            selectedAdmin: ""
+            selectedAdmin: []
         };
     },
     computed: {
@@ -163,7 +163,7 @@ export default {
                 "end": this.selectedDate + "T" + this.end,
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation,
-                "admin": this.selectedAdmin
+                "admin": this.selectedAdmin.join(", ")
             }
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings", slotData, {headers: this.$store.state.header}).then((res) => {
@@ -171,14 +171,14 @@ export default {
             });
         },
 
-        createSlotsBulk: function() {
+        createSlotsBulk: function() {          
             var slotData = {
                 "start": this.selectedDate + "T" + this.start,
                 "end": this.selectedDate + "T" + this.end,
                 "interval": this.interval,
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation,
-                "admin": this.selectedAdmin
+                "admin": this.selectedAdmin.join(", ")
             }
             this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
             axios.post(this.$store.state.baseURL + "/bookings/bulk", slotData, {headers: this.$store.state.header}).then((res) => {
