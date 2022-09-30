@@ -3,26 +3,26 @@ import Vuex from "vuex"
 
 Vue.use(Vuex)
 
-const domain = (process.env.NODE_ENV === "development") ? window.location.hostname : window.location.host;
-const protocol = (process.env.VUE_APP_PROTOCOL === "http") ? "http" : "https";
-const protocolWs = (process.env.VUE_APP_PROTOCOL === "http") ? "ws" : "wss";
-
 const state = {
-    user: null,
-    baseURL: `${protocol}://` + domain + "/api/v1",
-    containerAPI: `${protocol}://` + domain + "/containers",
-    rootURL: `${protocol}://` + domain,
-    wsRootURL: `${protocolWs}://` + domain,
-    header: {
-        'Authorization': '',
-        'Content-Type': 'application/json',
-    }
+    /** @type {?User} */
+    user: JSON.parse(localStorage.getItem('user')),
 }
 const getters = {
+    /**
+     * Returns current user data
+     * @typedef {Object} User
+     * @property {number} user_id
+     * @property {string} role
+     * @property {string} access_token
+     * @returns {User}
+     */
     getUser: (state) => state.user
 }
 const mutations = {
-    SET_CURRENT_USER: (state, user) => state.user = user
+    SET_CURRENT_USER: (state, user) => {
+        localStorage.setItem("user", JSON.stringify(user));
+        return state.user = user;
+    },
 }
 const actions = {
     async setCurrentUser({commit}, user) {
@@ -30,9 +30,11 @@ const actions = {
     }
 }
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
     state,
     getters,
     mutations,
     actions
 })
+
+export default store;

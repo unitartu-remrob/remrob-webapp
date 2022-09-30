@@ -27,7 +27,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import { mapActions } from 'vuex';
 
 export default {
@@ -46,11 +45,15 @@ export default {
     ...mapActions(["setCurrentUser"]),
 
     login: function() {
-      axios.post(this.$store.state.baseURL + "/login", {
+      this.$api.post("/api/v1/login", {
         "email": this.email,
         "password": this.password,
       }).then((res) => {
         console.log(res)
+        if (res.data.access_token) {
+          localStorage.setItem("user", JSON.stringify(res.data));
+          this.$api.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.access_token;
+        }
         this.setCurrentUser(res.data)
         this.$router.push({name:"Home"})
       }).catch((error) => {

@@ -32,7 +32,6 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import axios from 'axios';
 import { getCountdown } from '../util/helpers'
 
 export default {
@@ -57,7 +56,7 @@ export default {
     },
     methods: {
         getBookings: function() {
-            axios.get(`${this.$store.state.baseURL}/bookings/${this.getUser.user_id}`, {headers: this.$store.state.header}).then((res) => {
+            this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`).then((res) => {
                 this.bookings = res.data.user_bookings
                 // this.bookings.forEach(item => {
                 //     item.start_time = item.start.slice(0, 16).replace("T", "  ")
@@ -81,7 +80,6 @@ export default {
         }
     },
     created() {
-        this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
         this.getBookings();
     },
     mounted() {

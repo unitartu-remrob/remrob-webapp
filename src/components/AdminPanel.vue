@@ -4,7 +4,7 @@
         <b-tabs card>
 			<b-tab title="Containers"  @click="switchTab(sim=false)" active>
 			</b-tab>
-			<b-tab title="Simtainers" @click="switchTab(sim=true)">	
+			<b-tab title="Simtainers" @click="switchTab(sim=true)">
 			</b-tab>
 		</b-tabs>
 		<div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
@@ -15,14 +15,14 @@
 			<template v-slot:cell(robotStatus)="{ item: { robot_status } }">
 				<div v-if="true" class="d-flex align-items-center justify-content-center">
 					<Broadcast font-scale="2" :variant="robot_status ? 'success' : 'danger'"/>
-				</div>	
+				</div>
 			</template>
 			<template v-slot:cell(user)="{ item: { user, user_time } }">
 				<div v-if="user_time.isActive" class="d-flex align-items-center">
 					<div class="mr-2">{{user_time.displayTime}}</div>
 					<PersonFill font-scale="3" />
 					<div class="ml-2">{{user}}</div>
-				</div>	
+				</div>
 			</template>
 			<template v-slot:cell(alarm)="{ item: { issue, id } }">
 				<Exclamation class="exclm" variant="warning" v-if="issue" @click="clearIssue(id)" font-scale="2"/>
@@ -42,7 +42,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { getUptime, getTimeLeft } from '../util/helpers'
-import axios from 'axios';
+import { wsRootURL } from "@/util/api";
 export default {
     data() {
         return {
@@ -65,7 +65,7 @@ export default {
 			is_loaded: false,
 			ws: null
         }
-    },   
+    },
     computed: {
         ...mapGetters(["getUser"]),
 		filteredFields: function () {
@@ -75,7 +75,7 @@ export default {
 					return field.key !== 'robotStatus'
 				} else {
 					return true
-				}		
+				}
 			})
 		},
 		containerStatus: function() {
@@ -84,7 +84,7 @@ export default {
 				let Status,
 					StartedAt,
 					IPAddress
-				
+
 				// let id = (robot_id) ? `robotont-${robot_id}` : slug;
 
 				if (data === 404) {
@@ -115,27 +115,27 @@ export default {
 			return items
 		}
     },
-    methods: { 
+    methods: {
 		startContainer: function(id) {
 			const params = new URLSearchParams([['is_simulation', this.is_sim], ['fresh', true]]);
-			axios.post(`${this.$store.state.containerAPI}/start/${id}`, {}, {headers: this.$store.state.header, params}).then((res) => {
-				// this.ws.send("update") // crashes the connection ??
+            this.$api.post(`/containers/start/${id}`, {}, {params}).then((res) => {
+                // this.ws.send("update") // crashes the connection ??
 				console.log('something')
-            })	
+            })
 		},
 		stopContainer: function(id) {
-			axios.post(`${this.$store.state.containerAPI}/stop/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
+            this.$api.post(`/containers/stop/${id}`, {}).then((res) => {
 				console.log(`${id} stopped`)
 				// this.ws.send("update")
-            })	
+            })
 		},
 		removeContainer: function(id) {
-			axios.post(`${this.$store.state.containerAPI}/remove/${id}`, {}, {headers: this.$store.state.header}).then((res) => {
+			this.$api.post(`/containers/remove/${id}`, {}).then((res) => {
 				// this.ws.send("update")
             })
 		},
 		clearIssue: function(id) {
-			axios.put(`${this.$store.state.baseURL}/inventory/${id}`, { issue: false }, {headers: this.$store.state.header}).then((res) => {
+			this.$api.put(`/api/v1/inventory/${id}`, { issue: false }).then((res) => {
 				// this.ws.send("update")
             })
 		},
@@ -148,7 +148,7 @@ export default {
 		connectWs: function() {
 			console.log("connecting...")
 			const endpoint = (this.is_sim) ? "simulation" : "physbots";
-			const ws = new WebSocket(`${this.$store.state.wsRootURL}/containers/live/${endpoint}`) // TODO: add cookie auth, headers not available
+			const ws = new WebSocket(`${wsRootURL}/containers/live/${endpoint}`) // TODO: add cookie auth, headers not available
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)
@@ -157,7 +157,7 @@ export default {
 						robot_id, slug,
 						robot_status,
 						booking, user,
-						data: (status === 'fulfilled') 
+						data: (status === 'fulfilled')
 							?  value
 							:  404,
 					}
@@ -172,10 +172,9 @@ export default {
 		}
     },
     created() {
-		this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
 		this.connectWs()
     },
-	beforeDestroy() {  
+	beforeDestroy() {
 		this.ws.close()
     }
 }

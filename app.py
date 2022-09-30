@@ -1,33 +1,42 @@
+import json
+
+from datetime import timedelta, timezone, datetime
+from functools import wraps
+
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_mail import Message, Mail
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt, verify_jwt_in_request, decode_token
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, JWTManager, \
+    get_jwt, verify_jwt_in_request, decode_token, set_refresh_cookies, unset_refresh_cookies
 import bcrypt, os
-from functools import wraps
-from datetime import date, timedelta, timezone, datetime
 from dotenv import load_dotenv, find_dotenv
 
 ##########################################
 # git module imports
 ##########################################
-import requests, json
+import requests
 # How do you even python module?
 from communication import git_clone
 from communication import git_commit_push
+
 ##########################################
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
 
-env_file = '.env.production' if (os.environ.get('FLASK_ENV') == 'production') else '.env'
+is_prod = os.environ.get('FLASK_ENV') == 'production'
+env_file = '.env.production' if (is_prod) else '.env'
 load_dotenv(find_dotenv(env_file))
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 100000
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 465
 app.config["MAIL_USE_SSL"] = True
@@ -39,8 +48,8 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 mail = Mail(app)
 
-
 from models import *
+
 
 def admin_required():
     def wrapper(fn):
@@ -65,8 +74,9 @@ def send_email(user):
     msg.subject = "Password reset"
     msg.sender = os.getenv("MAIL_USERNAME")
     msg.recipients = [user.email]
-    msg.html = render_template("reset_email.html", url=url+token)
+    msg.html = render_template("reset_email.html", url=url + token)
     mail.send(msg)
+
 
 def send_confirmation(email):
     msg = Message()
@@ -76,6 +86,7 @@ def send_confirmation(email):
     msg.html = render_template("confirmation_email.html")
     mail.send(msg)
 
+
 def send_activation_email(email):
     msg = Message()
     msg.subject = "Account has been activated"
@@ -84,15 +95,18 @@ def send_activation_email(email):
     msg.html = render_template("activation_email.html")
     mail.send(msg)
 
+
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
     jti = jwt_payload["jti"]
     token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
     return token is not None
 
+
 @app.route('/')
 def index():
     return app.send_static_file("index.html")
+
 
 @app.route("/api/v1/register", methods=["POST"])
 def register():
@@ -113,7 +127,7 @@ def register():
         return "Missing lastname", 400
 
     user = User.query.filter_by(email=email).first()
-    
+
     if user:
         return "There already is a user with this email", 400
     else:
@@ -138,14 +152,29 @@ def login():
     if not user:
         return "User not found", 400
 
-    if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")) and user.active == True:
-        if user.role == "ROLE_ADMIN":
-            access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": True})
-        else:
-            access_token = create_access_token(identity=user.id, additional_claims={"is_administrator": False})
-        return jsonify(access_token=access_token, user_id=user.id, role=user.role), 200
+    if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")) and user.active:
+        additional_claims = {"is_administrator": user.role == "ROLE_ADMIN"}
+
+        access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=user.id, additional_claims=additional_claims)
+
+        response = jsonify(access_token=access_token, user_id=user.id, role=user.role)
+        set_refresh_cookies(response, refresh_token)
+        return response, 200
     else:
         return "User not active or wrong credentials", 400
+
+
+@app.route("/api/v1/refresh-token", methods=["POST"])
+@jwt_required(refresh=True, locations="cookies")
+def refresh():
+    jwt = get_jwt()
+    user_id = jwt["sub"]
+    user = User.query.filter_by(id=user_id).first()
+    is_administrator = user.role == "ROLE_ADMIN"
+    access_token = create_access_token(identity=user_id, additional_claims={"is_administrator": is_administrator})
+    return jsonify(access_token=access_token, user_id=user_id, role=user.role)
+
 
 @app.route("/api/v1/logout", methods=["DELETE"])
 @jwt_required()
@@ -154,18 +183,22 @@ def modify_token():
     now = datetime.now(timezone.utc)
     db.session.add(TokenBlocklist(jti=jti, created_at=now))
     db.session.commit()
-    return jsonify(msg="JWT revoked")
+    res = jsonify(msg="JWT revoked")
+    unset_refresh_cookies(res)
+    return res
+
 
 @app.route('/api/v1/password_reset', methods=['POST'])
 def reset():
     data = request.json
     email = data['email']
-    user = User.query.filter_by(email = email).first()
+    user = User.query.filter_by(email=email).first()
 
     if user:
         send_email(user)
         return "Email sent", 200
     return "No user found", 403
+
 
 @app.route('/api/v1/password_reset_verified/<token>', methods=['POST'])
 def reset_verified(token):
@@ -180,16 +213,18 @@ def reset_verified(token):
         db.session.commit()
         return "Password changed", 200
 
+
 @app.route("/api/v1/owncloud_link", methods=["GET"])
 @jwt_required()
 def user_owncloud():
     current_user = get_jwt_identity()
-    user = User.query.filter_by(id = str(current_user)).first()
+    user = User.query.filter_by(id=str(current_user)).first()
     if user.owncloud_id == None:
         return "User does not have an owncloud folder created", 404
     else:
         link = os.getenv("OWNCLOUD_VIEW_URL") + user.owncloud_id
         return link, 200
+
 
 @app.route("/api/v1/slots", methods=["GET"])
 @admin_required()
@@ -210,7 +245,7 @@ def all_slots():
                 user_name = user.first_name + " " + user.last_name
         else:
             user_name = ""
-            color= "blue"
+            color = "blue"
         if slot.simulation:
             title = "Simulation"
         else:
@@ -228,6 +263,7 @@ def all_slots():
         }
         results.append(slot_object)
     return jsonify({"bookings": results}), 200
+
 
 @app.route('/api/v1/bookings', methods=["GET", "POST"])
 @jwt_required()
@@ -248,12 +284,12 @@ def bookings():
     elif request.method == "GET":
         results = []
         bookings = Bookings.query.filter_by(user_id=None).all()
-        for booking in bookings: 
+        for booking in bookings:
             if datetime.strptime(booking.start_time, "%Y-%m-%dT%H:%M") < datetime.now():
                 color = "gray"
             else:
-                color = "blue" 
-            #inv = Inventory.query.get(booking.inventory_id)
+                color = "blue"
+            # inv = Inventory.query.get(booking.inventory_id)
 
             if booking.simulation:
                 title = "Simulation"
@@ -271,6 +307,7 @@ def bookings():
             }
             results.append(slot_object)
         return jsonify({"bookings": results}), 200
+
 
 @app.route('/api/v1/bookings/bulk', methods=["POST"])
 @admin_required()
@@ -290,9 +327,10 @@ def bookings_bulk():
         )
         db.session.add(booking)
         db.session.commit()
-        #print((datetime.strftime(start_time, date_format), datetime.strftime(end, date_format)))
+        # print((datetime.strftime(start_time, date_format), datetime.strftime(end, date_format)))
         start_time = end
     return "Slots created", 200
+
 
 @app.route('/api/v1/bookings/<user_id>', methods=["GET"])
 @jwt_required()
@@ -307,13 +345,13 @@ def user_bookings(user_id):
                 return "No such booking", 400
         else:
             bookings = Bookings.query.filter_by(user_id=user_id).all()
-        
+
         for booking in bookings:
             if booking.simulation:
                 title = "Simulation"
             else:
                 title = "Robot"
-            #inv = Inventory.query.get(booking.inventory_id)
+            # inv = Inventory.query.get(booking.inventory_id)
             slot_object = {
                 "title": title,
                 "start": booking.start_time,
@@ -331,11 +369,13 @@ def user_bookings(user_id):
     else:
         return "Wrong user", 403
 
+
 def overlaps(slot, booked_time_list):
     for times in booked_time_list:
         if slot[1] >= times[0] and times[1] > slot[0]:
             return True
-    return False 
+    return False
+
 
 @app.route("/api/v1/bookings/book/<id>", methods=["POST"])
 @jwt_required()
@@ -343,7 +383,7 @@ def book_slot(id):
     data = request.json
     current_user = get_jwt_identity()
     slot = Bookings.query.get(id)
-    user_bookings = Bookings.query.filter_by(user_id = str(current_user))
+    user_bookings = Bookings.query.filter_by(user_id=str(current_user))
     date_format = "%Y-%m-%dT%H:%M"
     user_booking_times = []
     upcoming_bookings = 0
@@ -352,13 +392,14 @@ def book_slot(id):
         end = datetime.strptime(i.end_time, date_format)
         user_booking_times.append((start, end))
 
-    if overlaps((datetime.strptime(slot.start_time, date_format), datetime.strptime(slot.end_time, date_format)), user_booking_times):
+    if overlaps((datetime.strptime(slot.start_time, date_format), datetime.strptime(slot.end_time, date_format)),
+                user_booking_times):
         return "Cannot book overlapping slots", 400
 
     for booking in user_bookings:
         if datetime.now() < datetime.strptime(booking.start_time, date_format):
             upcoming_bookings += 1
-    
+
     if upcoming_bookings < 2:
         if int(data["userId"]) == current_user:
             if slot.user_id == None:
@@ -372,13 +413,14 @@ def book_slot(id):
     else:
         return "Limit of active bookings reached", 400
 
+
 @app.route("/api/v1/bookings/delete/<id>", methods=["DELETE"])
 @admin_required()
 def delete_slot(id):
     slot = Bookings.query.get(id)
     db.session.delete(slot)
     db.session.commit()
-    return "Slot deleted",200
+    return "Slot deleted", 200
 
 
 @app.route("/api/v1/bookings/unbook/<user_id>/<slot_id>", methods=["DELETE"])
@@ -401,6 +443,7 @@ def unbook(user_id, slot_id):
     else:
         return "Wrong user", 403
 
+
 @app.route("/api/v1/simtainers", methods=["POST", "GET"])
 @admin_required()
 def new_simtainer():
@@ -410,8 +453,8 @@ def new_simtainer():
         Simtainers.query.delete()
         for i in range(9):
             cont = Simtainers(
-                container_id = i+1,
-                slug = f"robosim-{i+1}",
+                container_id=i + 1,
+                slug=f"robosim-{i + 1}",
             )
             db.session.add(cont)
         db.session.commit()
@@ -420,7 +463,7 @@ def new_simtainer():
     elif request.method == "GET":
         sims = Simtainers.query.all()
         results = [
-            {   
+            {
                 "id": sim.id,
                 "container_id": sim.container_id,
                 "slug": sim.slug,
@@ -428,15 +471,16 @@ def new_simtainer():
                 "vnc_uri": sim.vnc_uri
             } for sim in sims
         ]
-        sorted_inv = sorted(results, key=lambda x : x['container_id'])
+        sorted_inv = sorted(results, key=lambda x: x['container_id'])
         return jsonify(sorted_inv), 200
+
 
 @app.route("/api/v1/inventory", methods=["GET"])
 @admin_required()
 def inventory():
     inventory = Inventory.query.all()
     results = [
-        {   
+        {
             "id": inv.id,
             "robot_id": inv.robot_id,
             "slug": inv.slug,
@@ -447,8 +491,9 @@ def inventory():
             "vnc_uri": inv.vnc_uri
         } for inv in inventory
     ]
-    sorted_inv = sorted(results, key=lambda x : x['robot_id'])
+    sorted_inv = sorted(results, key=lambda x: x['robot_id'])
     return jsonify(sorted_inv), 200
+
 
 @app.route("/api/v1/inventory", methods=["POST"])
 @admin_required()
@@ -464,17 +509,18 @@ def new_inventory():
     entry = Inventory.query.filter(Inventory.robot_id == id).first()
     if entry == None:
         inventory = Inventory(
-            robot_id = id,
-            slug = f"robo-{id}",
-            project = 'default',
-            cell = 0,
-            status = True
+            robot_id=id,
+            slug=f"robo-{id}",
+            project='default',
+            cell=0,
+            status=True
         )
         db.session.add(inventory)
         db.session.commit()
         return "Inventory entry created successfully", 201
     else:
         return "Item already in inventory", 400
+
 
 @app.route("/api/v1/inventory/<inv_id>", methods=["DELETE", "PUT"])
 @jwt_required()
@@ -493,7 +539,7 @@ def update_inventory(inv_id):
         if "issue" in data:
             entry.issue = data["issue"]
         if "status" in data and is_admin:
-            if isinstance(data["status"], bool):             
+            if isinstance(data["status"], bool):
                 entry.status = data["status"]
             else:
                 return "Expected boolean", 400
@@ -534,7 +580,7 @@ def users():
         if "active" in data:
             user = User.query.get(data["id"])
             if not user.active and data["active"]:
-                 send_activation_email(user.email)
+                send_activation_email(user.email)
             user.active = data["active"]
             db.session.commit()
             return "User active status updated", 200
@@ -544,6 +590,7 @@ def users():
             db.session.commit()
             return "User role updated", 200
 
+
 @app.route("/api/v1/users/<id>", methods=["DELETE"])
 @admin_required()
 def delete_user(id):
@@ -551,6 +598,7 @@ def delete_user(id):
     db.session.delete(user)
     db.session.commit()
     return "User deleted", 200
+
 
 @app.route("/api/v1/admins", methods=["GET"])
 @admin_required()
@@ -587,6 +635,7 @@ def api_check_user():
         return 'error: no user specified'
     return check_project(user_name)
 
+
 @app.route('/api/v1/commit_push', methods=['GET'])
 def api_repo_commit_push():
     # This one is for committing from within the container
@@ -606,36 +655,37 @@ def api_repo_commit_push():
 
     return git_commit_push.commit_push(path)
 
+
 # @app.route('/api/v1/reclone', methods=['GET'])
 # def api_repo_reclone():
 #     # This one is for recloning from within the container
 #     """This function takes token as the request argument parses to get username after which it removes the repo and clones it again 
-
+#
 #     Returns:
 #         _type_: _description_
 #     """
-
+#
 #     if 'token' in request.args:
 #         session_token = request.args['token']
 #     else:
 #         return 'error: no session token provided'
-
+#
 #     user = User.query.filter_by(git_token=session_token).first()
-
+#
 #     if not user:
 #         return "No user found", 403
 #     else:
 #         user_name = user.user_repo
-
+#
 #     path = os.path.join(REPOS_ROOT, user_name)
-
+#
 #     force = False
 #     if 'force' in request.args:
 #         if 'true' == request.args['force'].lower():
 #             force = True  
-
+#
 #     return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
-    
+
 
 @app.route('/api/v1/clone_jwt', methods=['GET'])
 @jwt_required()
@@ -650,9 +700,10 @@ def api_repo_clone_jwt():
     force = False
     if 'force' in request.args:
         if 'true' == request.args['force'].lower():
-            force = True        
+            force = True
 
-    return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
+    return git_clone.clone(CLONING_ROOT + user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
+
 
 @app.route('/api/v1/commit_push_jwt', methods=['GET'])
 @jwt_required()
@@ -661,8 +712,9 @@ def api_repo_commit_push_jwt():
     current_user = get_jwt_identity()
     user = User.query.filter_by(id=current_user).first()
     path = os.path.join(REPOS_ROOT, user.user_repo)
-    
+
     return git_commit_push.commit_push(path)
+
 
 def check_project(project_name: str):
     """Checks if repo exists, if not then creating it
@@ -697,6 +749,7 @@ def check_project(project_name: str):
         resp = 'User exists'
 
     return resp
+
 
 ## Git end
 ############################################

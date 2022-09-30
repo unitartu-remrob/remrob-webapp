@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 
 export default {
   name: 'ForgotPassword',
@@ -36,7 +35,7 @@ export default {
   },
   methods: {
     resetRequest: function() {
-        axios.post(this.$store.state.baseURL + "/password_reset", {"email": this.email}).then((res) => {
+        this.$api.post(`/api/v1/password_reset`, {"email": this.email}).then((res) => {
             if (res.data === "Email sent") {
               this.dismissCountDown = this.dismissSec
             }

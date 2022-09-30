@@ -53,7 +53,6 @@ import FullCalendar /*{ CalendarOptions, EventApi, DateSelectArg, EventClickArg 
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import axios from 'axios';
 import { mapGetters } from 'vuex';
 import {Tooltip} from 'bootstrap'
 import VueTimepicker from 'vue2-timepicker/src/vue-timepicker.vue';
@@ -133,8 +132,7 @@ export default {
             return optionCount
         },
         getInventory: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
+            this.$api.get("/api/v1/inventory").then((res) => {
                 const options = this.getOptions(res.data);
                 for (let i = 0; i < options.length; i++) {
                     this.inventory.push({value: {
@@ -165,8 +163,7 @@ export default {
                 "is_simulation": this.selectedInventory.simulation,
                 "admin": this.selectedAdmin.join(", ")
             }
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.post(this.$store.state.baseURL + "/bookings", slotData, {headers: this.$store.state.header}).then((res) => {
+            this.$api.post("/api/v1/bookings", slotData).then((res) => {
                 this.getAllSlots()
             });
         },
@@ -180,29 +177,25 @@ export default {
                 "is_simulation": this.selectedInventory.simulation,
                 "admin": this.selectedAdmin.join(", ")
             }
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.post(this.$store.state.baseURL + "/bookings/bulk", slotData, {headers: this.$store.state.header}).then((res) => {
+            this.$api.post("/api/v1/bookings/bulk", slotData).then((res) => {
                 this.getAllSlots()
             });
 
         },
 
         deleteSlot: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.delete(this.$store.state.baseURL + "/bookings/delete/" + this.selectedSlot, {headers: this.$store.state.header}).then((res) => {
+            this.$api.post(`/api/v1/bookings/delete/${this.selectedSlot}`).then((res) => {
                 this.getAllSlots()
             });
         },
         getAllSlots: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.get(this.$store.state.baseURL + "/slots", {headers: this.$store.state.header}).then((res) => {
+            this.$api.post(`/api/v1/slots`).then((res) => {
                 this.calendarOptions.events = res.data.bookings
             });
         },
 
         getAdmins: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.get(this.$store.state.baseURL + "/admins", {headers: this.$store.state.header}).then((res) => {
+          this.$api.post(`/api/v1/admins`).then((res) => {
                 for (let i = 0; i < res.data.length; i++) {
                     this.admins.push({value: res.data[i], text: res.data[i]})
                 }

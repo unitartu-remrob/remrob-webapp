@@ -13,7 +13,6 @@ import Users from '../components/Users.vue'
 import ForgotPassword from '../components/ForgotPassword.vue'
 import ResetPassword from '../components/ResetPassword.vue'
 import NotFound from '../components/Errors/404'
-import store from '../store/store.js'
 Vue.use(VueRouter)
 
 const routes = [
@@ -131,13 +130,12 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.isAuthenticated) {
-    if (store.getters.getUser == null) {
+  if (to.matched.some(r => r.meta.isAuthenticated)) {
+    if (localStorage.getItem("user") == null) {
       // The page is protected and the user is not authenticated. Force a login.
-      next('/login')
-    }
-    else {
-      next()
+      next('/login');
+    } else {
+      next();
     }
   } 
   else {

@@ -24,7 +24,6 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import axios from 'axios';
 export default {
     data() {
         return {
@@ -52,39 +51,29 @@ export default {
     },
     methods: {
         getUsers: function() {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.get(this.$store.state.baseURL + "/users", {headers: this.$store.state.header}).then((res) => {
+          this.$api.get("/api/v1/users").then((res) => {
                 this.users = res.data
                 this.usersCopy = res.data
             })
         },
         deleteUser: function(id) {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            axios.delete(this.$store.state.baseURL + "/users/" + id, {headers: this.$store.state.header}).then((res) => {
+          this.$api.delete(`/api/v1/users/${id}`).then((res) => {
                 this.message = res.data
                 this.showAlert = true;
                 this.getUsers()
             })
         },
         setActive: function(active, id) {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            var object = {
-                "id": id,
-                "active": active
-            }
-            axios.put(this.$store.state.baseURL + "/users", object ,{headers: this.$store.state.header}).then((res) => {
+            const data = { id, active }
+            this.$api.put("/api/v1/users", data).then((res) => {
                 this.message = res.data
                 this.showAlert = true;
             })
 
         },
         setRole: function(role, id) {
-            this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-            var object = {
-                "id": id,
-                "role": role
-            }
-            axios.put(this.$store.state.baseURL + "/users", object ,{headers: this.$store.state.header}).then((res) => {
+            const data = {id, role}
+            this.$api.put("/api/v1/users", data).then((res) => {
                 this.message = res.data;
                 this.showAlert = true;
             })
