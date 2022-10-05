@@ -681,7 +681,8 @@ def check_project(project_name: str):
         "name": project_name,
         "description": description,
         "path": project_path,
-        "initialize_with_readme": "true"
+        "initialize_with_readme": "true",
+        "namespace_id": "1483" # this is a hardcoded gitlab group namespace ID
     })
     headers = {
         'Authorization': f'Bearer {TOKEN}',
