@@ -42,7 +42,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { getUptime, getTimeLeft } from '../util/helpers'
-import { wsRootURL } from "@/util/api";
+import { wsRootURL, rootURL } from "@/util/api";
 export default {
     data() {
         return {
@@ -105,7 +105,7 @@ export default {
 					uptime: !inactive ? getUptime(StartedAt) : '-',
 					status: Status,
 					cpu: data.cpu_percent,
-					vnc_uri: `${this.$store.state.rootURL}${data.vnc_uri}`, // can add &view_only=true for spying
+					vnc_uri: `${rootURL}${data.vnc_uri}`, // can add &view_only=true for spying
 					user_time: getTimeLeft(end_time),
 					user,
 					issue,

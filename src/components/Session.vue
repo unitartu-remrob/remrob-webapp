@@ -83,6 +83,7 @@ import { mapGetters } from 'vuex';
 import { getCountdown } from '../util/helpers'
 import Desktop from './Desktop.vue'
 import RobotStatus from './RobotStatus.vue'
+import { rootURL } from "@/util/api";
 
 export default {
     data() {
@@ -137,7 +138,7 @@ export default {
             }
         },
         vnc_uri: function() {
-            return `${this.$store.state.rootURL}${this.container.vnc_uri}`;
+            return `${rootURL}${this.container.vnc_uri}`;
         },
         is_sim: function() {
             return this.booking.is_simulation;
@@ -147,7 +148,7 @@ export default {
 		inspectContainer: function() {
             const { slug } = this.container;
             this.loading = true;
-            this.$api.get(`/container/inspect/${slug}`).then((res) => {
+            this.$api.get(`/containers/inspect/${slug}`).then((res) => {
                 this.containerData = res.data
                 const { Status } = this.containerData.State;
                 setTimeout(() => {
@@ -165,7 +166,7 @@ export default {
             this.starting = true;
             // Always inform whether sim, the server will validate the environment if user is not an admin
             const params = new URLSearchParams([['fresh', this.freshImage], ['is_simulation', this.booking.is_simulation]]);
-            this.$api.post(`/container/start/${slug}`, {}, {params}).then((res) => {
+            this.$api.post(`/containers/start/${slug}`, {}, {params}).then((res) => {
                 const { path } = res.data
                 // Update the UI
                 console.log(res.data)
@@ -178,7 +179,7 @@ export default {
 		stopContainer: function() {
             const { slug } = this.container;
             this.stopping = true;
-			this.$api.post(`/container/stop/${slug}`).then((res) => {
+			this.$api.post(`/containers/stop/${slug}`).then((res) => {
 				console.log(`${slug} stopped`)
                 this.stopping = false;
 				this.inspectContainer()
@@ -186,7 +187,7 @@ export default {
 		},
         removeContainer: function() {
             const { slug } = this.container;
-			this.$api.post(`/container/remove/${slug}`).then((res) => {
+			this.$api.post(`/containers/remove/${slug}`).then((res) => {
                 this.inspectContainer()
                 this.started = false
 				// this.ws.send("update")
@@ -195,8 +196,8 @@ export default {
         purgeContainer: function() {
             const { slug } = this.container;
             this.purging = true;
-			this.$api.post(`/container/stop/${slug}`).then((res) => {
-                this.$api.post(`/container/remove/${slug}`).then((res) => {
+			this.$api.post(`/containers/stop/${slug}`).then((res) => {
+                this.$api.post(`/containers/remove/${slug}`).then((res) => {
                     console.log(`${slug} purged`)
                     this.started = false
                     // this.ws.send("update")
@@ -208,7 +209,7 @@ export default {
         commitContainer: function() {
             const { slug } = this.container;
             this.saving = true;
-			this.$api.post(`/container/commit/${slug}`).then((res) => {
+			this.$api.post(`/containers/commit/${slug}`).then((res) => {
                 console.log("Container successfully saved")
                 this.saving = false;
             })
@@ -234,7 +235,7 @@ export default {
 		},
         getBookingInfo: function() {
             const params = new URLSearchParams([['booking', this.sesssionID]]);
-            this.$get(`/api/v1/bookings/${this.getUser.user_id}`, {params}).then((res) => {
+            this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`, {params}).then((res) => {
                 this.booking = res.data.user_bookings[0]
                 console.log("Active booking", this.booking)
                 // Assign ourselves a container:
@@ -245,18 +246,18 @@ export default {
              });
         },
         requestContainer: function() {
-            this.$api.get(`/container/assign`).then((res) => {
+            this.$api.get(`/containers/assign`).then((res) => {
                 console.log("Assigned container", res.data)
                 this.is_loaded = true;
                 this.container = res.data
                 this.inspectContainer()
             }).catch(e => {
-                // this.$router.push({name: "UserPanel"})
+                console.log("Failed to assign a container")
              });
         },
         yieldSession: function() {
             const { slug } = this.container;
-            this.$api.post(`/container/yield/${slug}`).then((res) => {
+            this.$api.post(`/containers/yield/${slug}`).then((res) => {
                 this.$router.push({ name: "Home" })
             })
         },
