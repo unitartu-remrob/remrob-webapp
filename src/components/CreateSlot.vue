@@ -189,13 +189,13 @@ export default {
             });
         },
         getAllSlots: function() {
-            this.$api.post(`/api/v1/slots`).then((res) => {
+            this.$api.get(`/api/v1/slots`).then((res) => {
                 this.calendarOptions.events = res.data.bookings
             });
         },
 
         getAdmins: function() {
-          this.$api.post(`/api/v1/admins`).then((res) => {
+          this.$api.get(`/api/v1/admins`).then((res) => {
                 for (let i = 0; i < res.data.length; i++) {
                     this.admins.push({value: res.data[i], text: res.data[i]})
                 }
