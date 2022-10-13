@@ -75,7 +75,7 @@ export default {
     },
     methods: {
         handleEventClick: function (info) {
-            if (new Date(info.event.startStr) < new Date()) {
+            if (new Date(info.event.startStr) < new Date() && new Date(info.event.endStr) < new Date()) {
                 return;
             }
 

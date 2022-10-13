@@ -285,7 +285,7 @@ def bookings():
         results = []
         bookings = Bookings.query.filter_by(user_id=None).all()
         for booking in bookings:
-            if datetime.strptime(booking.start_time, "%Y-%m-%dT%H:%M") < datetime.now():
+            if datetime.strptime(booking.start_time, "%Y-%m-%dT%H:%M") < datetime.now() and datetime.strptime(booking.end_time, "%Y-%m-%dT%H:%M") < datetime.now():
                 color = "gray"
             else:
                 color = "blue"
@@ -562,7 +562,7 @@ def update_inventory(inv_id):
 @admin_required()
 def users():
     if request.method == "GET":
-        users = User.query.all()
+        users = User.query.order_by(User.id.asc()).all()
         results = [
             {
                 "id": user.id,
