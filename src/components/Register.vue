@@ -39,7 +39,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 
 export default {
   name: 'Register',
@@ -58,13 +57,13 @@ export default {
   },
   methods: {
     register: function () {
-      axios.post(this.$store.state.baseURL + "/register", {
+        this.$api.post(`/api/v1/register`, {
         "email": this.email,
         "first_name": this.firstName,
         "last_name": this.lastName,
         "password": this.password,
       }).then((res) => {
-        if (res.status == 200) {
+        if (res.status === 200) {
           this.showAlert = true;
           setTimeout(() => this.$router.push({name: "Login"}), 2000)
         }

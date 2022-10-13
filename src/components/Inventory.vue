@@ -34,7 +34,6 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import axios from 'axios';
 import InventoryInput from './InputForm.vue'
 export default {
     data() {
@@ -59,7 +58,7 @@ export default {
     },
     methods: {
         getInventory: function() {
-            axios.get(this.$store.state.baseURL + "/inventory", {headers: this.$store.state.header}).then((res) => {
+            this.$api.get(`/api/v1/inventory`).then((res) => {
                 this.inventory = res.data
             })
         },
@@ -71,15 +70,14 @@ export default {
             const data = {
                 "robot_id": this.robotId
             }
-            axios.post(this.$store.state.baseURL + "/inventory", data, {headers: this.$store.state.header}).then((res) => {
+            this.$api.post(`/api/v1/inventory`, data).then((res) => {
                 this.robotId = null;
                 this.getInventory()
             })
         },
         deleteInventory: function(id) {
             this.inventory = this.inventory.filter(item => item.slug !== id)
-
-            axios.delete(this.$store.state.baseURL + `/inventory/${id}`, {headers: this.$store.state.header}).then((res) => {
+            this.$api.delete(`/api/v1/inventory/${id}`).then((res) => {
                 console.log("Item deleted")
             })
         },
@@ -88,13 +86,12 @@ export default {
 				"project": item.project,
                 "cell": item.cell
 			}
-			axios.put(this.$store.state.baseURL + `/inventory/${item.slug}`, data, {headers: this.$store.state.header}).then((res) => {
+            this.$api.put(`/api/v1/inventory/${item.slug}`, data).then((res) => {
 				
 			})
 		}
     },
     created() {
-        this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
         this.getInventory()
     }
 }

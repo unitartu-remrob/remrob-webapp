@@ -35,7 +35,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import { mapActions, mapGetters } from 'vuex';
 import UserSubmissionLink from './components/UserSubmissionLink.vue'
 export default {
@@ -57,9 +56,9 @@ export default {
     ...mapActions(["setCurrentUser"]),
 
     logout: function() {
-      this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-      axios.delete(this.$store.state.baseURL + "/logout", {headers: this.$store.state.header}).then((res) => {
+      this.$api.delete("/api/v1/logout").then((res) => {
         this.setCurrentUser(null)
+        localStorage.removeItem("user");
         this.$router.push({name: "Login"})
       })
     },

@@ -1,75 +1,75 @@
 <template>
-	<div class="robot-status mt-3">
-		<div>Robot status</div>
-    <div class="d-flex justify-content-center mt-3 mb-3">
-      <CircleFill v-if="this.robotStatus === 'true'" class="status-indicator" variant="success" font-scale="1.5" />
-      <CircleFill v-else variant="danger" font-scale="1.5" />
+    <div class="robot-status mt-3">
+        <div>Robot status</div>
+        <div class="d-flex justify-content-center mt-3 mb-3">
+            <CircleFill v-if="this.robotStatus === 'true'" class="status-indicator" variant="success" font-scale="1.5"/>
+            <CircleFill v-else variant="danger" font-scale="1.5"/>
+        </div>
+        <b-img style="max-width: 12vw" :src="require('../assets/robotont.png')"></b-img>
     </div>
-    <b-img style="max-width: 12vw" :src="require('../assets/robotont.png')"></b-img>
-	</div>
 </template>
 
 <script>
 
-export default {
-  props: ['robotID'],
-  data() {
-    return {
-      ws: null,
-      robotStatus: null,
-    }
-  },
+import {wsRootURL} from "@/util/api";
 
-  computed: {
-    
-  },
-  methods: {
-    connectWs: function() {
-			const ws = new WebSocket(`${this.$store.state.wsRootURL}/containers/robot-status/${this.robotID}`) // TODO: add cookie auth
-			ws.onmessage = (event) => {
-        this.robotStatus = event.data
-        console.log(event.data)
-			}
-			ws.onopen = function(event) {
-				console.log("Streaming robot status...")
-			}
-			this.ws = ws; // ref for closing
-		}
-  },
-  created() {
-    this.connectWs()
-  },
-  beforeDestroy() {  
-		this.ws.close()
-  }
+export default {
+    props: ['robotID'],
+    data() {
+        return {
+            ws: null,
+            robotStatus: null,
+        }
+    },
+
+    computed: {},
+    methods: {
+        connectWs: function () {
+            const ws = new WebSocket(`${wsRootURL}/containers/robot-status/${this.robotID}`) // TODO: add cookie auth
+            ws.onmessage = (event) => {
+                this.robotStatus = event.data
+                console.log(event.data)
+            }
+            ws.onopen = function (event) {
+                console.log("Streaming robot status...")
+            }
+            this.ws = ws; // ref for closing
+        }
+    },
+    created() {
+        this.connectWs()
+    },
+    beforeDestroy() {
+        this.ws.close()
+    }
 }
 </script>
 
 <style>
 .robot-status {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-	font-weight: 700;
-  font-size: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.6rem;
 }
 
 .status-indicator {
-  animation: blink 1.5s infinite;
+    animation: blink 1.5s infinite;
 }
 
 @keyframes blink {
-  0% {
-	opacity: 0;
-  }
-  35% {
-    opacity: 1;
-  }
-  75% {
-	opacity: 0.8;
-  }
-  100% {
-    opacity: 0;
-  }
+    0% {
+        opacity: 0;
+    }
+    35% {
+        opacity: 1;
+    }
+    75% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 </style>

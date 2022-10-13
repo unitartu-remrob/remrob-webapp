@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 
 export default {
   name: 'ResetPassword',
@@ -32,7 +31,8 @@ export default {
   },
   methods: {
     resetPassword: function() {
-        axios.post(this.$store.state.baseURL + "/password_reset_verified/" + this.$route.params.token, {"password": this.password}).then((res) => {
+        const data = {"password": this.password}
+        this.$api.post(`/api/v1/password_reset_verified/${this.$route.params.token}`, data).then((res) => {
             if (res.data === "Password changed") {
               this.$router.push({name: "Login"})
             }
