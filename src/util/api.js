@@ -36,8 +36,10 @@ const refreshAccessToken = async () => {
 // on authentication failiure error, try to refresh token
 api.interceptors.response.use((response) => response, async err => {
     const originalRequest = err.config;
-    if (err.response.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
+    const { url } = err.config
+
+    if (err.response.status === 401 && url !== "/api/v1/refresh-token") {//!originalRequest._retry) {
+        //originalRequest._retry = true;
         await refreshAccessToken();
         return api(originalRequest);
     }
