@@ -1,4 +1,5 @@
 import axios from "axios";
+import $router from "../router/router.js";
 
 const domain = window.location.host;
 const protocol = (process.env.VUE_APP_PROTOCOL === "http") ? "http" : "https";
@@ -27,6 +28,7 @@ const refreshAccessToken = async () => {
     } catch (err) {
         localStorage.removeItem('user');
         console.log("refreshing token failed")
+        $router.push({name: "Login"})
         return Promise.reject(err);
     }
 }
