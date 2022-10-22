@@ -318,6 +318,8 @@ def bookings_bulk():
     end_time = datetime.strptime(data["end"], date_format)
     while start_time < end_time:
         end = start_time + timedelta(minutes=int(data["interval"]))
+        if end > end_time:
+            end = end_time
         booking = Bookings(
             start_time=datetime.strftime(start_time, date_format),
             end_time=datetime.strftime(end, date_format),

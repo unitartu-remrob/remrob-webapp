@@ -151,7 +151,12 @@ export default {
             this.$bvModal.show("delete-modal");
         },
         handleDateSelect: function (info) {
-            this.selectedDate = info.startStr;
+            if (info.startStr.includes("T")){
+                this.selectedDate = info.startStr.split("T")[0]
+            }
+            else {
+                this.selectedDate = info.startStr
+            }
             this.$bvModal.show("type-modal")
             //this.$bvModal.show("slot-modal");
         },
@@ -184,7 +189,7 @@ export default {
         },
 
         deleteSlot: function() {
-            this.$api.post(`/api/v1/bookings/delete/${this.selectedSlot}`).then((res) => {
+            this.$api.delete(`/api/v1/bookings/delete/${this.selectedSlot}`).then((res) => {
                 this.getAllSlots()
             });
         },

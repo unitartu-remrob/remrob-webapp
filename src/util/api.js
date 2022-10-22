@@ -24,7 +24,7 @@ const refreshAccessToken = async () => {
         api.defaults.headers.common['Authorization'] = 'Bearer ' + token;
         localStorage.setItem('user', JSON.stringify(res.data));
         console.log("refresing token succeded")
-        return Promise.resolve();
+        return Promise.resolve(token);
     } catch (err) {
         localStorage.removeItem('user');
         console.log("refreshing token failed")
@@ -38,9 +38,10 @@ api.interceptors.response.use((response) => response, async err => {
     const originalRequest = err.config;
     const { url } = err.config
 
-    if (err.response.status === 401 && url !== "/api/v1/refresh-token") {//!originalRequest._retry) {
-        //originalRequest._retry = true;
-        await refreshAccessToken();
+    if (err.response.status === 401 && url !== "/api/v1/refresh-token" && !originalRequest._retry) {//) {
+        originalRequest._retry = true;
+        const token = await refreshAccessToken();
+        originalRequest.headers["Authorization"] = 'Bearer ' + token
         return api(originalRequest);
     }
     return Promise.reject(err);
