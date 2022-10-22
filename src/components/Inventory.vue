@@ -44,7 +44,7 @@ export default {
             fields: [
                 { key: "title", label: "" },
                 // { key: "location", label: "Workcell" },
-                { key: "project", label: "" },              
+                { key: "project", label: "Change settings" },              
                 // { key: "status", label: "Available" },
                 { key: "delete", label: ""}
             ]
@@ -60,6 +60,7 @@ export default {
         getInventory: function() {
             this.$api.get(`/api/v1/inventory`).then((res) => {
                 this.inventory = res.data
+                console.log(this.inventory)
             })
         },
         createInventory: function() {
@@ -84,7 +85,8 @@ export default {
         updateInventory: function(item) {
 			const data = {
 				"project": item.project,
-                "cell": item.cell
+                "cell": item.cell,
+                "status": item.status
 			}
             this.$api.put(`/api/v1/inventory/${item.slug}`, data).then((res) => {
 				
