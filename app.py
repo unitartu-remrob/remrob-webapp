@@ -1,6 +1,6 @@
 import json
 
-from datetime import timedelta, timezone, datetime
+from datetime import timedelta, timezone, datetime, date
 from functools import wraps
 
 from flask import Flask, request, jsonify, render_template
@@ -234,6 +234,10 @@ def all_slots():
     color = ""
     user_name = ""
     for slot in slots:
+        if datetime.strptime(slot.end_time, "%Y-%m-%dT%H:%M").date() < (date.today() - timedelta(days=7)):
+            # Do not send slots that are more than a week old
+            continue
+
         if slot.user_id != None:
             color = "green"
             user = User.query.get(slot.user_id)
