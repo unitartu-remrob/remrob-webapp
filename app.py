@@ -289,7 +289,10 @@ def bookings():
         results = []
         bookings = Bookings.query.filter_by(user_id=None).all()
         for booking in bookings:
-            if datetime.strptime(booking.start_time, "%Y-%m-%dT%H:%M") < datetime.now() and datetime.strptime(booking.end_time, "%Y-%m-%dT%H:%M") < datetime.now():
+            if datetime.strptime(booking.end_time, "%Y-%m-%dT%H:%M").date() < (date.today() - timedelta(days=7)):
+                # Do not send slots that are more than a week old
+                continue
+            if datetime.strptime(booking.end_time, "%Y-%m-%dT%H:%M") < datetime.now():
                 color = "gray"
             else:
                 color = "blue"
