@@ -9,7 +9,7 @@
         <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
         </b-modal>
-        <b-modal ok-title="Confirm" @ok="purgeContainer" title="Restart session?" id="restart-modal">
+        <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
             <h4>This will delete any unsaved work and give you a fresh start opportunity</h4>
         </b-modal>
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
@@ -28,22 +28,22 @@
                         <b-spinner v-if="starting" small></b-spinner>
                         Start session
                     </b-button>
-                    <!-- <b-button class="mr-2" variant="warning" size="lg" :disabled="containerState.inactive" @click="stopContainer">
-                        <b-spinner v-if="stopping" small></b-spinner>
-                        Stop
-                    </b-button> -->
                     <b-button class="mr-3" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">
                         <Link font-scale="1" />
                         Connect to session!
                     </b-button>
-                    <b-button class="mr-3" variant="warning" size="md" :disabled="containerState.inactive" @click="$bvModal.show('restart-modal')">
+                    <b-button class="mr-2" variant="warning" size="md" :disabled="containerState.inactive" @click="stopContainer">
+                        <b-spinner v-if="stopping" small></b-spinner>
+                        Stop
+                    </b-button>
+                    <b-button class="mr-3" variant="danger" size="md" :disabled="!containerState.exited" @click="$bvModal.show('restart-modal')">
                         <b-spinner v-if="purging" small></b-spinner>
-                        Delete session
+                        Delete
                     </b-button>
                     <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
                         <b-spinner v-if="submitting" small></b-spinner>
                         Submit code
-                    </b-button>                   
+                    </b-button>              
                     <!-- <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
                         <b-spinner v-if="saving" small></b-spinner>
                         Save environment
@@ -157,6 +157,7 @@ export default {
                 this.loading = false;
             }).catch(e => {
                 // With the expectation of exception 404 - container dead
+                console.log("Caught inactive")
                 this.containerData.State = { Status: "inactive" }
                 this.loading = false;
             })
@@ -253,6 +254,9 @@ export default {
                 this.inspectContainer()
             }).catch(e => {
                 console.log("Failed to assign a container")
+                if (e.response.status == 403) {
+                    this.$router.push({name: "403"})
+                }
              });
         },
         yieldSession: function() {

@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <h1>403 Error</h1>
+    <div class="error">
+        <h1 class="display-2">403 Error</h1>
         <p>Unauthorized.</p>
         <router-link to="/" exact>
             Go to home page
@@ -15,5 +15,13 @@ export default {
 </script>
 
 <style>
-
+	.error {
+		display: flex;
+		width: 100%;
+		height: 100%;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 15rem;
+		font-size: 2rem;
+	}
 </style>

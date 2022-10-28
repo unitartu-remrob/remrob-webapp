@@ -13,6 +13,7 @@ import Users from '../components/Users.vue'
 import ForgotPassword from '../components/ForgotPassword.vue'
 import ResetPassword from '../components/ResetPassword.vue'
 import NotFound from '../components/Errors/404'
+import E403 from '../components/Errors/403'
 Vue.use(VueRouter)
 
 const routes = [
@@ -121,6 +122,11 @@ const routes = [
     path: "/404",
     name: '404',
     component: NotFound
+  },
+  {
+    path: "/403",
+    name: '403',
+    component: E403
   }
 ]
 
