@@ -2,8 +2,8 @@
     <b-container fluid>
         <b-row class="m-2">
             <b-col sm v-if="getUser.role == 'ROLE_LEARNER'">
-                <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('../assets/calendar.png')" title="Session reservation">
-                    <b-card-text>Find a time to access our robots or simulation environments</b-card-text>
+                <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('../assets/calendar.png')">
+                    <b-card-text style="font-size: 1.5rem">Find a time to access our robots and simulation environments!</b-card-text>
                     <b-button @click="$router.push({name: 'Booking'})" size="lg">Go to reservation</b-button>
                 </b-card>
             </b-col>
@@ -17,7 +17,7 @@
                 </b-card>
             </b-col> -->
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots slot">
+                <b-card img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots">
                     <b-card-text>Create slots for booking system</b-card-text>
                     <b-button @click="$router.push({name: 'CreateSlot'})">Go create</b-button>
                 </b-card>
@@ -74,12 +74,24 @@ export default {
 
 .booking-card {
     border: 0 !important;
+    max-width: 25vw !important;
+    margin: 2rem 0 0 4rem;
 }
 
 .robotont-swarm {
-    padding-top: 5rem;
+    padding-top: 10rem;
     max-width: 60vw;
 }
+
+.opaque {
+    opacity: 0.6;
+}
+
+.upcoming {
+    background-color: #fdfbe7 !important;
+}
+
+
 
 @media screen and (min-width: 601px) {
         .cardClass {

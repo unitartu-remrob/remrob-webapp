@@ -11,7 +11,8 @@ import {
   BIconExclamationLg,
   BIconTv,
   BIconBroadcast,
-  BIconLink45deg
+  BIconLink45deg,
+  BIconClock
 } from 'bootstrap-vue'
 import router from './router/router'
 import store from './store/store'
@@ -34,6 +35,7 @@ Vue.component('Exclamation', BIconExclamationLg)
 Vue.component('Screen', BIconTv)
 Vue.component('Broadcast', BIconBroadcast)
 Vue.component('Link', BIconLink45deg)
+Vue.component('Clock', BIconClock)
 
 Vue.prototype.$api = api;
 
