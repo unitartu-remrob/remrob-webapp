@@ -140,7 +140,7 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const user = localStorage.getItem("user");
+  const user = JSON.parse(localStorage.getItem("user"));
   if (to.matched.some(r => r.meta.isAuthenticated)) {
     if (user == null) {
       // The page is protected and the user is not authenticated. Force a login.
