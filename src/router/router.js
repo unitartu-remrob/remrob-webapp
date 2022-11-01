@@ -40,7 +40,8 @@ const routes = [
     name: 'CreateSlot',
     component: CreateSlot,
     meta: {
-      isAuthenticated: true
+      isAuthenticated: true,
+      requiresAdmin: true
     }
   },
 
@@ -61,7 +62,8 @@ const routes = [
     name: 'Inventory',
     component: Inventory,
     meta: {
-      isAuthenticated: true
+      isAuthenticated: true,
+      requiresAdmin: true
     }
   },
 
@@ -88,7 +90,8 @@ const routes = [
     name: 'Users',
     component: Users,
     meta: {
-      isAuthenticated: true
+      isAuthenticated: true,
+      requiresAdmin: true
     }
   },
 
@@ -97,7 +100,8 @@ const routes = [
     name: 'AdminPanel',
     component: AdminPanel,
     meta: {
-      isAuthenticated: true
+      isAuthenticated: true,
+      requiresAdmin: true
     }
   },
   {
@@ -136,15 +140,20 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  const user = localStorage.getItem("user");
   if (to.matched.some(r => r.meta.isAuthenticated)) {
-    if (localStorage.getItem("user") == null) {
+    if (user == null) {
       // The page is protected and the user is not authenticated. Force a login.
       next('/login');
-    } else {
-      next();
     }
-  } 
-  else {
+    if (to.meta.requiresAdmin && (user.role !== "ROLE_ADMIN")) {
+      // reject access to admin routes for regular users
+      next('/403')
+    }
+    else {     
+      next()
+    }
+  } else {
     // This page did not require authentication
     next()
   }
