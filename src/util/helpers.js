@@ -16,7 +16,8 @@ const adjustForLocal = (d) => {
 	const localTime = d.getTime();
 	const localoffset = d.getTimezoneOffset() * 60000; // getTimezoneOffset is in minutes
 	const utc = localTime + localoffset; // get utc time
-	const adjusted = new Date(utc + (2*3600000)) // EST is +3 in summer, +2 in winter
+	const UTC_OFFSET = Math.floor(process.env.VUE_APP_UTC_OFFSET)
+	const adjusted = new Date(utc + (UTC_OFFSET*3600000)) // EST is +3 in summer, +2 in winter
 	return adjusted
 }
 
