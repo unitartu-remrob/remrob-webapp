@@ -39,17 +39,11 @@
                     <b-button class="mr-3" variant="danger" size="md" :disabled="!containerState.exited" @click="$bvModal.show('restart-modal')">
                         <b-spinner v-if="purging" small></b-spinner>
                         Delete
-                    </b-button>
-                    <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
-                        <b-spinner v-if="submitting" small></b-spinner>
-                        Submit code
-                    </b-button>              
+                    </b-button>       
                     <!-- <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
                         <b-spinner v-if="saving" small></b-spinner>
                         Save environment
                     </b-button> -->
-                    <!-- <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer"></b-button> -->
-                    <!-- <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button> -->
                 </div>
 
             </b-col>
@@ -63,9 +57,6 @@
         <div class="room" v-if="this.is_loaded">
             <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert>
             <div v-if="!is_sim" class="room-items">
-                <!-- <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
-                    <b-button>Link to camera</b-button>
-                </b-card> -->
                 <!-- <iframe class="camera-stream"
                     :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
                 </iframe> -->
@@ -173,8 +164,7 @@ export default {
                 console.log(res.data)
                 this.container.vnc_uri = path;
 				this.inspectContainer()
-                this.starting = false;
-                // Artificial buffer to        
+                this.starting = false;     
             })	
 		},
 		stopContainer: function() {
@@ -207,33 +197,17 @@ export default {
                 })
             })	
 		},
-        commitContainer: function() {
-            const { slug } = this.container;
-            this.saving = true;
-			this.$api.post(`/containers/commit/${slug}`).then((res) => {
-                console.log("Container successfully saved")
-                this.saving = false;
-            })
-		},
-        commitCode: function() {
-            this.submitting = true;
-            // This will find the user in DB and make a push for its corresponding repository
-			this.$api.get(`/api/v1/commit_push_jwt`).then((res) => {
-                console.log("Code successfully pushed")
-                this.submitting = false;
-                this.successMessage = "Code successfully uploaded!"
-                this.dismissCountDown = this.dismissSec
-            })
-		},
+        // commitContainer: function() {
+        //     const { slug } = this.container;
+        //     this.saving = true;
+		// 	this.$api.post(`/containers/commit/${slug}`).then((res) => {
+        //         console.log("Container successfully saved")
+        //         this.saving = false;
+        //     })
+		// },
         countDownChanged(dismissCountDown) {
             this.dismissCountDown = dismissCountDown
         },
-        raiseIssue: function() {
-            const { slug } = this.container;
-			this.$api.put(`/api/v1/inventory/${slug}`, { issue: true } ).then((res) => {
-                console.log("Issue submitted")
-            })
-		},
         getBookingInfo: function() {
             const params = new URLSearchParams([['booking', this.sesssionID]]);
             this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`, {params}).then((res) => {
@@ -259,12 +233,12 @@ export default {
                 }
              });
         },
-        yieldSession: function() {
-            const { slug } = this.container;
-            this.$api.post(`/containers/yield/${slug}`).then((res) => {
-                this.$router.push({ name: "Home" })
-            })
-        },
+        // yieldSession: function() {
+        //     const { slug } = this.container;
+        //     this.$api.post(`/containers/yield/${slug}`).then((res) => {
+        //         this.$router.push({ name: "Home" })
+        //     })
+        // },
         updateTime() {
             const { start, end } = this.booking;
             const time = getCountdown(start, end);
@@ -295,7 +269,6 @@ export default {
     margin-top: 3rem;
 }
 .session {
-    /* This styling is a mess */
     transform: translateX(29rem) scale(0.58);
     margin-top: -56rem;
 }
@@ -310,7 +283,6 @@ export default {
     height: 22rem;
     margin: 2rem 4rem;
     width: 42vw;
-    /* border: 2px solid black; */
 }
 
 .room-items {

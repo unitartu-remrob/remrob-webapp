@@ -34,7 +34,12 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 pip install -r requirements.txt
 ```
 
-## Run app.py
+## Run dev server (debugging + hot-reload)
 ```
-python app.py
+npm run dev-server
+```
+
+## Run production server
+```
+npm start
 ```

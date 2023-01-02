@@ -7,21 +7,11 @@ from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
-from flask_mail import Message, Mail
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, JWTManager, \
     get_jwt, verify_jwt_in_request, decode_token, set_refresh_cookies, unset_refresh_cookies
 import bcrypt, os
 from dotenv import load_dotenv, find_dotenv
 
-##########################################
-# git module imports
-##########################################
-import requests
-# How do you even python module?
-from communication import git_clone
-from communication import git_commit_push
-
-##########################################
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
@@ -37,19 +27,11 @@ app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
-app.config["MAIL_SERVER"] = "smtp.gmail.com"
-app.config["MAIL_PORT"] = 465
-app.config["MAIL_USE_SSL"] = True
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-mail = Mail(app)
 
 from models import *
-
 
 def admin_required():
     def wrapper(fn):
@@ -65,35 +47,6 @@ def admin_required():
         return decorator
 
     return wrapper
-
-
-def send_email(user):
-    url = os.getenv("FRONTEND_BASE_URL") + "password_reset/"
-    token = create_access_token(identity=user.id)
-    msg = Message()
-    msg.subject = "Password reset"
-    msg.sender = os.getenv("MAIL_USERNAME")
-    msg.recipients = [user.email]
-    msg.html = render_template("reset_email.html", url=url + token)
-    mail.send(msg)
-
-
-def send_confirmation(email):
-    msg = Message()
-    msg.subject = "Register confirmation"
-    msg.sender = os.getenv("MAIL_USERNAME")
-    msg.recipients = [email]
-    msg.html = render_template("confirmation_email.html")
-    mail.send(msg)
-
-
-def send_activation_email(email):
-    msg = Message()
-    msg.subject = "Account has been activated"
-    msg.sender = os.getenv("MAIL_USERNAME")
-    msg.recipients = [email]
-    msg.html = render_template("activation_email.html")
-    mail.send(msg)
 
 
 @jwt.token_in_blocklist_loader
@@ -131,10 +84,9 @@ def register():
     if user:
         return "There already is a user with this email", 400
     else:
-        user = User(email=email, first_name=first_name, last_name=last_name, password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"), active=False, role="ROLE_LEARNER")
+        user = User(email=email, first_name=first_name, last_name=last_name, password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"), active=True, role="ROLE_ADMIN")
         db.session.add(user)
         db.session.commit()
-        send_confirmation(email)
         return "User created", 200
 
 
@@ -186,44 +138,6 @@ def modify_token():
     res = jsonify(msg="JWT revoked")
     unset_refresh_cookies(res)
     return res
-
-
-@app.route('/api/v1/password_reset', methods=['POST'])
-def reset():
-    data = request.json
-    email = data['email']
-    user = User.query.filter_by(email=email).first()
-
-    if user:
-        send_email(user)
-        return "Email sent", 200
-    return "No user found", 403
-
-
-@app.route('/api/v1/password_reset_verified/<token>', methods=['POST'])
-def reset_verified(token):
-    user_id = decode_token(token)["sub"]
-    user = User.query.get(user_id)
-    if not user:
-        return "No user found", 403
-
-    password = request.json["password"]
-    if password:
-        user.password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        db.session.commit()
-        return "Password changed", 200
-
-
-@app.route("/api/v1/owncloud_link", methods=["GET"])
-@jwt_required()
-def user_owncloud():
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(id=str(current_user)).first()
-    if user.owncloud_id == None:
-        return "User does not have an owncloud folder created", 404
-    else:
-        link = os.getenv("OWNCLOUD_VIEW_URL") + user.owncloud_id
-        return link, 200
 
 
 @app.route("/api/v1/slots", methods=["GET"])
@@ -296,7 +210,6 @@ def bookings():
                 color = "gray"
             else:
                 color = "blue"
-            # inv = Inventory.query.get(booking.inventory_id)
 
             if booking.simulation:
                 title = "Simulation"
@@ -622,146 +535,6 @@ def admins():
         result.append(admin.first_name + " " + admin.last_name)
     return jsonify(result), 200
 
-
-############################################
-##                  GIT                   ##
-############################################
-
-load_dotenv("communication/.env")
-REPOS_ROOT = os.getenv("REPOS_ROOT")
-CLONING_ROOT = os.getenv("CLONING_ROOT")
-TOKEN_NAME = os.getenv("TOKEN_NAME")
-TOKEN = os.getenv("TOKEN")
-
-
-@app.route('/api/v1/check_user', methods=['GET'])
-@jwt_required()
-def api_check_user():
-    if 'user_name' in request.args:
-        user_name = request.args['user_name']
-    else:
-        return 'error: no user specified'
-    return check_project(user_name)
-
-
-@app.route('/api/v1/commit_push', methods=['GET'])
-def api_repo_commit_push():
-    # This one is for committing from within the container
-    if 'token' in request.args:
-        session_token = request.args['token']
-    else:
-        return 'error: no session token provided'
-
-    user = User.query.filter_by(git_token=session_token).first()
-
-    if not user:
-        return "No user found", 403
-    else:
-        user_name = user.user_repo
-
-    path = os.path.join(REPOS_ROOT, user_name)
-
-    return git_commit_push.commit_push(path)
-
-
-# @app.route('/api/v1/reclone', methods=['GET'])
-# def api_repo_reclone():
-#     # This one is for recloning from within the container
-#     """This function takes token as the request argument parses to get username after which it removes the repo and clones it again 
-#
-#     Returns:
-#         _type_: _description_
-#     """
-#
-#     if 'token' in request.args:
-#         session_token = request.args['token']
-#     else:
-#         return 'error: no session token provided'
-#
-#     user = User.query.filter_by(git_token=session_token).first()
-#
-#     if not user:
-#         return "No user found", 403
-#     else:
-#         user_name = user.user_repo
-#
-#     path = os.path.join(REPOS_ROOT, user_name)
-#
-#     force = False
-#     if 'force' in request.args:
-#         if 'true' == request.args['force'].lower():
-#             force = True  
-#
-#     return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
-
-
-@app.route('/api/v1/clone_jwt', methods=['GET'])
-@jwt_required()
-def api_repo_clone_jwt():
-    # @ user_name
-    # @ [force]
-    if 'user_name' in request.args:
-        user_name = request.args['user_name']
-    else:
-        return 'error: no user specified'
-
-    force = False
-    if 'force' in request.args:
-        if 'true' == request.args['force'].lower():
-            force = True
-
-    return git_clone.clone(CLONING_ROOT + user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
-
-
-@app.route('/api/v1/commit_push_jwt', methods=['GET'])
-@jwt_required()
-def api_repo_commit_push_jwt():
-    # This one is for committing from the web
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(id=current_user).first()
-    path = os.path.join(REPOS_ROOT, user.user_repo)
-
-    return git_commit_push.commit_push(path)
-
-
-def check_project(project_name: str):
-    """Checks if repo exists, if not then creating it
-
-    Args:
-        project_name (str): user name
-
-    Returns:
-        str: status
-    """
-    url = "https://gitlab.ut.ee/api/v4/projects"
-    project_path = project_name
-    description = f"Project of the user: {project_name}"
-
-    payload = json.dumps({
-        "name": project_name,
-        "description": description,
-        "path": project_path,
-        "initialize_with_readme": "true",
-        "namespace_id": "1483" # this is a hardcoded gitlab group namespace ID
-    })
-    headers = {
-        'Authorization': f'Bearer {TOKEN}',
-        'Content-Type': 'application/json',
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.json())
-
-    if isinstance(response.json(), dict):
-        resp = 'User exists' if response.json().get('message', 0) else 'User repo was created'
-    else:
-        resp = 'User exists'
-
-    return resp
-
-
-## Git end
-############################################
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")

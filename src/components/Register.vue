@@ -5,7 +5,7 @@
         <b-card>
           <b-form @submit="register">
             <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
-            <b-alert :show="showAlert" dismissible variant="success">Register successful. Check your email for confirmation.</b-alert>
+            <b-alert :show="showAlert" dismissible variant="success">Registration successful</b-alert>
             <b-form-group>
               <h3 class="text-center">Register</h3>
             </b-form-group>

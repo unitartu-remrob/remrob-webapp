@@ -13,9 +13,6 @@ class User(db.Model):
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean)
     role = db.Column(db.String(100))
-    git_token = db.Column(db.String(255))
-    user_repo = db.Column(db.String(255))
-    owncloud_id = db.Column(db.String(255))
 
 class Bookings(db.Model):
     __tablename__ = "bookings"
