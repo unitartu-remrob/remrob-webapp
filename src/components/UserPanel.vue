@@ -78,10 +78,7 @@ export default {
         getBookings: function() {
             this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`).then((res) => {
                 this.bookings = res.data.user_bookings
-                // this.bookings.forEach(item => {
-                //     item.start_time = item.start.slice(0, 16).replace("T", "  ")
-                //     item.end_time = item.end.slice(0, 16).replace("T", "  ")
-                // })
+
                 this.bookings.sort((a, b) => (b.id - a.id))
                 console.log(res.data)
             })			

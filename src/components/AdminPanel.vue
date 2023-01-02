@@ -24,9 +24,6 @@
 					<div class="ml-2">{{user}}</div>
 				</div>
 			</template>
-			<template v-slot:cell(alarm)="{ item: { issue, id } }">
-				<Exclamation class="exclm" variant="warning" v-if="issue" @click="clearIssue(id)" font-scale="2"/>
-			</template>
 			<template v-slot:cell(actions)="{ item: { running, inactive, disconnected, id } }">
 				<b-button class="mr-2" variant="success" :disabled="running" @click="startContainer(id)">Start</b-button>
 				<b-button class="mr-2" variant="warning" :disabled="inactive" @click="stopContainer(id)">Stop</b-button>
@@ -92,7 +89,7 @@ export default {
 				} else {
 					({ Status, StartedAt } = data.State);
 					const network = Object.keys(data.NetworkSettings.Networks)[0];
-					({ IPAddress } = data.NetworkSettings.Networks[network]) // what is this abomination :D
+					({ IPAddress } = data.NetworkSettings.Networks[network])
 				}
 				const running = (Status === "running"); // => stop active
 				const disconnected = (Status === "inactive"); // remove && start active
@@ -134,11 +131,6 @@ export default {
 				// this.ws.send("update")
             })
 		},
-		clearIssue: function(id) {
-			this.$api.put(`/api/v1/inventory/${id}`, { issue: false }).then((res) => {
-				// this.ws.send("update")
-            })
-		},
 		switchTab: function(sim) {
 			this.is_sim = sim
 			this.ws.close()
@@ -148,7 +140,7 @@ export default {
 		connectWs: function() {
 			console.log("connecting...")
 			const endpoint = (this.is_sim) ? "simulation" : "physbots";
-			const ws = new WebSocket(`${wsRootURL}/containers/live/${endpoint}`) // TODO: add cookie auth, headers not available
+			const ws = new WebSocket(`${wsRootURL}/containers/live/${endpoint}`)
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
 				console.log("PARSED", results)
@@ -181,8 +173,5 @@ export default {
 </script>
 
 <style scoped>
-	.exclm:hover {
-		transform: scale(1.2);
-		cursor: pointer;
-	}
+
 </style>

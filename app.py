@@ -628,7 +628,6 @@ def admins():
 ############################################
 
 load_dotenv("communication/.env")
-print(os.getenv("REPOS_ROOT"))
 REPOS_ROOT = os.getenv("REPOS_ROOT")
 CLONING_ROOT = os.getenv("CLONING_ROOT")
 TOKEN_NAME = os.getenv("TOKEN_NAME")

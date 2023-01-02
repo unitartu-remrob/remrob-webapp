@@ -1,9 +1,9 @@
-# app-remrob
+# Remrob frontend application
 
 ## Requirements
 
-* Python
-* Node.js and npm
+* Python3
+* Node v16.13.0 (npm v8.1.0)
 * PostgreSQL
 
 ## Frontend setup
