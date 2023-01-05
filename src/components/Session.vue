@@ -3,12 +3,12 @@
         <!-- <b-modal ok-title="Confirm" @ok="removeContainer" title="Remove workspace?" id="kill-modal">
             <h4>This will remove any unsaved changes</h4>
         </b-modal> -->
-        <b-modal ok-title="Confirm" @ok="yieldSession" title="Quit session" id="yield-modal">
+        <!-- <b-modal ok-title="Confirm" @ok="yieldSession" title="Quit session" id="yield-modal">
             <h4>Are you sure you want to surrender your slot?</h4>
-        </b-modal>
-        <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
+        </b-modal> -->
+        <!-- <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
-        </b-modal>
+        </b-modal> -->
         <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
             <h4>This will delete any unsaved work and give you a fresh start opportunity</h4>
         </b-modal>
