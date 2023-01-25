@@ -43,3 +43,9 @@ npm run dev-server
 ```
 npm start
 ```
+
+# Acknowledgments
+
+Completed with the support by IT Academy Programme of Education and Youth Board of Estonia.
+
+Valminud Haridus- ja Noorteameti IT Akadeemia programmi toel.
