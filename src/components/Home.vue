@@ -31,13 +31,17 @@
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/users.png')" title="Users">
                     <b-card-text>Edit users roles or activate/deactivate accounts</b-card-text>
-                    <b-button @click="$router.push({name: 'Users'})">View users</b-button>
+                    <Counter endpoint="users">
+                        <b-button @click="$router.push({name: 'Users'})">View users</b-button>
+                    </Counter>
                 </b-card>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/admin_panel.png')" title="Admin Panel">
                     <b-card-text>Admin Panel</b-card-text>
-                    <b-button @click="$router.push({name: 'AdminPanel'})">View panel</b-button>
+                    <Counter endpoint="inventory">
+                      <b-button @click="$router.push({name: 'AdminPanel'})">View panel</b-button>
+                    </Counter>
                 </b-card>
             </b-col>
         </b-row>
@@ -45,9 +49,10 @@
     </b-container>
 </template>
 
-<script>
+<script lang="js">
 import { mapGetters } from 'vuex';
 import UserPanel from './UserPanel';
+import Counter from './Counter';
 
 export default {
     name: "Home",
@@ -55,7 +60,8 @@ export default {
         ...mapGetters(["getUser"])
     },
     components: {
-        UserPanel
+        UserPanel,
+        Counter
     },
     mounted() {
 

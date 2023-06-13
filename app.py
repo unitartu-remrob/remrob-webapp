@@ -458,6 +458,7 @@ def unbook(user_id, slot_id):
 def new_simtainer():
     # Just an endpoint, so you don't have to manually fill the table
     # Currently a single server can handle max 9 containers, will have to adjust this table with a multi-server setup
+    args = request.args
     if request.method == "POST":
         Simtainers.query.delete()
         for i in range(9):
@@ -477,9 +478,12 @@ def new_simtainer():
                 "container_id": sim.container_id,
                 "slug": sim.slug,
                 "title": f"ROBOSIM-{sim.container_id}",
-                "vnc_uri": sim.vnc_uri
+                "vnc_uri": sim.vnc_uri,
+                "user": sim.user_id
             } for sim in sims
         ]
+        if args.get('user') == "true":
+            results = [sim for sim in results if sim["user"] != None]
         sorted_inv = sorted(results, key=lambda x: x['container_id'])
         return jsonify(sorted_inv), 200
 
@@ -487,6 +491,7 @@ def new_simtainer():
 @app.route("/api/v1/inventory", methods=["GET"])
 @admin_required()
 def inventory():
+    args = request.args
     inventory = Inventory.query.all()
     results = [
         {
@@ -497,9 +502,12 @@ def inventory():
             "status": inv.status,
             "project": inv.project,
             "cell": inv.cell,
-            "vnc_uri": inv.vnc_uri
+            "vnc_uri": inv.vnc_uri,
+            "user": inv.user_id,
         } for inv in inventory
     ]
+    if args.get('user') == "true":
+        results = [item for item in results if item["user"] != None]
     sorted_inv = sorted(results, key=lambda x: x['robot_id'])
     return jsonify(sorted_inv), 200
 
@@ -571,6 +579,7 @@ def update_inventory(inv_id):
 @admin_required()
 def users():
     if request.method == "GET":
+        args = request.args
         users = User.query.order_by(User.id.asc()).all()
         results = [
             {
@@ -582,6 +591,8 @@ def users():
                 "role": user.role
             } for user in users
         ]
+        if args.get('active') == "false":
+            results = [user for user in results if not user["active"]]
         return jsonify(results), 200
 
     elif request.method == "PUT":

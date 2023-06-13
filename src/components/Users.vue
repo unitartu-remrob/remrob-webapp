@@ -51,13 +51,12 @@ export default {
     },
     methods: {
         getUsers: function() {
-          this.$api.get("/api/v1/users").then((res) => {
+            this.$api.get("/api/v1/users").then((res) => {
                 this.users = res.data
-                this.usersCopy = res.data
             })
         },
         deleteUser: function(id) {
-          this.$api.delete(`/api/v1/users/${id}`).then((res) => {
+            this.$api.delete(`/api/v1/users/${id}`).then((res) => {
                 this.message = res.data
                 this.showAlert = true;
                 this.getUsers()
