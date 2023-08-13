@@ -4,6 +4,7 @@ from datetime import timedelta, timezone, datetime, date
 from functools import wraps
 
 from flask import Flask, request, jsonify, render_template
+from sqlalchemy import text, cast, Date
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -325,19 +326,21 @@ def bookings_bulk():
     end_time = datetime.strptime(data["end"], date_format)
     while start_time < end_time:
         end = start_time + timedelta(minutes=int(data["interval"]))
-        if end > end_time:
-            end = end_time
-        booking = Bookings(
-            start_time=datetime.strftime(start_time, date_format),
-            end_time=datetime.strftime(end, date_format),
-            simulation=data["is_simulation"],
-            project=data["project"],
-            admin=data["admin"]
-        )
-        db.session.add(booking)
+        # if end > end_time:
+        #     end = end_time
+        for _ in range(int(data["nr_of_slots"])):
+            booking = Bookings(
+                start_time=datetime.strftime(start_time, date_format),
+                end_time=datetime.strftime(end, date_format),
+                simulation=data["is_simulation"],
+                project=data["project"],
+                admin=data["admin"]
+            )
+            # print("adding slot", data["nr_of_slots"])
+            db.session.add(booking)
         db.session.commit()
         # print((datetime.strftime(start_time, date_format), datetime.strftime(end, date_format)))
-        start_time = end
+        start_time = end + timedelta(minutes=int(data["downtime"]))
     return "Slots created", 200
 
 
@@ -422,6 +425,20 @@ def book_slot(id):
     else:
         return "Limit of active bookings reached", 400
 
+@app.route("/api/v1/bookings/delete", methods=["DELETE"])
+@admin_required()
+def delete_date():
+    data = request.get_json()
+    selected_day = data.get("selected_day")
+    # create a condition that checks if the start time has the same date as the selected day
+    bookings_to_delete = Bookings.query.filter(
+        cast(Bookings.start_time, Date) == selected_day
+    ).all()
+    for booking in bookings_to_delete:
+        db.session.delete(booking)
+    # deleted_count = Bookings.query.filter(cast(Bookings.start_time, Date) == selected_day).delete()
+    db.session.commit()
+    return "Day cleared", 200
 
 @app.route("/api/v1/bookings/delete/<id>", methods=["DELETE"])
 @admin_required()
@@ -600,7 +617,10 @@ def users():
         if "active" in data:
             user = User.query.get(data["id"])
             if not user.active and data["active"]:
-                send_activation_email(user.email)
+                try:
+                    send_activation_email(user.email)
+                except:
+                    print("Email failed to send, but account will still be activated")
             user.active = data["active"]
             db.session.commit()
             return "User active status updated", 200

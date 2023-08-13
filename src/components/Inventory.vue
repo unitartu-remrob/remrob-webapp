@@ -1,6 +1,6 @@
 <template>
     <b-container fluid>
-        <b-row>
+        <b-row class="mt-3">
             <b-col>
                 <b-form>
                     <b-form-group label="Robot ID">

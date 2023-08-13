@@ -1,45 +1,72 @@
 <template>
     <b-container fluid>
-        <b-modal centered hide-footer title="Choose creation type" id="type-modal">
+        <b-modal centered hide-footer title="Choose creation mode" id="type-modal">
             <div class="text-center">
                 <b-button @click="$bvModal.hide('type-modal'); $bvModal.show('slot-modal')" class="m-3">Single slot creation</b-button>
-                <br>
                 <b-button @click="$bvModal.hide('type-modal'); $bvModal.show('bulk-modal')" class="m-3">Bulk slot creations</b-button>
+                <div class="d-flex flex-column align-items-end mt-3">
+                    <b-button @click="$bvModal.hide('type-modal'); $bvModal.show('delete-modal-date')" variant="outline-danger" pill size="sm">Delete all</b-button>
+                </div>
             </div>
         </b-modal>
         <b-modal title="Create slots" @ok="createSlotsBulk" id="bulk-modal">
-            <b-form-group label="Start time">
-                <VueTimepicker manual-input v-model="start"></VueTimepicker>
+            <div class="px-2">
+            <b-form-group>
+                <b-row class="timepicker-row">
+                    <b-col cols="6">
+                        <label class="timepicker-label">Start time</label>
+                        <VueTimepicker manual-input v-model="start"></VueTimepicker>
+                    </b-col>
+                    <b-col cols="6">
+                        <label class="timepicker-label">End time</label>
+                        <VueTimepicker manual-input v-model="end"></VueTimepicker>
+                    </b-col>
+                </b-row>
+                <b-form-group class="mt-3" label="Session duration (minutes)">
+                    <b-form-input type="number" placeholder="1" v-model="interval"></b-form-input>
+                </b-form-group>
+                <b-form-group class="mt-3" label="Number of concurrent sessions">
+                    <b-form-input type="number" placeholder="1" v-model="nrOfSlots"></b-form-input>
+                </b-form-group>
+                <b-form-group class="mt-3" label="Downtime between sessions (minutes)">
+                    <b-form-input type="number" placeholder="0" v-model="downtime"></b-form-input>
+                    <div class="small mt-1">Adding pause between sessions will push the end time of the last session.</div>
+                </b-form-group>
+                
+                <b-form-group label="Item">
+                    <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
+                </b-form-group>
+                <!-- <b-form-group label="Admin">
+                    <b-form-checkbox-group v-model="selectedAdmin" :options="admins"></b-form-checkbox-group>
+                </b-form-group> -->
             </b-form-group>
-            <b-form-group label="End time">
-                <VueTimepicker manual-input v-model="end"></VueTimepicker>
-            </b-form-group>
-            <b-form-group label="Time interval (minutes)">
-                <b-form-input type="number" placeholder="1" v-model="interval"></b-form-input>
-            </b-form-group>
-            <b-form-group label="Item">
-                <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
-            </b-form-group>
-            <b-form-group label="Admin">
-                <b-form-checkbox-group v-model="selectedAdmin" :options="admins"></b-form-checkbox-group>
-            </b-form-group>
+            </div>
         </b-modal>
         <b-modal title="Create slot" @ok="createSlot" id="slot-modal">
-            <b-form-group label="Start time">
-                <VueTimepicker format="HH:mm" manual-input v-model="start"></VueTimepicker>
-            </b-form-group>
-            <b-form-group label="End time">
-                <VueTimepicker manual-input v-model="end"></VueTimepicker>
-            </b-form-group>
-            <b-form-group label="Item">
+            <div class="px-2">
+            <b-row class="timepicker-row">
+                <b-col cols="6">
+                    <label class="timepicker-label">Start time</label>
+                    <VueTimepicker manual-input v-model="start"></VueTimepicker>
+                </b-col>
+                <b-col cols="6">
+                    <label class="timepicker-label">End time</label>
+                    <VueTimepicker manual-input v-model="end"></VueTimepicker>
+                </b-col>
+            </b-row>
+            <b-form-group class="mt-3" label="Item">
                 <b-form-select v-model="selectedInventory" :options="inventory"></b-form-select>
             </b-form-group>
-            <b-form-group label="Admin">
+            <!-- <b-form-group label="Admin">
                 <b-form-checkbox-group v-model="selectedAdmin" :options="admins"></b-form-checkbox-group>
-            </b-form-group>
+            </b-form-group> -->
+            </div>
         </b-modal>
         <b-modal ok-title="Confirm" @ok="deleteSlot" title="Delete the slot" id="delete-modal">
             <h4>Are you sure you want to delete this slot?</h4>
+        </b-modal>
+        <b-modal ok-title="Confirm" @ok="deleteDate" title="Clear all slots of the day" id="delete-modal-date">
+            <h4>Are you sure you want to delete all of this day's slots?</h4>
         </b-modal>
         <div class="m-3">
             <FullCalendar :options="calendarOptions" />
@@ -73,6 +100,8 @@ export default {
                     right: "dayGridMonth,timeGridWeek,timeGridDay",
                 },
                 initialView: "dayGridMonth",
+                locale: 'en-GB',
+                firstDay: 1,
                 displayEventTime: true,
                 displayEventEnd: true,
                 editable: false,
@@ -99,6 +128,8 @@ export default {
             selectedSlot: null,
             inventory: [],
             interval: 30,
+            downtime: 0,
+            nrOfSlots: 1,
             admins: [],
             selectedAdmin: []
         };
@@ -180,6 +211,8 @@ export default {
                 "interval": this.interval,
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation,
+                "nr_of_slots": this.nrOfSlots,
+                "downtime": this.downtime,
                 "admin": this.selectedAdmin.join(", ")
             }
             this.$api.post("/api/v1/bookings/bulk", slotData).then((res) => {
@@ -187,7 +220,16 @@ export default {
             });
 
         },
-
+        deleteDate: function() {
+            console.log(this.selectedDate)
+            this.$api.delete(`/api/v1/bookings/delete`, {
+                data: {
+                    "selected_day": this.selectedDate
+                }
+            }).then((res) => {
+                this.getAllSlots()
+            });
+        },
         deleteSlot: function() {
             this.$api.delete(`/api/v1/bookings/delete/${this.selectedSlot}`).then((res) => {
                 this.getAllSlots()
@@ -223,4 +265,18 @@ export default {
 .tooltip-inner {
     white-space: pre-wrap;
 }
+
+.timepicker-label {
+  margin-bottom: 3px;
+}
+/* 
+.timepicker-row {
+  margin-right: -5px;
+  margin-left: -5px;
+} */
+
+/* .timepicker-row > .col-6 {
+  padding-right: 5px;
+  padding-left: 5px;
+} */
 </style>

@@ -23,10 +23,11 @@
           <b-nav vertical>
             <b-nav-item to="/booking">Booking</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/createSlot">Create slots</b-nav-item>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/inventory">Create inventory</b-nav-item>
+            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/inventory">Manage inventory</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/users">Users</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/admin-panel">Admin panel</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" href="http://remrob.ut.ee/cam/" target="_blank">Camera dashboard</b-nav-item>
+            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" href="/containers/guide">Administration guide</b-nav-item>
           </b-nav>
         </nav>
       </b-sidebar>

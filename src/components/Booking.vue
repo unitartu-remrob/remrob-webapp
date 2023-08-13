@@ -6,7 +6,14 @@
         <b-modal ok-title="Confirm" @ok="bookSlot" title="Book the slot" id="booking-modal">
             <h4>Are you sure you want to book this slot?</h4>
         </b-modal>
-        <b-alert class="m-2" :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged" variant="danger">{{errorMessage}}</b-alert>
+        <b-alert class="m-2"
+            :show="dismissCountDown"
+            dismissible
+            @dismissed="dismissCountDown=0"
+            @dismiss-count-down="countDownChanged"
+            variant="danger"
+        >{{errorMessage}}
+        </b-alert>
         <b-row class="text-center m-3">
             <b-col>
                 <FullCalendar :options="calendarOptions" />
@@ -39,6 +46,8 @@ export default {
                     right: "dayGridMonth,timeGridWeek,timeGridDay",
                 },
                 initialView: "dayGridMonth",
+                locale: 'en-GB',
+                firstDay: 1,
                 displayEventTime: true,
                 displayEventEnd: true,
                 editable: false,

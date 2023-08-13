@@ -23,8 +23,8 @@
                 </b-card>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card img-fluid class="text-center" :img-src="require('../assets/inventory.png')" title="Create inventory">
-                    <b-card-text>Create inventory for robots and containers</b-card-text>
+                <b-card img-fluid class="text-center" :img-src="require('../assets/inventory.png')" title="Manage inventory">
+                    <b-card-text>Manage robot placement and access</b-card-text>
                     <b-button @click="$router.push({name: 'Inventory'})">View inventory</b-button>
                 </b-card>
             </b-col>  
@@ -38,7 +38,7 @@
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/admin_panel.png')" title="Admin Panel">
-                    <b-card-text>Admin Panel</b-card-text>
+                    <b-card-text>Monitor user sessions</b-card-text>
                     <Counter endpoint="inventory">
                       <b-button @click="$router.push({name: 'AdminPanel'})">View panel</b-button>
                     </Counter>
