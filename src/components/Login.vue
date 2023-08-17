@@ -1,9 +1,9 @@
 <template>
-  <b-container>
+  <div class="login-container">
     <b-row align-h="center">
       <b-col style="max-width: 35rem; margin-top: 10%;">
-        <b-card>
-          <b-form>
+        <b-card class="login-box">
+          <b-form class="login-form">
             <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
             <b-form-group>
               <h3 class="text-center">Login</h3>
@@ -23,7 +23,7 @@
         </b-card>
       </b-col>
     </b-row>
-  </b-container>
+  </div>
 </template>
 
 <script>
@@ -70,5 +70,37 @@ export default {
 </script>
 
 <style scoped>
+.login-container {
+  background-image: url('../assets/login_bg.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  height: 94.35vh;
+}
+
+.login-box {
+  box-shadow: 9px 13px 52px 13px rgba(0,0,0,0.18);
+  border-radius: 15px;
+}
+
+.login-form {
+  padding: 0.25rem 0.75rem;
+}
+
+@media (max-width: 768px) {
+  /* Remove background image on mobile */
+  .login-container {
+    background-image: none;
+  }
+  .login-box {
+    box-shadow: none;
+  }
+  .login-form {
+    padding: 0;
+  }
+}
 
 </style>
