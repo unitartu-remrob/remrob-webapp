@@ -40,10 +40,10 @@
                         <b-spinner v-if="purging" small></b-spinner>
                         Delete
                     </b-button>
-                    <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
+                    <!-- <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
                         <b-spinner v-if="submitting" small></b-spinner>
                         Submit code
-                    </b-button>              
+                    </b-button>               -->
                     <!-- <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
                         <b-spinner v-if="saving" small></b-spinner>
                         Save environment

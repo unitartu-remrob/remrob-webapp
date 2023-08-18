@@ -1,6 +1,6 @@
 <template>
-    <b-container fluid>
-        <b-alert :show="showAlert" dismissible variant="success">{{message}}</b-alert>
+    <b-container fluid class="mt-3">
+        <b-alert :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged" :variant="alertType" class="alert-float">{{message}}</b-alert>
         <b-modal ok-title="Confirm" @ok="deleteUser(selectedForDelete)" title="Delete user" id="delete-modal">
             <h4>Are you sure you want to delete this user?</h4>
         </b-modal>
@@ -38,11 +38,14 @@ export default {
                 {key: "actions", label: "Actions"}
             ],
             roles: [
-                {value: "ROLE_ADMIN", text: "ROLE_ADMIN"},
-                {value: "ROLE_LEARNER", text: "ROLE_LEARNER"}
+                {value: "ROLE_ADMIN", text: "ADMIN"},
+                {value: "ROLE_LEARNER", text: "ROS apprentice"}
             ],
             message: "",
             showAlert: false,
+            dismissSec: 3,
+            dismissCountDown: 0,
+            alertType: "",
             selectedForDelete: null
         }
     },
@@ -58,7 +61,8 @@ export default {
         deleteUser: function(id) {
             this.$api.delete(`/api/v1/users/${id}`).then((res) => {
                 this.message = res.data
-                this.showAlert = true;
+                this.alertType = "info"
+                this.dismissCountDown = this.dismissSec;
                 this.getUsers()
             })
         },
@@ -66,7 +70,9 @@ export default {
             const data = { id, active }
             this.$api.put("/api/v1/users", data).then((res) => {
                 this.message = res.data
-                this.showAlert = true;
+                // this.showAlert = true;
+                this.alertType = active ? "success" : "warning";
+                this.dismissCountDown = this.dismissSec;
             })
 
         },
@@ -74,9 +80,12 @@ export default {
             const data = {id, role}
             this.$api.put("/api/v1/users", data).then((res) => {
                 this.message = res.data;
-                this.showAlert = true;
+                this.dismissCountDown = this.dismissSec;
             })
         }
+    },
+    countDownChanged(dismissCountDown) {
+      this.dismissCountDown = dismissCountDown
     },
 
     created() {
@@ -87,5 +96,13 @@ export default {
 </script>
 
 <style>
+.alert-float {
+  position: fixed !important;
+  top: 80px; /* Adjust top position as needed */
+  left: 400px; /* Adjust right position as needed */
+  right: 500px;
+  border-radius: 20px !important;
+  z-index: 1010; /* Adjust z-index as needed */
+}
 
 </style>

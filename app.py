@@ -153,17 +153,20 @@ def login():
     if not user:
         return "User not found", 400
 
-    if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")) and user.active:
-        additional_claims = {"is_administrator": user.role == "ROLE_ADMIN"}
+    if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
+        if user.active:
+            additional_claims = {"is_administrator": user.role == "ROLE_ADMIN"}
 
-        access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
-        refresh_token = create_refresh_token(identity=user.id, additional_claims=additional_claims)
+            access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
+            refresh_token = create_refresh_token(identity=user.id, additional_claims=additional_claims)
 
-        response = jsonify(access_token=access_token, user_id=user.id, role=user.role)
-        set_refresh_cookies(response, refresh_token)
-        return response, 200
+            response = jsonify(access_token=access_token, user_id=user.id, role=user.role)
+            set_refresh_cookies(response, refresh_token)
+            return response, 200
+        else:
+            return "Your account has not been activated yet", 403
     else:
-        return "User not active or wrong credentials", 400
+        return "Invalid password", 400
 
 
 @app.route("/api/v1/refresh-token", methods=["POST"])
@@ -547,7 +550,7 @@ def new_inventory():
             slug=f"robo-{id}",
             project='default',
             cell=0,
-            status=True
+            status=False
         )
         db.session.add(inventory)
         db.session.commit()
@@ -589,7 +592,7 @@ def update_inventory(inv_id):
     elif is_admin and request.method == "DELETE":
         Inventory.query.filter(Inventory.slug == inv_id).delete()
         db.session.commit()
-        return "Record deleted successfully", 200
+        return "Item deleted successfully", 200
 
 
 @app.route("/api/v1/users", methods=["GET", "PUT"])
@@ -623,7 +626,10 @@ def users():
                     print("Email failed to send, but account will still be activated")
             user.active = data["active"]
             db.session.commit()
-            return "User active status updated", 200
+            if user.active:
+                return f"{user.first_name} {user.last_name} account activated", 200
+            else:
+                return f"{user.first_name} {user.last_name} account deactivated", 200
         if "role" in data:
             user = User.query.get(data["id"])
             user.role = data["role"]
@@ -637,7 +643,7 @@ def delete_user(id):
     user = User.query.get(id)
     db.session.delete(user)
     db.session.commit()
-    return "User deleted", 200
+    return f"User {user.first_name} {user.last_name} has been removed", 200
 
 
 @app.route("/api/v1/admins", methods=["GET"])

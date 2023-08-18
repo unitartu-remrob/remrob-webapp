@@ -1,5 +1,9 @@
 <template>
-    <b-container fluid>
+    <b-container fluid class="mt-3">
+        <b-alert :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged" :variant="alertType">{{message}}</b-alert>
+        <b-modal ok-title="Confirm" @ok="deleteInventory(selectedForDelete)" title="Delete user" id="delete-modal">
+            <h4>Are you sure you want to remove this inventory item?</h4>
+        </b-modal>
         <b-row class="mt-3">
             <b-col>
                 <b-form>
@@ -16,7 +20,7 @@
             <b-col>
                 <b-table striped :items="inventory" :fields="fields">
                     <template #cell(delete)="{ item: { slug } }">
-                        <b-button type="button" class="delete-button" variant="dark" @click="deleteInventory(slug)">Remove</b-button>
+                        <b-button type="button" class="delete-button" variant="dark" @click="function() {selectedForDelete = slug; $bvModal.show('delete-modal')}">Remove</b-button>
                     </template>
                     <template #cell(project)="{ item }">
                         <InventoryInput :inventoryItem="item" @update="updateInventory"/>
@@ -25,7 +29,7 @@
             </b-col>
         </b-row>
         <b-row>
-            <b-col class="d-flex justify-content-center mt-2">
+            <b-col class="d-flex justify-content-center mt-3">
                 <b-img style="max-width: 20vw" :src="require('../assets/field_plan.jpg')"></b-img>
             </b-col>
         </b-row>
@@ -46,8 +50,13 @@ export default {
                 // { key: "location", label: "Workcell" },
                 { key: "project", label: "Change settings" },              
                 // { key: "status", label: "Available" },
-                { key: "delete", label: ""}
-            ]
+                { key: "delete", label: ""},
+            ],
+            selectedForDelete: null,
+            message: "",
+            dismissSec: 3,
+            dismissCountDown: 0,
+            alertType: "",
         }
     },
     components: {
@@ -73,13 +82,18 @@ export default {
             }
             this.$api.post(`/api/v1/inventory`, data).then((res) => {
                 this.robotId = null;
+                this.message = res.data;
+                this.alertType = "success";
+                this.dismissCountDown = this.dismissSec;
                 this.getInventory()
             })
         },
         deleteInventory: function(id) {
             this.inventory = this.inventory.filter(item => item.slug !== id)
             this.$api.delete(`/api/v1/inventory/${id}`).then((res) => {
-                console.log("Item deleted")
+                this.message = res.data;
+                this.alertType = "info";
+                this.dismissCountDown = this.dismissSec;
             })
         },
         updateInventory: function(item) {
@@ -89,7 +103,9 @@ export default {
                 "status": item.status
 			}
             this.$api.put(`/api/v1/inventory/${item.slug}`, data).then((res) => {
-				
+				this.message = res.data;
+                this.alertType = "success";
+                this.dismissCountDown = this.dismissSec;
 			})
 		}
     },
