@@ -87,10 +87,6 @@ export default {
     overflow-x: hidden;
   }
 
-  a {
-    background-color: transparent !important;
-  }
-
   .b-sidebar .nav-item > a {
     color: white !important;
   }

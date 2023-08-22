@@ -175,18 +175,14 @@ export default {
 }
 
 .editorial {
-  /* display: flex; */
-  /* max-width: 85%; */
-  /* justify-content: center; */
   position: relative;
   top: -15rem;
   left: 25%;
 }
 
-.save-board-btn {
-  /* position: relative;
-  top: -4rem;
-  right: -64% */
+.editorial a,
+.remrob-info a {
+  background-color: transparent !important;
 }
 
 .post-controls {
