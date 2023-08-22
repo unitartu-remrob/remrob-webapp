@@ -3,6 +3,8 @@
         <!-- <b-modal ok-title="Confirm" @ok="removeContainer" title="Remove workspace?" id="kill-modal">
             <h4>This will remove any unsaved changes</h4>
         </b-modal> -->
+        <div class="bg-main"
+        :class="is_sim ? 'vr-cell' : 'bg-cell'"></div>
         <b-modal ok-title="Confirm" @ok="yieldSession" title="Quit session" id="yield-modal">
             <h4>Are you sure you want to surrender your slot?</h4>
         </b-modal>
@@ -15,12 +17,12 @@
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
 		<b-row v-if="this.is_loaded">
             <b-col class="info text-center">
-                <h1>{{message}}</h1>
+                <h2>{{message}}</h2>
                 <div :key="timerKey">
                     <h3 class="mt-4">Time left: <strong>{{ this.booking.displayTime }}</strong></h3>
                 </div>
                 <div class="controls">
-                    <p class="h2 mb-5">Session status: <strong>{{containerState.Status}}</strong></p>
+                    <p class="h3 mb-4">Session status: <strong>{{containerState.Status}}</strong></p>
                     <!-- <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
                     </b-form-checkbox> -->
@@ -71,9 +73,13 @@
                 </iframe> -->
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
+            <div v-else class="simbot">
+                <b-img :src="require('../assets/robotont-sim.png')"></b-img>
+            </div>
         </div>
-        <div class="session" v-if="this.is_loaded">
+        <div class="session" v-if="this.is_loaded" :style="is_sim ? 'top: 7rem;' : ''">
             <Desktop :started="started" :source="vnc_uri" />
+            <!-- <b-img class="keyboard" :src="require('../assets/keyb.png')"></b-img> -->
         </div>
     </b-container>
 </template>
@@ -289,16 +295,53 @@ export default {
 
 <style scoped>
 .info {
-    margin-top: 8rem;
+    margin-top: 7rem;
+    margin-left: 8rem;
+    padding: 3rem 1.5rem;
+    background: white;
+    border-radius: 1.2rem;
+    border: 2px solid rgb(22, 20, 20);
+    max-width: 42%;
 }
 .controls {
-    margin-top: 3rem;
+    margin-top: 2rem;
 }
 .session {
     /* This styling is a mess */
+    position: fixed;
     transform: translateX(29rem) scale(0.58);
-    margin-top: -56rem;
+    right: 6rem;
+    top: 4rem;
+    left: 0;
+    bottom: 0;
 }
+
+.vr-cell {
+    background-image: url('../assets/mesh_bg.jpg');
+}
+
+.simbot {
+    position: fixed;
+    left: 20%;
+    top: 70%;
+}
+
+.simbot img {
+    width: 110%;
+    height: auto;
+}
+
+.keyboard {
+    position: fixed;
+    right: 35%;
+    bottom: -25%;
+    width: 40%;
+    height: auto;
+    transform: skew(-32deg, 16deg);
+    z-index: 2;
+    opacity: 0.85;
+}
+
 .yield {
     position: absolute;
     right: 10rem;
@@ -307,7 +350,7 @@ export default {
     border: 2px solid rgb(201, 204, 37);
 }
 .room {
-    height: 22rem;
+    height: 20rem;
     margin: 2rem 4rem;
     width: 42vw;
     /* border: 2px solid black; */

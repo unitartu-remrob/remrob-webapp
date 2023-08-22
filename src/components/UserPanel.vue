@@ -128,11 +128,12 @@ export default {
 
 .panel-title {
     position: absolute;
-    top: -2.3rem;
+    top: -1.9rem;
     left: calc(-4rem - 6rem);
     padding: 1.1rem 3.5rem;
     background-color: #cfaa05;
     color: white;
+    font-size: 2rem;
     font-weight: 600;
     z-index: 50;
     box-shadow: -13px -23px 133px -22px rgba(0,0,0,0.75);
