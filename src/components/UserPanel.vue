@@ -130,7 +130,7 @@ export default {
     position: absolute;
     top: -2.3rem;
     left: calc(-4rem - 6rem);
-    padding: 1.1rem 4rem;
+    padding: 1.1rem 3.5rem;
     background-color: #cfaa05;
     color: white;
     font-weight: 600;

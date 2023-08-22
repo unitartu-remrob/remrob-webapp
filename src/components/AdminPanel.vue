@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="bg-white mt-4" style="max-width: 95%; margin: auto; padding: 0.75rem; border-radius: 1.5rem">
+    <b-container fluid class="bg-white mt-4" style="max-width: 95%; margin: auto; padding: 0.75rem 1rem; border-radius: 0.5rem">
 		<div class="bg-main"></div>
         <b-tabs card>
 			<b-tab title="Containers"  @click="switchTab(sim=false)" active>

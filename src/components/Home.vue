@@ -7,7 +7,7 @@
             <b-col sm v-if="getUser.role == 'ROLE_LEARNER'">
                 <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('../assets/calendar.png')">
                     <b-card-text style="font-size: 1.5rem">Find a time to access our robots and simulation environments!</b-card-text>
-                    <b-button @click="$router.push({name: 'Booking'})" size="lg">Go to reservation</b-button>
+                    <b-button @click="$router.push({name: 'Booking'})" size="lg" variant="">Go to reservation</b-button>
                 </b-card>
             </b-col>
             <b-col v-if="getUser.role == 'ROLE_LEARNER'">
@@ -146,10 +146,15 @@ export default {
 
 @media screen and (min-width: 601px) {
     .admin-menu .booking-card {
+        align-items: center;
         max-width: 22vw;
         margin: 0 0 0 4rem;
-        padding: 1.8rem 2rem;
+        padding: 1.6rem 2rem;
         background-color: rgba(255, 255, 255, 0.9);
+    }
+    .booking-card .card-img {
+        width: 75%;
+        
     }
 }
 

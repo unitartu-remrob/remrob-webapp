@@ -30,7 +30,9 @@
             :disabled="activeItem === null"
             @click="$bvModal.show('delete-modal')">Delete post</b-button>
           <b-button class="save-board-btn" type="button" variant="success" @click="updateNews()">Save post</b-button>
-          <b-button class="save-board-btn" type="button" variant="primary" @click="createPost()">Create new post</b-button>
+          <b-button class="save-board-btn" type="button" variant="primary"
+            :disabled="activeItem === null"
+            @click="createPost()">Create new post</b-button>
           <b-button class="save-board-btn" type="button" variant="info"
             :disabled="activeItem === null"
             @click="setPost()">Set as active post</b-button>
