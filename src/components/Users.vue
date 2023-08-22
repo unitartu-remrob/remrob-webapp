@@ -1,5 +1,6 @@
 <template>
-    <b-container fluid class="mt-3">
+    <b-container fluid class="pt-3">
+        <div class="text-center panel-title">Remrob userbase</div>
         <b-alert :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged" :variant="alertType" class="alert-float">{{message}}</b-alert>
         <b-modal ok-title="Confirm" @ok="deleteUser(selectedForDelete)" title="Delete user" id="delete-modal">
             <h4>Are you sure you want to delete this user?</h4>

@@ -229,6 +229,69 @@ def user_owncloud():
         link = os.getenv("OWNCLOUD_VIEW_URL") + user.owncloud_id
         return link, 200
 
+@app.route("/api/v1/newsboard", methods=["GET", "POST", "DELETE", "PUT"])
+@jwt_required()
+def newsboard():
+    if request.method == "GET":
+        latest = request.args.get("latest")
+        print(latest)
+        if latest == "true":
+            news = Newsboard.query.filter_by(active=True)
+        else:
+            news = Newsboard.query.all()
+            print(news)
+        if news:
+            results = [
+                {
+                    "id": item.id,
+                    "title": item.title,
+                    "content": item.content,
+                    "active": item.active
+                } for item in news
+            ]
+            return jsonify(results), 200
+        else:
+            return "No newsboard found", 404
+
+    elif request.method == "POST" and get_jwt()["is_administrator"]:
+        data = request.json
+        content = data["content"]
+        title = data["title"]
+        news = Newsboard(content=content, title=title, active=False)
+        db.session.add(news)
+        db.session.commit()
+        return "Newsboard post created", 200
+
+@app.route("/api/v1/newsboard/<post_id>", methods=["DELETE", "PUT"])
+@admin_required()
+def newsboard_update(post_id):
+    if request.method == "PUT":
+        data = request.json
+        post = Newsboard.query.filter_by(id=post_id).first()
+        if post:
+            if "content" in data: post.content = data["content"]
+            if "title" in data: post.title = data["title"]
+            if "active" in data:
+                # Set the previous one to inactive
+                Newsboard.query.filter_by(active=True).update({"active": False})
+                # Activate latest
+                post.active = data["active"]
+            db.session.commit()
+            return "Newsboard item updated", 200
+        else:
+            return "Requested item not found", 404
+    
+    elif request.method == "DELETE":
+        post = Newsboard.query.filter_by(id=post_id).first()
+        if post:
+            db.session.delete(post)
+            db.session.commit()
+            return "Newsboard post deleted", 200
+        else:
+            return "Requested item not found", 404
+
+    else:
+        return "Unauthorized", 403
 
 @app.route("/api/v1/slots", methods=["GET"])
 @admin_required()

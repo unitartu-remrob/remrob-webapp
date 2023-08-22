@@ -21,11 +21,14 @@
       >
         <nav class="mb-3">
           <b-nav vertical>
-            <b-nav-item to="/booking">Booking</b-nav-item>
+            <b-nav-item to="/booking">Booking calendar</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/createSlot">Create slots</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/inventory">Manage inventory</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/users">Users</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/admin-panel">Admin panel</b-nav-item>
+            <br>
+            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/newsboard">Update newsboard</b-nav-item>
+            <br>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" href="http://remrob.ut.ee/cam/" target="_blank">Camera dashboard</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" href="/containers/guide">Administration guide</b-nav-item>
           </b-nav>
@@ -84,6 +87,10 @@ export default {
     overflow-x: hidden;
   }
 
+  a {
+    background-color: transparent !important;
+  }
+
   .b-sidebar .nav-item > a {
     color: white !important;
   }
@@ -93,5 +100,4 @@ export default {
     color: gray !important;
   }
 
- 
 </style>

@@ -1,18 +1,21 @@
 <template>
-    <b-container fluid class="mt-3">
-        <b-alert :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged" :variant="alertType">{{message}}</b-alert>
+    <b-container fluid class="pt-3 bg-white">
+        <b-alert :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" :variant="alertType">{{message}}</b-alert>
         <b-modal ok-title="Confirm" @ok="deleteInventory(selectedForDelete)" title="Delete user" id="delete-modal">
             <h4>Are you sure you want to remove this inventory item?</h4>
         </b-modal>
         <b-row class="mt-3">
             <b-col>
                 <b-form>
-                    <b-form-group label="Robot ID">
+                    <b-form-group label="Robotont nr.">
                         <b-form-input type="number" v-model="robotId">  
                         </b-form-input>
                     </b-form-group>
                     <b-button @click="createInventory">Submit</b-button>
                 </b-form>
+            </b-col>
+            <b-col>
+                <h1 class="text-center panel-title">Robot inventory</h1>
             </b-col>
         </b-row>
         <br>
@@ -29,8 +32,9 @@
             </b-col>
         </b-row>
         <b-row>
-            <b-col class="d-flex justify-content-center mt-3">
+            <b-col class="d-flex justify-content-center mt-3 align-items-center">
                 <b-img style="max-width: 20vw" :src="require('../assets/field_plan.jpg')"></b-img>
+                <h4>⬅️ Cell legend relative to door</h4>
             </b-col>
         </b-row>
     </b-container>
@@ -115,6 +119,10 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 
+
+.panel-title {
+    font-size: 2.8rem;
+}
 </style>

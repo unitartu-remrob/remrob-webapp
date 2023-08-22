@@ -58,3 +58,10 @@ class Cameras(db.Model):
 
     cell = db.Column('cell', db.Integer)
     ip = db.Column('camera_ip', db.String(100))
+
+class Newsboard(db.Model):
+    __tablename__ = "newsboard"
+    id = db.Column(db.Integer, primary_key = True)
+    title = db.Column('title', db.String(100))
+    content = db.Column('content', db.Text)
+    active = db.Column('active', db.Boolean)

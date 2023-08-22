@@ -10,6 +10,7 @@ import AdminPanel from  '../components/AdminPanel'
 import UserPanel from '../components/UserPanel'
 import Session from '../components/Session'
 import Users from '../components/Users.vue'
+import NewsboardEditorial from '../components/NewsboardEditorial.vue'
 import ForgotPassword from '../components/ForgotPassword.vue'
 import ResetPassword from '../components/ResetPassword.vue'
 import NotFound from '../components/Errors/404'
@@ -89,6 +90,16 @@ const routes = [
     path: '/users',
     name: 'Users',
     component: Users,
+    meta: {
+      isAuthenticated: true,
+      requiresAdmin: true
+    }
+  },
+
+  {
+    path: '/newsboard',
+    name: 'Newsboard',
+    component: NewsboardEditorial,
     meta: {
       isAuthenticated: true,
       requiresAdmin: true

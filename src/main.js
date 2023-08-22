@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import { BootstrapVue } from 'bootstrap-vue';
+import wysiwyg from "vue-wysiwyg";
 
 // import ErrorPage from 'vue-error-page';
 
@@ -28,6 +29,7 @@ Vue.config.productionTip = false
 // Vue.use(ErrorPage);
 
 Vue.use(BootstrapVue)
+Vue.use(wysiwyg, {})
 Vue.component('Justify', BIconJustify)
 Vue.component('CircleFill', BIconCircleFill)
 Vue.component('PersonFill', BIconPersonFill)

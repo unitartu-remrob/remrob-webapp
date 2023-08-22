@@ -4,7 +4,14 @@
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 4rem; height: 4rem;" type="grow" variant="info"></b-spinner></div>
         <b-row v-else>
             <b-col>
-                <b-table :items="bookings" :fields="fields" striped outlined head-variant="dark" :tbody-tr-class="rowClass">
+                <b-table
+                :items="bookings"
+                :fields="fields"
+                striped
+                outlined
+                head-variant="dark"
+                :tbody-tr-class="rowClass"
+                class="session-table">
                     <template v-slot:cell(join)="{ item }">
                         <b-button
                             :disabled="!item.isActive"
@@ -111,13 +118,30 @@ export default {
 <style scoped>
 .panel {
     margin-bottom: 5rem;
+    margin-top: 5rem;
     font-size: 1.2rem;
+    max-width: 85%;
+    padding: 0.5rem 3rem 1rem;
+    position: relative;
 }
 
+
 .panel-title {
-    font-size: 2.3rem;
-    margin: 2rem 1rem 1.5rem;
-    text-decoration: underline;
+    position: absolute;
+    top: -2.3rem;
+    left: calc(-4rem - 6rem);
+    padding: 1.1rem 4rem;
+    background-color: #cfaa05;
+    color: white;
+    font-weight: 600;
+    z-index: 50;
+    box-shadow: -13px -23px 133px -22px rgba(0,0,0,0.75);
+}
+
+.session-table {
+    background-color: white;
+    border: 0 !important;
+    box-shadow: 1px -1px 117px 3px rgba(0,0,0,0.75);
 }
 
 .loader {

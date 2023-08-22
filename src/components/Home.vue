@@ -1,6 +1,9 @@
 <template>
     <b-container fluid>
-        <b-row class="m-2">
+        <div
+        class="bg-main"
+        :class="getUser.role == 'ROLE_ADMIN' ? 'bg-main' : 'bg-cell'"></div>
+        <b-row class="admin-menu">
             <b-col sm v-if="getUser.role == 'ROLE_LEARNER'">
                 <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('../assets/calendar.png')">
                     <b-card-text style="font-size: 1.5rem">Find a time to access our robots and simulation environments!</b-card-text>
@@ -8,7 +11,7 @@
                 </b-card>
             </b-col>
             <b-col v-if="getUser.role == 'ROLE_LEARNER'">
-                <b-img class="robotont-swarm" :src="require('../assets/robotonts.png')"></b-img>
+                <InfoPanel/>
             </b-col>
             <!-- <b-col v-if="getUser.role == 'ROLE_LEARNER'">
                 <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/user_panel.png')" title="User Panel">
@@ -18,19 +21,19 @@
             </b-col> -->
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots">
-                    <b-card-text>Create slots for booking system</b-card-text>
-                    <b-button @click="$router.push({name: 'CreateSlot'})">Go create</b-button>
+                    <b-card-text>Create bookable time slots for learners.</b-card-text>
+                    <b-button @click="$router.push({name: 'CreateSlot'})">Slot creation calendar</b-button>
                 </b-card>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/inventory.png')" title="Manage inventory">
-                    <b-card-text>Manage robot placement and access</b-card-text>
+                    <b-card-text>Manage robot placement and access.</b-card-text>
                     <b-button @click="$router.push({name: 'Inventory'})">View inventory</b-button>
                 </b-card>
             </b-col>  
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/users.png')" title="Users">
-                    <b-card-text>Edit users roles or activate/deactivate accounts</b-card-text>
+                    <b-card-text>Edit users roles or activate/deactivate accounts.</b-card-text>
                     <Counter endpoint="users">
                         <b-button @click="$router.push({name: 'Users'})">View users</b-button>
                     </Counter>
@@ -38,7 +41,7 @@
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/admin_panel.png')" title="Admin Panel">
-                    <b-card-text>Monitor user sessions</b-card-text>
+                    <b-card-text>Monitor user sessions.</b-card-text>
                     <Counter endpoint="inventory">
                       <b-button @click="$router.push({name: 'AdminPanel'})">View panel</b-button>
                     </Counter>
@@ -53,6 +56,7 @@
 import { mapGetters } from 'vuex';
 import UserPanel from './UserPanel';
 import Counter from './Counter';
+import InfoPanel from './InfoPanel';
 
 export default {
     name: "Home",
@@ -61,7 +65,8 @@ export default {
     },
     components: {
         UserPanel,
-        Counter
+        Counter,
+        InfoPanel
     },
     mounted() {
 
@@ -78,15 +83,9 @@ export default {
 	align-items: center;
 }
 
-.booking-card {
-    border: 0 !important;
-    max-width: 25vw !important;
-    margin: 2rem 0 0 4rem;
-}
-
-.robotont-swarm {
-    padding-top: 10rem;
-    max-width: 60vw;
+.panel-title {
+    font-size: 2.3rem;
+    margin: 1rem 10rem 1.5rem;
 }
 
 .opaque {
@@ -97,7 +96,62 @@ export default {
     background-color: #fdfbe7 !important;
 }
 
+.bg-main {
+    background-image: url('../assets/login_bg.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center center; /* Adjust as needed */
+    background-attachment: fixed;
+    box-sizing: border-box;
+    position: fixed;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100%;
+    filter: blur(0.5px);
+    opacity: 0.9;
+}
 
+.bg-cell {
+    background-image: url('../assets/cell.jpg');
+}
+
+.admin-menu {
+    padding: 0.5rem;
+    position: relative;
+    margin: 2rem auto !important;
+    max-width: 85%;
+}
+
+.admin-menu .card {
+    background-color: rgba(255, 255, 255, 0.65);
+    border: 6px solid rgb(22, 20, 20);
+    border-radius: 2rem;
+    padding: 1rem;
+    height: 100%;
+}
+
+.admin-menu .card-title {
+    font-size: 1.6rem;
+    font-weight: bold;
+    /* margin-top: 4px; */
+}
+
+.admin-menu .card-text {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+@media screen and (min-width: 601px) {
+    .admin-menu .booking-card {
+        max-width: 22vw;
+        margin: 0 0 0 4rem;
+        padding: 1.8rem 2rem;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+}
 
 @media screen and (min-width: 601px) {
         .cardClass {
