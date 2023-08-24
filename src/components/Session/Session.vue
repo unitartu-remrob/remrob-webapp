@@ -12,7 +12,7 @@
             <h4>This will overwrite any previous save</h4>
         </b-modal>
         <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
-            <h4>This will delete any unsaved work and give you a fresh start opportunity</h4>
+            <h4>This will undo all system changes (except files stored in your catkin workspace)</h4>
         </b-modal>
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
 		<b-row v-if="this.is_loaded">
@@ -62,10 +62,10 @@
         <!-- <b-row v-if="this.is_loaded">
             <b-button class="ml-2 yield" variant="light" size="md" @click="$bvModal.show('yield-modal')">Yield slot</b-button>  
         </b-row> -->
-        <div class="room" v-if="this.is_loaded">
+        <b-row class="room" v-if="this.is_loaded">
             <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert>
             <div v-if="!is_sim" class="room-items">
-                <!-- <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('../assets/camera.png')">
+                <!-- <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('@/assets/camera.png')">
                     <b-button>Link to camera</b-button>
                 </b-card> -->
                 <!-- <iframe class="camera-stream"
@@ -74,19 +74,19 @@
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
             <div v-else class="simbot">
-                <b-img :src="require('../assets/robotont-sim.png')"></b-img>
+                <b-img :src="require('@/assets/robotont-sim.png')"></b-img>
             </div>
-        </div>
+        </b-row>
         <div class="session" v-if="this.is_loaded" :style="is_sim ? 'top: 7rem;' : ''">
             <Desktop :started="started" :source="vnc_uri" />
-            <!-- <b-img class="keyboard" :src="require('../assets/keyb.png')"></b-img> -->
+            <!-- <b-img class="keyboard" :src="require('@/assets/keyb.png')"></b-img> -->
         </div>
     </b-container>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import { getCountdown } from '../util/helpers'
+import { getCountdown } from '@/util/helpers'
 import Desktop from './Desktop.vue'
 import RobotStatus from './RobotStatus.vue'
 import { rootURL } from "@/util/api";
@@ -295,8 +295,9 @@ export default {
 
 <style scoped>
 .info {
-    margin-top: 7rem;
-    margin-left: 8rem;
+    position: absolute;
+    margin-top: 4%;
+    margin-left: 7.3%;
     padding: 3rem 1.5rem;
     background: white;
     border-radius: 1.2rem;
@@ -317,12 +318,12 @@ export default {
 }
 
 .vr-cell {
-    background-image: url('../assets/mesh_bg.jpg');
+    background-image: url('../../assets/mesh_bg.jpg');
 }
 
 .simbot {
     position: fixed;
-    left: 20%;
+    left: 15%;
     top: 70%;
 }
 
@@ -350,9 +351,13 @@ export default {
     border: 2px solid rgb(201, 204, 37);
 }
 .room {
-    height: 20rem;
+    /* height: 20%; */
     margin: 2rem 4rem;
-    width: 42vw;
+    /* padding-bottom: 10rem; */
+    width: 45%;
+    position: absolute;
+    left: 17%;
+    top: 62%;
     /* border: 2px solid black; */
 }
 

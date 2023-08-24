@@ -33,7 +33,7 @@
         </b-row>
         <b-row>
             <b-col class="d-flex justify-content-center mt-3 align-items-center">
-                <b-img style="max-width: 20vw" :src="require('../assets/field_plan.jpg')"></b-img>
+                <b-img style="max-width: 20vw" :src="require('@/assets/field_plan.jpg')"></b-img>
                 <h4>⬅️ Cell legend relative to door</h4>
             </b-col>
         </b-row>

@@ -19,6 +19,10 @@
             @click="switchActive(item)"
             >{{ item.title }}</b-dropdown-item>
         </b-dropdown>
+        <b-button class="save-board-btn mt-4" type="button" variant="info" size="lg"
+          :disabled="activeItem === null"
+          @click="setPost()">Set as active post</b-button>
+         <b-alert class="mt-4" style="z-index: 10;" :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" :variant="alertType">{{alertMessage}}</b-alert>
       </div>
       <b-form-group class="mt-3 post-controls">
         <div class="post-name-field">
@@ -26,22 +30,20 @@
           <b-form-input type="text" placeholder="Message name" v-model="postTitle"></b-form-input>
         </div>
         <div class="post-btn-container">
-          <b-button class="save-board-btn" type="button" variant="warning"
+          <b-button type="button" variant="warning"
             :disabled="activeItem === null"
             @click="$bvModal.show('delete-modal')">Delete post</b-button>
-          <b-button class="save-board-btn" type="button" variant="success" @click="updateNews()">Save post</b-button>
-          <b-button class="save-board-btn" type="button" variant="primary"
+          <b-button type="button" variant="primary"
             :disabled="activeItem === null"
             @click="createPost()">Create new post</b-button>
-          <b-button class="save-board-btn" type="button" variant="info"
-            :disabled="activeItem === null"
-            @click="setPost()">Set as active post</b-button>
+          <b-button type="button" variant="success" @click="updateNews()">Save post</b-button>
         </div>
       </b-form-group>
       <b-card class="resources">
-        <Newsboard :content="newsContent"/>
+        <template v-if=newsLoaded>
+          <Newsboard :content="newsContent"/>
+        </template>
       </b-card>
-      <b-alert :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" :variant="alertType">{{alertMessage}}</b-alert>
     </div>
   </div>
 </template>
@@ -64,6 +66,7 @@ export default {
       alertType: "",
       dismissSec: 3,
       dismissCountDown: 0,
+      newsLoaded: false,
       boardItems: [],
       activeItem: null,
       postTitle: ""
@@ -81,6 +84,7 @@ export default {
             // console.log("ACTIVE", this.activeItem)
             this.newsContent = this.activeItem.content;
             this.postTitle = this.activeItem.title;
+            this.newsLoaded = true;
           }
         } else {
           this.boardItems = [];
@@ -115,7 +119,6 @@ export default {
         }).then((res) => {
           this.alertMessage = `Message board item "${this.activeItem.title}" updated`;
           this.alertType = "success"; this.dismissCountDown = this.dismissSec;
-          this.fetchNews();
         }).catch((err) => {
           console.log(err);
         })
@@ -132,6 +135,8 @@ export default {
     },
     setPost: function() {
       this.$api.put(`/api/v1/newsboard/${this.activeItem.id}`, {
+        content: this.newsContent,
+        title: this.postTitle,
         active: true
       }).then((res) => {
         this.alertMessage = `Message board item "${this.activeItem.title}" is now active`;
@@ -156,30 +161,32 @@ export default {
 <style>
 @import "~vue-wysiwyg/dist/vueWysiwyg.css";
 
+.editorial {
+  position: relative;
+  margin-top: 3%;
+  left: 8%;
+}
+
 .admin-news {
     background-color: #fff;
-    width: 80%;
-    height: 25rem;
+    position: relative;
+    width: 43%;
+    /* height: 30rem; */
+    min-height: 29rem;
     border-radius: 2rem;
     padding: 2.5rem;
 }
 
 .message-picker {
-  position: relative;
-  float: right;
-  top: -2rem;
-  left: 20rem;
+  position: absolute;
+  /* float: right; */
+  bottom: 22%;
+  right: 17%;
   width: 40%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: column;
-}
-
-.editorial {
-  position: relative;
-  top: -15rem;
-  left: 25%;
 }
 
 .editorial a,
@@ -190,6 +197,8 @@ export default {
 .post-controls {
   display: block;
   padding-top: 1rem;
+  padding-bottom: 3rem;
+  max-width: 30%;
 }
 
 .post-name-field {
@@ -201,11 +210,18 @@ export default {
 
 .post-btn-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   align-items: center;
   position: relative;
   left: 14rem;
   width: 100%;
+}
+
+.save-board-btn {
+  font-weight: 700 !important;
+  padding: 0.5rem 1.5rem !important;
 }
 
 .editorial .dropdown-item {

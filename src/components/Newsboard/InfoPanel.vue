@@ -1,7 +1,9 @@
 <template>
-  <div class="remrob-info">
+  <div class="remrob-info robot-ground">
     <b-card class="resources">
-      <Newsboard :content="newsBoardText"/>
+      <template v-if=newsLoaded>
+        <Newsboard :content="newsBoardText"/>
+      </template>
     </b-card>
     <b-img class="robot-slide" :src="currentImage"></b-img>
   </div>
@@ -23,7 +25,8 @@ export default {
         require('@/assets/robotont-right.png'),
       ],
       currentIndex: 0,
-      newsBoardText: ""
+      newsBoardText: '',
+      newsLoaded: false
     };
   },
   computed: {
@@ -41,24 +44,28 @@ export default {
       clearInterval(this.imageRotationInterval);
     },
     fetchNews: function() {
-			this.$api.get("/api/v1/newsboard", {
+      this.$api.get("/api/v1/newsboard", {
         params: {
           latest: true
         }
       }).then((res) => {
-				const data = res.data;
+        const data = res.data;
         // take first active post
         this.newsBoardText = (data.length > 0) ? data[0].content : "";
-				console.log(data)
-			})
+        console.log("GOT NEWS", data[0].content)
+        console.log("IS equal", this.content === data[0].content)
+        this.newsLoaded = true;
+      })
 		}
   },
   mounted() {
-    
+    this.fetchNews();
+  },
+  beforeCreate() {
+
   },
   created() {
     this.startImageRotation();
-    this.fetchNews();
   },
   beforeDestroy() {
     this.stopImageRotation();
@@ -69,16 +76,16 @@ export default {
 <style>
 .robot-slide {
   position: fixed;
-  width: 255px;
-  /* bottom: 0; */
+  width: 15%;
   animation: drive 11s ease-in-out infinite;
-  z-index: -1;
-  right: 18rem;
+  /* z-index: -2; */
+  right: 18%;
+  z-index: 1;
   /* right: 1rem; */
 }
 
-.remrob-info {
-    padding-top: 20rem;
+.robot-ground {
+    padding-top: 30%;
     width: 50vw;
     /* max-width: 55vw; */
 }
@@ -92,14 +99,15 @@ export default {
   width: 25%;
   height: 30% !important;
   position: fixed;
-  top: 8rem;
-  right: 18rem;
+  top: 13%;
+  right: 15%;
   border: 2px solid rgb(22, 20, 20);
   border-radius: 8px;
 }
 
 .resources {
   transform: skewY(5deg) skewX(-2deg);
+  z-index: 0;
 }
 
 /* .news-text {

@@ -21,7 +21,7 @@
       >
         <nav class="mb-3">
           <b-nav vertical>
-            <b-nav-item to="/booking">Booking calendar</b-nav-item>
+            <b-nav-item to="/booking">Booking</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/createSlot">Create slots</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/inventory">Manage inventory</b-nav-item>
             <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/users">Users</b-nav-item>

@@ -6,7 +6,7 @@
         <b-row class="admin-menu">
             <b-col sm v-if="getUser.role == 'ROLE_LEARNER'">
                 <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('../assets/calendar.png')">
-                    <b-card-text style="font-size: 1.5rem">Find a time to access our robots and simulation environments!</b-card-text>
+                    <b-card-text style="font-size: 1.4rem">Find a time to access our robots and simulation environments!</b-card-text>
                     <b-button @click="$router.push({name: 'Booking'})" size="lg" variant="">Go to reservation</b-button>
                 </b-card>
             </b-col>
@@ -22,7 +22,7 @@
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots">
                     <b-card-text>Create bookable time slots for learners.</b-card-text>
-                    <b-button @click="$router.push({name: 'CreateSlot'})">Slot creation calendar</b-button>
+                    <b-button @click="$router.push({name: 'CreateSlot'})">Slot creation</b-button>
                 </b-card>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
@@ -56,7 +56,7 @@
 import { mapGetters } from 'vuex';
 import UserPanel from './UserPanel';
 import Counter from './Counter';
-import InfoPanel from './InfoPanel';
+import InfoPanel from './Newsboard/InfoPanel';
 
 export default {
     name: "Home",
@@ -71,7 +71,6 @@ export default {
     mounted() {
 
     },
-    
 }
 </script>
 
@@ -105,7 +104,7 @@ export default {
     background-attachment: fixed;
     box-sizing: border-box;
     position: fixed;
-    z-index: -1;
+    z-index: -5;
     top: 0;
     left: 0;
     height: 100vh;
@@ -121,7 +120,7 @@ export default {
 .admin-menu {
     padding: 0.5rem;
     position: relative;
-    margin: 2rem auto !important;
+    margin: 2rem auto 1rem !important;
     max-width: 85%;
 }
 
@@ -129,8 +128,8 @@ export default {
     background-color: rgba(255, 255, 255, 0.65);
     border: 6px solid rgb(22, 20, 20);
     border-radius: 2rem;
-    padding: 1rem;
-    height: 100%;
+    padding: 1rem 2rem;
+    height: calc(100% - 0.5rem);
 }
 
 .admin-menu .card-title {
@@ -151,6 +150,7 @@ export default {
         margin: 0 0 0 4rem;
         padding: 1.6rem 2rem;
         background-color: rgba(255, 255, 255, 0.9);
+        z-index: 30;
     }
     .booking-card .card-img {
         width: 75%;

@@ -118,22 +118,25 @@ export default {
 <style scoped>
 .panel {
     margin-bottom: 5rem;
-    margin-top: 5rem;
+    margin-top: 4rem;
     font-size: 1.2rem;
     max-width: 85%;
     padding: 0.5rem 3rem 1rem;
     position: relative;
+    z-index: 30;
 }
 
 
 .panel-title {
     position: absolute;
-    top: -1.9rem;
+    top: -1.6rem;
+    /* top: -5.6%; */
     left: calc(-4rem - 6rem);
-    padding: 1.1rem 3.5rem;
+    /* padding: 1.1rem 3.5rem; */
+    padding: 1.2% 4%;
     background-color: #cfaa05;
     color: white;
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 600;
     z-index: 50;
     box-shadow: -13px -23px 133px -22px rgba(0,0,0,0.75);

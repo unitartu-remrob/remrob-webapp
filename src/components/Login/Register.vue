@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <b-row align-h="end">
-      <b-col style="max-width: 35rem; margin: 7.3% 17.5%">
+      <b-col style="max-width: 35rem; margin: 5% 17.5%;">
         <b-card class="login-box">
           <b-form @submit="register" class="register-form p-1">
             <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
@@ -89,4 +89,7 @@ export default {
 
 <style scoped>
 
+.login-box {
+  padding: 0.2rem 1rem;
+}
 </style>

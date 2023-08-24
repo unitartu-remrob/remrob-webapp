@@ -1,7 +1,9 @@
 <template>
-	<vue-simple-scrollbar v-html="content">
-		
-	</vue-simple-scrollbar>
+	<div class="newtainer">
+		<vue-simple-scrollbar v-html="content">
+			
+		</vue-simple-scrollbar>
+	</div>
 </template>
 
 <script>
@@ -15,11 +17,6 @@ export default {
 		content: {
 			type: String,
 			default: ""
-		}
-	},
-	data: function() {
-		return {
-			
 		}
 	},
 	methods: {
@@ -41,7 +38,16 @@ export default {
 	line-height: 1.2rem;
 	overflow: auto;
 	overflow-x: hidden;
-	padding: 1.5rem 2rem;
+	padding: 3% 3.5% 4% 5%;
+	/* padding: 1.5rem 2rem; */
+}
+
+.newtainer {
+	height: 98%;
+}
+
+.ss-scroll {
+	/* opacity: 1; */
 }
 
 </style>

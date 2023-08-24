@@ -77,7 +77,7 @@ export default {
 
 <style>
 .login-container {
-  background-image: url('../assets/login_bg.jpg');
+  background-image: url('../../assets/login_bg.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
