@@ -1,17 +1,20 @@
 <template>
   <div id="app">
     <b-navbar toggleable="lg" type="dark" sticky variant="dark">
-      <Justify v-b-toggle.sidebar-backdrop v-if="$store.state.user !== null" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
+      <Justify v-b-toggle.sidebar-backdrop v-if="loggedIn" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
       <b-navbar-brand style="cursor:pointer" @click="$router.push({name:'Home'})">Remrob</b-navbar-brand>
-      <b-navbar-nav class="ml-auto">
-        <UserSubmissionLink v-if="$store.state.user !== null"/>
+      <b-navbar-nav v-if="loggedIn" class="ml-auto">
+        <b-nav-item v-if="isAdmin" to="/newsboard" class="admin-sc mr-3">
+          <b-button class="btn-dark" variant="light"><SignPost font-scale="1" class="mr-2"/>Update newsboard</b-button>
+        </b-nav-item>
+        <UserSubmissionLink />
         <b-nav-item>
-          <b-button v-if="$store.state.user !== null" @click="logout">Logout</b-button>
+          <b-button @click="logout">Logout</b-button>
         </b-nav-item>
       </b-navbar-nav>
     </b-navbar>
     <b-sidebar
-        v-if="$store.state.user !== null"
+        v-if="loggedIn"
         id="sidebar-backdrop"
         backdrop-variant="dark"
         backdrop
@@ -22,15 +25,13 @@
         <nav class="mb-3">
           <b-nav vertical>
             <b-nav-item to="/booking">Booking</b-nav-item>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/createSlot">Create slots</b-nav-item>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/inventory">Manage inventory</b-nav-item>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/users">Users</b-nav-item>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/admin-panel">Admin panel</b-nav-item>
-            <br>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" to="/newsboard">Update newsboard</b-nav-item>
-            <br>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" href="http://remrob.ut.ee/cam/" target="_blank">Camera dashboard</b-nav-item>
-            <b-nav-item v-if="getUser.role == 'ROLE_ADMIN'" href="/containers/guide">Administration guide</b-nav-item>
+            <b-nav-item v-if="isAdmin" to="/createSlot">Create slots</b-nav-item>
+            <b-nav-item v-if="isAdmin" to="/inventory">Manage inventory</b-nav-item>
+            <b-nav-item v-if="isAdmin" to="/users">Users</b-nav-item>
+            <b-nav-item v-if="isAdmin" to="/admin-panel">Admin panel</b-nav-item>
+            <b-nav-item v-if="isAdmin" to="/newsboard">Update newsboard</b-nav-item>
+            <b-nav-item v-if="isAdmin" href="http://remrob.ut.ee/cam/" target="_blank">Camera dashboard</b-nav-item>
+            <b-nav-item v-if="isAdmin" href="/containers/guide">Administration guide</b-nav-item>
           </b-nav>
         </nav>
       </b-sidebar>
@@ -53,7 +54,13 @@ export default {
     UserSubmissionLink
   },
   computed: {
-    ...mapGetters(["getUser"])
+    ...mapGetters(["getUser"]),
+    loggedIn: function() {
+      return this.getUser !== null;
+    },
+    isAdmin: function() {
+      return this.getUser.role === "ROLE_ADMIN";
+    }
   },
 
   methods: {
@@ -66,18 +73,9 @@ export default {
         this.$router.push({name: "Login"})
       })
     },
-    // getOwncloudLink: function() {
-    //   this.$store.state.header.Authorization = "Bearer " + this.getUser.access_token
-    //   axios.get(this.$store.state.baseURL + "/owncloud_link", {headers: this.$store.state.header}).then((res) => {
-    //     this.owncloud_active = true;
-    //     // this.owncloud_link =
-    //     console.log(res) 
-    //   }).catch(e => console.log(e))
-    // }
   },
   created() {
-    // this.getOwncloudLink();
-    // console.log(this.getUser)
+
   }
 }
 </script>
