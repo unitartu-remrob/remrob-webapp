@@ -729,75 +729,25 @@ def admins():
 
 load_dotenv("communication/.env")
 REPOS_ROOT = os.getenv("REPOS_ROOT")
-CLONING_ROOT = os.getenv("CLONING_ROOT")
+GITLAB_PROJECT_URL = os.getenv("GITLAB_PROJECT_URL")
+GITLAB_API_URL = os.getenv("GITLAB_API_URL")
 TOKEN_NAME = os.getenv("TOKEN_NAME")
 TOKEN = os.getenv("TOKEN")
 
 
-@app.route('/api/v1/check_user', methods=['GET'])
+@app.route('/api/v1/init_repo', methods=['POST'])
 @jwt_required()
-def api_check_user():
+def init_repo():
     if 'user_name' in request.args:
         user_name = request.args['user_name']
     else:
         return 'error: no user specified'
-    return check_project(user_name)
+    return init_repo(user_name)
 
 
-@app.route('/api/v1/commit_push', methods=['GET'])
-def api_repo_commit_push():
-    # This one is for committing from within the container
-    if 'token' in request.args:
-        session_token = request.args['token']
-    else:
-        return 'error: no session token provided'
-
-    user = User.query.filter_by(git_token=session_token).first()
-
-    if not user:
-        return "No user found", 403
-    else:
-        user_name = user.user_repo
-
-    path = os.path.join(REPOS_ROOT, user_name)
-
-    return git_commit_push.commit_push(path)
-
-
-# @app.route('/api/v1/reclone', methods=['GET'])
-# def api_repo_reclone():
-#     # This one is for recloning from within the container
-#     """This function takes token as the request argument parses to get username after which it removes the repo and clones it again 
-#
-#     Returns:
-#         _type_: _description_
-#     """
-#
-#     if 'token' in request.args:
-#         session_token = request.args['token']
-#     else:
-#         return 'error: no session token provided'
-#
-#     user = User.query.filter_by(git_token=session_token).first()
-#
-#     if not user:
-#         return "No user found", 403
-#     else:
-#         user_name = user.user_repo
-#
-#     path = os.path.join(REPOS_ROOT, user_name)
-#
-#     force = False
-#     if 'force' in request.args:
-#         if 'true' == request.args['force'].lower():
-#             force = True  
-#
-#     return git_clone.clone(CLONING_ROOT+user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
-
-
-@app.route('/api/v1/clone_jwt', methods=['GET'])
+@app.route('/api/v1/clone_repo', methods=['POST'])
 @jwt_required()
-def api_repo_clone_jwt():
+def clone_repo():
     # @ user_name
     # @ [force]
     if 'user_name' in request.args:
@@ -810,12 +760,12 @@ def api_repo_clone_jwt():
         if 'true' == request.args['force'].lower():
             force = True
 
-    return git_clone.clone(CLONING_ROOT + user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
+    return git_clone.clone(GITLAB_PROJECT_URL + user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
 
 
-@app.route('/api/v1/commit_push_jwt', methods=['GET'])
+@app.route('/api/v1/push_repo', methods=['POST'])
 @jwt_required()
-def api_repo_commit_push_jwt():
+def push_repo():
     # This one is for committing from the web
     current_user = get_jwt_identity()
     user = User.query.filter_by(id=current_user).first()
@@ -824,8 +774,8 @@ def api_repo_commit_push_jwt():
     return git_commit_push.commit_push(path)
 
 
-def check_project(project_name: str):
-    """Checks if repo exists, if not then creating it
+def init_repo(project_name: str):
+    """Checks if repo exists, if not then creates it through GitLab API
 
     Args:
         project_name (str): user name
@@ -833,7 +783,7 @@ def check_project(project_name: str):
     Returns:
         str: status
     """
-    url = "https://gitlab.ut.ee/api/v4/projects"
+    
     project_path = project_name
     description = f"Project of the user: {project_name}"
 
@@ -849,7 +799,7 @@ def check_project(project_name: str):
         'Content-Type': 'application/json',
     }
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("POST", GITLAB_API_URL, headers=headers, data=payload)
     print(response.json())
 
     if isinstance(response.json(), dict):
