@@ -52,8 +52,6 @@ export default {
         const data = res.data;
         // take first active post
         this.newsBoardText = (data.length > 0) ? data[0].content : "";
-        console.log("GOT NEWS", data[0].content)
-        console.log("IS equal", this.content === data[0].content)
         this.newsLoaded = true;
       })
 		}

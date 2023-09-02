@@ -12,7 +12,7 @@
             <h4>This will overwrite any previous save</h4>
         </b-modal>
         <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
-            <h4>This will undo all system changes (except files stored in your catkin workspace)</h4>
+            <h4>This will undo all system changes (except files stored in your catkin workspace and Submission folder)</h4>
         </b-modal>
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
 		<b-row v-if="this.is_loaded">
@@ -221,16 +221,16 @@ export default {
                 this.saving = false;
             })
 		},
-        commitCode: function() {
-            this.submitting = true;
-            // This will find the user in DB and make a push for its corresponding repository
-			this.$api.get(`/api/v1/commit_push_jwt`).then((res) => {
-                console.log("Code successfully pushed")
-                this.submitting = false;
-                this.successMessage = "Code successfully uploaded!"
-                this.dismissCountDown = this.dismissSec
-            })
-		},
+        // commitCode: function() {
+        //     this.submitting = true;
+        //     // This will find the user in DB and make a push for its corresponding repository
+		// 	this.$api.post(`/api/v1/push_repo`).then((res) => {
+        //         console.log("Code successfully pushed")
+        //         this.submitting = false;
+        //         this.successMessage = "Code successfully uploaded!"
+        //         this.dismissCountDown = this.dismissSec
+        //     })
+		// },
         countDownChanged(dismissCountDown) {
             this.dismissCountDown = dismissCountDown
         },

@@ -14,15 +14,6 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 import bcrypt, os
 from dotenv import load_dotenv, find_dotenv
 
-##########################################
-# git module imports
-##########################################
-import requests
-# How do you even python module?
-from communication import git_clone
-from communication import git_commit_push
-
-##########################################
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
@@ -671,7 +662,9 @@ def users():
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "active": user.active,
-                "role": user.role
+                "role": user.role,
+                "user_repo": user.user_repo,
+                "owncloud_id": user.owncloud_id
             } for user in users
         ]
         if args.get('active') == "false":
@@ -697,7 +690,7 @@ def users():
             user = User.query.get(data["id"])
             user.role = data["role"]
             db.session.commit()
-            return "User role updated", 200
+            return f"{user.first_name} {user.last_name} role updated to ${data['role']}", 200
 
 
 @app.route("/api/v1/users/<id>", methods=["DELETE"])
@@ -723,95 +716,6 @@ def admins():
     return jsonify(result), 200
 
 
-############################################
-##                  GIT                   ##
-############################################
-
-load_dotenv("communication/.env")
-REPOS_ROOT = os.getenv("REPOS_ROOT")
-GITLAB_PROJECT_URL = os.getenv("GITLAB_PROJECT_URL")
-GITLAB_API_URL = os.getenv("GITLAB_API_URL")
-TOKEN_NAME = os.getenv("TOKEN_NAME")
-TOKEN = os.getenv("TOKEN")
-
-
-@app.route('/api/v1/init_repo', methods=['POST'])
-@jwt_required()
-def init_repo():
-    if 'user_name' in request.args:
-        user_name = request.args['user_name']
-    else:
-        return 'error: no user specified'
-    return init_repo(user_name)
-
-
-@app.route('/api/v1/clone_repo', methods=['POST'])
-@jwt_required()
-def clone_repo():
-    # @ user_name
-    # @ [force]
-    if 'user_name' in request.args:
-        user_name = request.args['user_name']
-    else:
-        return 'error: no user specified'
-
-    force = False
-    if 'force' in request.args:
-        if 'true' == request.args['force'].lower():
-            force = True
-
-    return git_clone.clone(GITLAB_PROJECT_URL + user_name, TOKEN_NAME, TOKEN, REPOS_ROOT, force)
-
-
-@app.route('/api/v1/push_repo', methods=['POST'])
-@jwt_required()
-def push_repo():
-    # This one is for committing from the web
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(id=current_user).first()
-    path = os.path.join(REPOS_ROOT, user.user_repo)
-
-    return git_commit_push.commit_push(path)
-
-
-def init_repo(project_name: str):
-    """Checks if repo exists, if not then creates it through GitLab API
-
-    Args:
-        project_name (str): user name
-
-    Returns:
-        str: status
-    """
-    
-    project_path = project_name
-    description = f"Project of the user: {project_name}"
-
-    payload = json.dumps({
-        "name": project_name,
-        "description": description,
-        "path": project_path,
-        "initialize_with_readme": "true",
-        "namespace_id": "1483" # this is a hardcoded gitlab group namespace ID
-    })
-    headers = {
-        'Authorization': f'Bearer {TOKEN}',
-        'Content-Type': 'application/json',
-    }
-
-    response = requests.request("POST", GITLAB_API_URL, headers=headers, data=payload)
-    print(response.json())
-
-    if isinstance(response.json(), dict):
-        resp = 'User exists' if response.json().get('message', 0) else 'User repo was created'
-    else:
-        resp = 'User exists'
-
-    return resp
-
-
-## Git end
-############################################
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")
