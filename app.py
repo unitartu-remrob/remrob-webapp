@@ -4,7 +4,7 @@ from datetime import timedelta, timezone, datetime, date
 from functools import wraps
 
 from flask import Flask, request, jsonify, render_template
-from sqlalchemy import text, cast, Date
+from sqlalchemy import func, text, cast, Date
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -118,7 +118,11 @@ def register():
     if not last_name:
         return "Missing lastname", 400
 
-    user = User.query.filter_by(email=email).first()
+    # Capitalize first letter of first and last name
+    first_name = first_name.capitalize()
+    last_name = last_name.capitalize()
+
+    user = User.query.filter(func.lower(User.email)==email.lower()).first()
 
     if user:
         return "There already is a user with this email", 400
@@ -139,7 +143,7 @@ def login():
         return "Missing email", 400
     if not password:
         return "Missing password", 400
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter(func.lower(User.email)==email.lower()).first()
 
     if not user:
         return "User not found", 400
@@ -654,7 +658,7 @@ def update_inventory(inv_id):
 def users():
     if request.method == "GET":
         args = request.args
-        users = User.query.order_by(User.id.asc()).all()
+        users = User.query.order_by(User.id.desc()).all()
         results = [
             {
                 "id": user.id,

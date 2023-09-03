@@ -60,7 +60,7 @@ export default {
       }).catch((error) => {
         if (error.response.status === 400) {
           this.alertType = "danger"
-        } else {
+        } else if (error.response.status === 403) {
           this.alertType = "info"
         }
         this.errorMessage = error.response.data
