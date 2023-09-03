@@ -1,3 +1,47 @@
-<p>
-    Your registration was successful. Please wait for the administrator to activate your account.
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Confirmation</title>
+    <style>
+        /* Add your custom styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        .cta-button {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 10px 20px;
+            background-color: #424242;
+            font-size: 18px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p style="margin-bottom: 36px;">Hello {{ user_name }},</p>
+        <p>Your registration on https://remrob.ut.ee has been successful.</p>
+        <p>Please wait for the administrator to activate your account. You will receive an email notification once it's active.</p>
+        <p>Meanwhile, check out all the cool robotics stuff you're going to be learning!</p>
+        <a href="https://sisu.ut.ee/rosak" class="cta-button" style="color: #fff; margin-top: 10px;">Course Materials</a>
+    </div>
+</body>
+</html>

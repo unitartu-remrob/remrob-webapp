@@ -1,4 +1,46 @@
-<p>
-    To reset your password click on the following link:
-    {{ url }}
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <style>
+        /* Add your email styling here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+            font-size: 1.2rem;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Password Reset</h1>
+
+        <p>Hello {{ user_name }},</p>
+        
+        <p>A request was received to change the password for your account on https://remrob.ut.ee. To proceed, please click the link below:</p>
+        
+        <p><a href="{{ url }}">Reset Your Password</a></p>
+
+    </div>
+</body>
+</html>

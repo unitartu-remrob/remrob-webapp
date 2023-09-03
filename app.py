@@ -66,25 +66,25 @@ def send_email(user):
     msg.subject = "Password reset"
     msg.sender = os.getenv("MAIL_USERNAME")
     msg.recipients = [user.email]
-    msg.html = render_template("reset_email.html", url=url + token)
+    msg.html = render_template("reset_email.html", user_name=f"{user.first_name} {user.last_name}", url=url + token)
     mail.send(msg)
 
 
-def send_confirmation(email):
+def send_confirmation(email, name):
     msg = Message()
-    msg.subject = "Register confirmation"
+    msg.subject = "Registration confirmation"
     msg.sender = os.getenv("MAIL_USERNAME")
     msg.recipients = [email]
-    msg.html = render_template("confirmation_email.html")
+    msg.html = render_template("confirmation_email.html", user_name=name)
     mail.send(msg)
 
 
-def send_activation_email(email):
+def send_activation_email(email, name):
     msg = Message()
-    msg.subject = "Account has been activated"
+    msg.subject = "Your Remrob account is now active! 🤖"
     msg.sender = os.getenv("MAIL_USERNAME")
     msg.recipients = [email]
-    msg.html = render_template("activation_email.html")
+    msg.html = render_template("activation_email.html", user_name=name)
     mail.send(msg)
 
 
@@ -130,7 +130,7 @@ def register():
         user = User(email=email, first_name=first_name, last_name=last_name, password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"), active=False, role="ROLE_LEARNER")
         db.session.add(user)
         db.session.commit()
-        send_confirmation(email)
+        send_confirmation(email, f"{first_name} {last_name}")
         return "User created", 200
 
 
@@ -191,12 +191,15 @@ def modify_token():
 def reset():
     data = request.json
     email = data['email']
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter(func.lower(User.email)==email.lower()).first()
 
     if user:
-        send_email(user)
-        return "Email sent", 200
-    return "No user found", 403
+        try:
+            send_email(user)
+            return "Email sent", 200
+        except:
+            return f"Email could not be delivered to {email}", 400
+    return f"No user found for email {email}", 403
 
 
 @app.route('/api/v1/password_reset_verified/<token>', methods=['POST'])
@@ -211,6 +214,8 @@ def reset_verified(token):
         user.password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
         db.session.commit()
         return "Password changed", 200
+    else:
+        return "Missing password", 400
 
 
 @app.route("/api/v1/owncloud_link", methods=["GET"])
@@ -679,17 +684,21 @@ def users():
         data = request.json
         if "active" in data:
             user = User.query.get(data["id"])
+            user_name = f"{user.first_name} {user.last_name}"
+            # If user is not activated, but the request is to activate, send an activation email
             if not user.active and data["active"]:
                 try:
-                    send_activation_email(user.email)
-                except:
-                    print("Email failed to send, but account will still be activated")
+                    send_activation_email(user.email, user_name)
+                except Exception as e:
+                    print(e)
+                    print(f"Activation email failed to send for {user_name}, but account will still be activated")
+            # Change the status, if the account gets disabled, no email is sent
             user.active = data["active"]
             db.session.commit()
             if user.active:
-                return f"{user.first_name} {user.last_name} account activated", 200
+                return f"{user_name} account activated", 200
             else:
-                return f"{user.first_name} {user.last_name} account deactivated", 200
+                return f"{user_name} account deactivated", 200
         if "role" in data:
             user = User.query.get(data["id"])
             user.role = data["role"]

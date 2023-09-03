@@ -1,3 +1,52 @@
-<p>
-    Your account has been activated.
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Activation</title>
+    <style>
+        /* Add your custom styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+        .cta-button {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 10px 20px;
+            background-color: #424242;
+            font-size: 18px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-bottom: 28px;">Your Remrob Account Has Been Activated!</h1>
+        <p>Tere {{ user_name }},</p>
+        <p>Your account on https://remrob.ut.ee has been successfully activated. You can now see if there are any bookable sessions available!</p>
+        <a href="https://remrob.ut.ee" class="cta-button" style="color: #fff; margin-top: 16px;">Start Learning ROS</a>
+    </div>
+    </div>
+</body>
+</html>

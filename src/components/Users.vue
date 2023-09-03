@@ -126,10 +126,10 @@ export default {
             if (id !== null && id.length) {
                 return `https://gitlab.ut.ee/remrob/${id}`
             }
-        }
-    },
-    countDownChanged(dismissCountDown) {
-      this.dismissCountDown = dismissCountDown
+        },
+        countDownChanged(dismissCountDown) {
+            this.dismissCountDown = dismissCountDown
+        },
     },
 
     created() {
