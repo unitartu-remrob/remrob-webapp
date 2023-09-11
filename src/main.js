@@ -16,7 +16,8 @@ import {
   BIconClock,
   BIconSignpost,
   BIconCodeSquare,
-  BIconFilm
+  BIconFilm,
+  BIconJournalText
 } from 'bootstrap-vue'
 import router from './router/router'
 import store from './store/store'
@@ -43,6 +44,7 @@ Vue.component('Link', BIconLink45deg)
 Vue.component('Clock', BIconClock)
 Vue.component('SignPost', BIconSignpost)  //journal-code
 Vue.component('JournalCode', BIconCodeSquare)
+Vue.component('JournalText', BIconJournalText)
 Vue.component('FilmIcon', BIconFilm)
 
 Vue.prototype.$api = api;
