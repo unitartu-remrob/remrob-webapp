@@ -81,3 +81,30 @@ export const getTimeLeft = (expires) => {
 		displayTime
 	}
 }
+
+export function formatDate(date) {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1 and pad with leading zero
+	const day = String(date.getDate()).padStart(2, '0');
+
+	// Create the formatted date string "yyyy-mm-dd"
+	const formattedDate = `${year}-${month}-${day}`;
+
+	return formattedDate;
+}
+
+export function formatDayTime(date) {
+	console.log("result", date)
+	// Get hours and minutes
+	const hours = date.getHours();
+	const minutes = date.getMinutes();
+
+	// Pad with leading zeros if necessary
+	const formattedHours = String(hours).padStart(2, '0');
+	const formattedMinutes = String(minutes).padStart(2, '0');
+
+	// Create the formatted time string
+	const formattedTime = `${formattedHours}:${formattedMinutes}`;
+
+	return formattedTime;
+}

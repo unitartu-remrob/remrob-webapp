@@ -81,8 +81,9 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { mapGetters } from 'vuex';
-import {Tooltip} from 'bootstrap'
+import { Tooltip } from 'bootstrap'
 import VueTimepicker from 'vue2-timepicker/src/vue-timepicker.vue';
+import { formatDate } from '../../util/helpers';
 
 export default {
     name: "CreateSlot",
@@ -163,19 +164,25 @@ export default {
             return optionCount
         },
         getInventory: function() {
-            this.$api.get("/api/v1/inventory").then((res) => {
-                const options = this.getOptions(res.data);
+            Promise.all([
+                this.$api.get("/api/v1/inventory"),
+                this.$api.get("/api/v1/simtainers")
+            ]).then(([inventoryRes, simulationRes]) => {
+                const options = this.getOptions(inventoryRes.data);
                 for (let i = 0; i < options.length; i++) {
                     this.inventory.push({value: {
                         simulation: false,
                         project: options[i].project
                     }, text: `Robotont@${options[i].project} (x${options[i].count})`})
                 }
+                // would be nice to check here how many slots are booked for the inventory already,
+                // so that it's not possible to overbook resources
                 this.inventory.push({value: {
                     simulation: true,
                     project: "simulation"
-                }, text: "Simulation (x9)"})
-            })
+                }, text: `Simulation (x${simulationRes.data.length})`})
+                console.log(this.inventory)
+            });
         },
         handleEventClick: function (info) {
             this.selectedSlot = info.event.id
@@ -191,10 +198,22 @@ export default {
             this.$bvModal.show("type-modal")
             //this.$bvModal.show("slot-modal");
         },
+        getNextDay: function (currentDay) {
+            return formatDate(new Date(new Date(currentDay).setDate(new Date(currentDay).getDate() + 1)))
+        },
         createSlot: function () {
+            console.log(this.selectedDate)
+            // if this.end == 00:00, then select next day as end time
+            // const startTime = this.selectedDate + "T" + this.start;
+            // check if time goes past midnight:
+
+            const endDate = (this.end == "00:00")
+                ? this.getNextDay(this.selectedDate)
+                : this.selectedDate;
+            
             var slotData = {
                 "start": this.selectedDate + "T" + this.start,
-                "end": this.selectedDate + "T" + this.end,
+                "end": endDate + "T" + this.end,
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation,
                 "admin": this.selectedAdmin.join(", ")
@@ -204,10 +223,14 @@ export default {
             });
         },
 
-        createSlotsBulk: function() {          
+        createSlotsBulk: function() {
+            const endDate = (this.end == "00:00")
+                ? this.getNextDay(this.selectedDate)
+                : this.selectedDate;
+
             var slotData = {
                 "start": this.selectedDate + "T" + this.start,
-                "end": this.selectedDate + "T" + this.end,
+                "end": endDate + "T" + this.end,
                 "interval": this.interval,
                 "project": this.selectedInventory.project,
                 "is_simulation": this.selectedInventory.simulation,
@@ -221,7 +244,6 @@ export default {
 
         },
         deleteDate: function() {
-            console.log(this.selectedDate)
             this.$api.delete(`/api/v1/bookings/delete`, {
                 data: {
                     "selected_day": this.selectedDate
@@ -238,6 +260,7 @@ export default {
         getAllSlots: function() {
             this.$api.get(`/api/v1/slots`).then((res) => {
                 this.calendarOptions.events = res.data.bookings
+                console.log(this.calendarOptions.events)
             });
         },
 

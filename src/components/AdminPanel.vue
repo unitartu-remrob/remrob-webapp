@@ -117,7 +117,6 @@ export default {
 			const params = new URLSearchParams([['is_simulation', this.is_sim], ['fresh', true]]);
             this.$api.post(`/containers/start/${id}`, {}, {params}).then((res) => {
                 // this.ws.send("update") // crashes the connection ??
-				console.log('something')
             })
 		},
 		stopContainer: function(id) {
