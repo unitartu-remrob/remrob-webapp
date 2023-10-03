@@ -99,7 +99,7 @@ export default {
 
         eventRender: function(info) {
             var tooltip = new Tooltip(info.el, {
-                title: "Admin: " + info.event.extendedProps.admin,
+                title: info.event.title,
                 placement: 'top',
                 trigger: 'hover',
                 container: 'body'

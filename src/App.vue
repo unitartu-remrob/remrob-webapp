@@ -32,9 +32,10 @@
             <b-nav-item v-if="isAdmin" to="/inventory">Manage inventory</b-nav-item>
             <b-nav-item v-if="isAdmin" to="/users">Users</b-nav-item>
             <b-nav-item v-if="isAdmin" to="/admin-panel">Admin panel</b-nav-item>
+            <br/>
             <b-nav-item v-if="isAdmin" to="/newsboard">Update newsboard</b-nav-item>
-            <b-nav-item v-if="isAdmin" href="http://remrob.ut.ee/cam/" target="_blank">Camera dashboard</b-nav-item>
-            <b-nav-item v-if="isAdmin" href="/containers/guide">Administration guide</b-nav-item>
+            <b-nav-item v-if="isAdmin" href="http://192.168.200.201:8000" target="_blank">Camera dashboard (only from LAN)</b-nav-item>
+            <b-nav-item v-if="isAdmin" href="/containers/guide/">Administration guide</b-nav-item>
           </b-nav>
         </nav>
       </b-sidebar>

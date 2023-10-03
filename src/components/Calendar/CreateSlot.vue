@@ -141,7 +141,7 @@ export default {
     methods: {
         eventRender: function(info) {
             var tooltip = new Tooltip(info.el, {
-                title: "Admin: " + info.event.extendedProps.admin + "\n Student: " + info.event.extendedProps.user,
+                title: "Student: " + info.event.extendedProps.user,
                 placement: 'top',
                 trigger: 'hover',
                 container: 'body'

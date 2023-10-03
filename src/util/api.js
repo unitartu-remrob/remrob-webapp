@@ -2,8 +2,14 @@ import axios from "axios";
 import $router from "../router/router.js";
 
 const domain = window.location.host;
-const protocol = (process.env.VUE_APP_PROTOCOL === "http") ? "http" : "https";
-const protocolWs = (process.env.VUE_APP_PROTOCOL === "http") ? "ws" : "wss";
+const hostname = window.location.hostname;
+
+const forceHttp = (process.env.VUE_APP_PROTOCOL === "http");
+const isTonditallAccess = (hostname === "localhost");
+
+// https requests will fail when sent directly to the flask app
+const protocol = forceHttp || isTonditallAccess ? "http" : "https";
+const protocolWs = forceHttp || isTonditallAccess ? "ws" : "wss";
 
 const rootURL = `${protocol}://${domain}`
 const wsRootURL = `${protocolWs}://${domain}`
@@ -15,7 +21,6 @@ const api = axios.create({
         "Content-Type": "application/json",
     },
 });
-
 
 const refreshAccessToken = async () => {
     try {
