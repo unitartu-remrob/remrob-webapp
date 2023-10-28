@@ -40,6 +40,10 @@
 import { mapGetters } from 'vuex';
 import { getUptime, getTimeLeft } from '../util/helpers'
 import { wsRootURL, rootURL } from "@/util/api";
+import useSound from 'vue-use-sound'
+import userJoinSound from "../assets/sound/start.wav";
+import userLeaveSound from "../assets/sound/boop.mp3";
+
 export default {
     data() {
         return {
@@ -57,6 +61,7 @@ export default {
 				{ key: "connection", label: "", tdClass: 'text-left', thClass: "text-center"},
             ],
 			containerList: [],
+			containerState: {},
 			pollInterval: null,
 			is_sim: false,
 			is_loaded: false,
@@ -95,6 +100,8 @@ export default {
 				const disconnected = (Status === "inactive"); // remove && start active
 				const inactive = (Status === "exited" || disconnected); // start active
 
+				this.containerState[slug] = { last: this.containerState[slug]?.current, current: running }
+
 				return {
 					id: slug,
 					running, disconnected, inactive,
@@ -109,6 +116,7 @@ export default {
 					robot_status
 				}
 			})
+			this.alertChange();
 			return items
 		}
     },
@@ -134,6 +142,7 @@ export default {
 			this.is_sim = sim
 			this.ws.close()
 			this.is_loaded = false
+			// this.containerState = {}
 			this.connectWs()
 		},
 		connectWs: function() {
@@ -142,7 +151,7 @@ export default {
 			const ws = new WebSocket(`${wsRootURL}/containers/live/${endpoint}`)
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
-				console.log("PARSED", results)
+				// console.log("PARSED", results)
 				const data = results.map(({ robot_id, slug, status, robot_status, value, booking, user }) => {
 					return {
 						robot_id, slug,
@@ -160,8 +169,28 @@ export default {
 				console.log("Successfully connected to the websocket server")
 			}
 			this.ws = ws; // ref for closing
-		}
+		},
+		alertChange: function () {
+			// compare containerState and play the sound alert if there's been a switch from true to false
+			for (const [slug, state] of Object.entries(this.containerState)) {
+				if (state.last === true && state.current === false) {
+					this.stopSound();
+				} else if (state.last === false && state.current === true) {
+					this.startSound();
+				}
+			}
+		},
     },
+	setup() {
+		const [startSound] = useSound(userJoinSound);
+		const [stopSound] = useSound(userLeaveSound);
+		return { startSound, stopSound }
+	},
+	watch: {
+		containerState: function (val) {
+			console.log("containerStatus", val)
+		} 
+	},
     created() {
 		this.connectWs()
     },
