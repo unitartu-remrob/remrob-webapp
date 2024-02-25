@@ -14,6 +14,8 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 import bcrypt, os
 from dotenv import load_dotenv, find_dotenv
 
+from logs.top import get_system_usage
+
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
@@ -26,7 +28,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=5000)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
@@ -729,6 +731,28 @@ def admins():
     return jsonify(result), 200
 
 
+@app.route('/fps', methods=['POST'])
+def fps_measure():
+    data = request.json
+
+    if 'fps' not in data:
+        return {"error": "No fps value provided"}, 400
+
+    if 'source' not in data:
+        return {"error": "No source provided"}, 400
+
+    cpu_usage, ram_usage, gpu_usage, gpu_util = get_system_usage()
+
+    # Add metrics to data dictionary
+    data['cpu_usage'] = cpu_usage
+    data['ram_usage'] = ram_usage
+    data['gpu_usage'] = gpu_usage
+    data['gpu_util'] = gpu_util
+
+    with open('logs/fps_data.txt', 'a') as f:
+        f.write(json.dumps(data) + '\n')
+
+    return {"message": "FPS data logged successfully"}, 200
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")
