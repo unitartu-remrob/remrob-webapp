@@ -31,4 +31,4 @@ pnpm-debug.log*
 communication/.env
 
 logs/fps_data.txt
-logs/avg_metrics.json
+logs/data/*

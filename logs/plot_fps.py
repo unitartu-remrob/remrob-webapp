@@ -1,14 +1,24 @@
 import os
 import json
+import argparse
+from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.ticker as mticker
 import numpy as np
 from scipy.signal import find_peaks
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--prefix', help='Optional prefix for data file')
+parser.add_argument('--container', help='From which container to parse the data')
+args = parser.parse_args()
+
+CONTAINER_ID = args.container if args.container is not None else 1
+
 script_dir = os.path.dirname(os.path.realpath(__file__))
 data_file = os.path.join(script_dir, 'fps_data.txt')
-gazebo_fps_file = '../remrob-server/server/compose/local/temp/robosim-5/GAZEBO_FPS_out.txt'
+gazebo_fps_file = f'../remrob-server/server/compose/local/temp/robosim-{CONTAINER_ID}/GAZEBO_FPS_out.txt'
+rviz_fps_file = f'../remrob-server/server/compose/local/temp/robosim-{CONTAINER_ID}/FPS_out.txt'
 
 fig, ax = plt.subplots()
 
@@ -96,12 +106,20 @@ def update(i):
     # ax_percentage.annotate('GPU Usage', xy=(1, gpu_values[-1]), xytext=(10, 0), 
     #              xycoords=('axes fraction', 'data'), textcoords='offset points', color='g')
 
-def get_gazebo_fps():
-    with open(gazebo_fps_file, 'r') as f:
+def load_fps_file(filename):
+    with open(filename, 'r') as f:
         return [float(line.strip()) for line in f]
 
 def get_gazebo_fps_avg():
-    fps_values = get_gazebo_fps()
+    fps_values = load_fps_file(gazebo_fps_file)
+    if len(fps_values) <= 1:
+        return 0
+    return sum(fps_values[1:]) / len(fps_values[1:])
+
+def get_rviz_fps_avg():
+    fps_values = load_fps_file(rviz_fps_file)
+    if len(fps_values) <= 1:
+        return 0
     return sum(fps_values[1:]) / len(fps_values[1:])
 
 def get_performance_avg(start, end):
@@ -126,12 +144,16 @@ print(f"Average FB updates during the largest peak: {average_peak_value}")
 average_gazebo_framerate = get_gazebo_fps_avg()
 print(f"Average Gazebo framerate: {average_gazebo_framerate} FPS")
 
+average_rviz_framerate = get_rviz_fps_avg()
+print(f"Average RViz framerate: {average_rviz_framerate} FPS")
+
 performance_avg = get_performance_avg(start, end)
 print(f"Average CPU usage: {performance_avg['avg_cpu']}%"
       f"\nAverage RAM usage: {performance_avg['avg_ram']}%"
       f"\nAverage GPU usage: {performance_avg['avg_gpu']}%")
 
-with open(os.path.join(script_dir, 'avg_metrics.json'), 'w') as f:
+timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+with open(os.path.join(script_dir, f'data/{args.prefix}avg_metrics_{timestamp}.json'), 'w') as f:
     f.write(json.dumps({
         'fps': average_peak_value,
         'gazebo_fps': average_gazebo_framerate,
