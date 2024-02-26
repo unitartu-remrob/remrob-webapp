@@ -8,6 +8,7 @@ from scipy.signal import find_peaks
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 data_file = os.path.join(script_dir, 'fps_data.txt')
+gazebo_fps_file = '../remrob-server/server/compose/local/temp/robosim-5/GAZEBO_FPS_out.txt'
 
 fig, ax = plt.subplots()
 
@@ -21,7 +22,7 @@ def calculate_average_peak_value(data_file):
     peaks, _ = find_peaks(fps_values)
 
     if len(peaks) == 0:
-        return None
+        return None, 0, 0
 
     largest_peak = max(peaks, key=lambda x: fps_values[x])
 
@@ -44,6 +45,11 @@ def update(i):
     ax.clear()
 
     ax_percentage = ax.twinx()
+    # ax_gazebo = ax.twinx()
+
+    # ax_gazebo.spines['left'].set_position(('outward', 80))
+    # ax_gazebo.set_frame_on(True)
+    # ax_gazebo.patch.set_visible(False)
 
     # Read the fps_values file
     with open(data_file, 'r') as f:
@@ -64,7 +70,7 @@ def update(i):
 
     # Plot
     ax.plot(avg_fps_values, label='Framebuffer updates per second', linewidth=2, alpha=1)
-    ax_percentage.plot(cpu_values, label='%CPU', color='gray', linewidth=1, alpha=0.4)
+    ax_percentage.plot(cpu_values, label='%CPU', color='m', linewidth=1, alpha=0.4)
     ax_percentage.plot(ram_values, label='%RAM', color='y', linewidth=1, alpha=0.4)
     ax_percentage.plot(gpu_values, label='%GPU', color='g', linewidth=1, alpha=0.4)
     # ax.plot(count_values, label='Total Framebuffer updates per second')
@@ -90,11 +96,12 @@ def update(i):
     # ax_percentage.annotate('GPU Usage', xy=(1, gpu_values[-1]), xytext=(10, 0), 
     #              xycoords=('axes fraction', 'data'), textcoords='offset points', color='g')
 
+def get_gazebo_fps():
+    with open(gazebo_fps_file, 'r') as f:
+        return [float(line.strip()) for line in f]
 
 def get_gazebo_fps_avg():
-    gazebo_fps_file = '../remrob-server/server/compose/local/temp/robosim-1/GAZEBO_FPS_out.txt'
-    with open(gazebo_fps_file, 'r') as f:
-        fps_values = [float(line.strip()) for line in f]
+    fps_values = get_gazebo_fps()
     return sum(fps_values[1:]) / len(fps_values[1:])
 
 def get_performance_avg(start, end):

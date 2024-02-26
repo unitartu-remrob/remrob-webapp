@@ -4,8 +4,8 @@ import psutil
 devices = Device.all()
 
 def get_system_usage():
-    # cpu_usage = psutil.cpu_percent()
-    cpu_usage = sum(psutil.cpu_percent(percpu=True))
+    cpu_usage = psutil.cpu_percent()
+    # cpu_usage = sum(psutil.cpu_percent(percpu=True))
     # ram_usage = psutil.virtual_memory().percent
     ram_usage = psutil.virtual_memory().used / (1024.0 ** 3)
 

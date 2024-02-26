@@ -30,3 +30,5 @@ pnpm-debug.log*
 .env.production
 communication/.env
 
+logs/fps_data.txt
+logs/avg_metrics.json
