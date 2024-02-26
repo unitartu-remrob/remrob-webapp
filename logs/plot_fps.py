@@ -157,6 +157,7 @@ with open(os.path.join(script_dir, f'data/{args.prefix}avg_metrics_{timestamp}.j
     f.write(json.dumps({
         'fps': average_peak_value,
         'gazebo_fps': average_gazebo_framerate,
+        'rviz_fps': average_rviz_framerate,
         'cpu': performance_avg['avg_cpu'],
         'ram': performance_avg['avg_ram'],
         'gpu': performance_avg['avg_gpu']
