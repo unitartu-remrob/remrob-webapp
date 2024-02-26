@@ -25,7 +25,7 @@ fig, ax = plt.subplots()
 def calculate_average_peak_value(data_file):
 
     with open(data_file, 'r') as f:
-        fps_values = [json.loads(line)['fps'] for line in f if json.loads(line)['fps'] is not None]
+        fps_values = [json.loads(line)['fps'] if json.loads(line)['fps'] is not None else 0 for line in f]
 
     fps_values = np.array(fps_values)
 
