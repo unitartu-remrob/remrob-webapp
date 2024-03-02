@@ -2,7 +2,7 @@
 
 Video illustration of a performance test run: https://www.youtube.com/watch?v=ScvikH2_Jkg 
 
-The performance test scripts are on `performance-metrics` branch in [remrob-docker repository](https://github.com/unitartu-remrob/remrob-docker). The Dockerfile includes custom-built Gazebo and Rviz that have been modified to extract FPS measures from the simulations. The extracted data is saved in `$HOME/.ros`.
+The performance test scripts are on `performance-tests` branch in [remrob-docker repository](https://github.com/unitartu-remrob/remrob-docker/tree/performance-tests). The Dockerfile includes custom-built Gazebo and Rviz that have been modified to extract FPS measures from the simulations. The extracted data is saved in `$HOME/.ros`.
 
 The modified template generation scripts are in `remrob-server` repository `performance-metrics` branch. The image name in the template should be the same as the one built from the `performance-metrics` branch. The FPS data files are mapped to the host from `$HOME/.ros` directory in the containers.
 
