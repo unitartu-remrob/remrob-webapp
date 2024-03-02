@@ -1,6 +1,8 @@
 # Running tests
 
-Video illustration of a performance test run: https://www.youtube.com/watch?v=ScvikH2_Jkg 
+Video illustration of a performance test run: https://www.youtube.com/watch?v=ScvikH2_Jkg
+
+To run the tests, make sure the server is serving the [modified version of noVNC](https://github.com/Tsapu/noVNC-metrics), which does average framebuffer update rate logging to the server.
 
 The performance test scripts are on `performance-tests` branch in [remrob-docker repository](https://github.com/unitartu-remrob/remrob-docker/tree/performance-tests). The Dockerfile includes custom-built Gazebo and Rviz that have been modified to extract FPS measures from the simulations. The extracted data is saved in `$HOME/.ros`.
 
