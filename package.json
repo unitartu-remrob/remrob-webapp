@@ -6,8 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "FLASK_ENV=production gunicorn --bind 0.0.0.0:5000 app:app --workers 4",
-    "dev-server": "FLASK_ENV=development flask run"
+    "start": ". .venv/bin/activate && FLASK_ENV=production gunicorn --bind 0.0.0.0:5000 app:app --workers 4",
+    "dev-server": ". .venv/bin/activate && FLASK_ENV=development flask run"
   },
   "dependencies": {
     "@burhanahmeed/vue-modal-2": "^1.1.11",

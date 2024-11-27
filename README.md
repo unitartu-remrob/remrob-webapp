@@ -11,6 +11,7 @@
 ## Project setup
 ```
 npm install
+python -m venv .venv
 ```
 
 ### Compiles and hot-reloads for development
