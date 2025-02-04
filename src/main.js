@@ -3,7 +3,6 @@ import App from './App.vue'
 import { BootstrapVue } from 'bootstrap-vue';
 import wysiwyg from "vue-wysiwyg";
 
-// import ErrorPage from 'vue-error-page';
 
 import {
   BIconJustify,
@@ -22,15 +21,11 @@ import {
 import router from './router/router'
 import store from './store/store'
 import { api } from './util/api'
-// import authentication from './plugins/authentication'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
-
 Vue.config.productionTip = false
-
-// Vue.use(ErrorPage);
 
 Vue.use(BootstrapVue)
 Vue.use(wysiwyg, {})

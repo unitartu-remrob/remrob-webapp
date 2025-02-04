@@ -5,7 +5,6 @@
             <CircleFill v-if="this.robotStatus === 'true'" class="status-indicator" variant="success" font-scale="1.5"/>
             <CircleFill v-else variant="danger" font-scale="1.5"/>
         </div>
-        <!-- <b-img style="max-width: 12vw" :src="require('../assets/robotont.png')"></b-img> -->
     </div>
 </template>
 
@@ -30,7 +29,7 @@ export default {
                 this.robotStatus = event.data
                 console.log(event.data)
             }
-            ws.onopen = function (event) {
+            ws.onopen = function (_) {
                 console.log("Streaming robot status...")
             }
             this.ws = ws; // ref for closing

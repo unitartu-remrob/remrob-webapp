@@ -13,12 +13,6 @@
             <b-col v-if="getUser.role == 'ROLE_LEARNER'">
                 <InfoPanel/>
             </b-col>
-            <!-- <b-col v-if="getUser.role == 'ROLE_LEARNER'">
-                <b-card style="max-width: 25vw" img-fluid class="text-center" :img-src="require('../assets/user_panel.png')" title="User Panel">
-                    <b-card-text>View and start booked sessions</b-card-text>
-                    <b-button @click="$router.push({name: 'UserPanel'})">View panel</b-button>
-                </b-card>
-            </b-col> -->
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots">
                     <b-card-text>Create bookable time slots for learners.</b-card-text>
@@ -100,7 +94,7 @@ export default {
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    background-position: center center; /* Adjust as needed */
+    background-position: center center;
     background-attachment: fixed;
     box-sizing: border-box;
     position: fixed;

@@ -1,21 +1,12 @@
 <template>
     <b-container fluid>
-        <!-- <b-modal ok-title="Confirm" @ok="removeContainer" title="Remove workspace?" id="kill-modal">
-            <h4>This will remove any unsaved changes</h4>
-        </b-modal> -->
         <div class="bg-main"
         :class="is_sim ? 'vr-cell' : 'bg-cell'"></div>
-        <b-modal ok-title="Confirm" @ok="yieldSession" title="Quit session" id="yield-modal">
-            <h4>Are you sure you want to surrender your slot?</h4>
-        </b-modal>
-        <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
+        <!-- <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
-        </b-modal>
-        <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
-            <h4>This will undo all system changes (except files stored in your catkin workspace and Submission folder)</h4>
-        </b-modal>
+        </b-modal> -->
         <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
-		<b-row v-if="this.is_loaded">
+		<b-row v-if="this.is_loaded">``
             <b-col class="info text-center">
                 <h2>{{message}}</h2>
                 <div :key="timerKey">
@@ -42,16 +33,10 @@
                         <b-spinner v-if="purging" small></b-spinner>
                         Delete
                     </b-button>
-                    <!-- <b-button class="ml-5" variant="dark" size="lg" :disabled="containerState.inactive" @click="commitCode">
-                        <b-spinner v-if="submitting" small></b-spinner>
-                        Submit code
-                    </b-button>               -->
                     <!-- <b-button class="ml-5" variant="info" size="md" :disabled="!containerState.exited" @click="$bvModal.show('commit-modal')">
                         <b-spinner v-if="saving" small></b-spinner>
                         Save environment
                     </b-button> -->
-                    <!-- <b-button class="ml-2" variant="danger" size="md" :disabled="!containerState.exited" @click="removeContainer"></b-button> -->
-                    <!-- <b-button v-if="!is_sim" class="ml-2" variant="dark" size="sm" @click="raiseIssue">HELP</b-button> -->
                 </div>
 
             </b-col>
@@ -59,15 +44,9 @@
                 
             </b-col>
         </b-row>
-        <!-- <b-row v-if="this.is_loaded">
-            <b-button class="ml-2 yield" variant="light" size="md" @click="$bvModal.show('yield-modal')">Yield slot</b-button>  
-        </b-row> -->
         <b-row class="room" v-if="this.is_loaded">
             <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert>
             <div v-if="!is_sim" class="room-items">
-                <!-- <b-card class="text-center mt-4" style="max-width: 12vw" :img-src="require('@/assets/camera.png')">
-                    <b-button>Link to camera</b-button>
-                </b-card> -->
                 <!-- <iframe class="camera-stream"
                     :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
                 </iframe> -->
@@ -79,7 +58,6 @@
         </b-row>
         <div class="session" v-if="this.is_loaded" :style="is_sim ? 'top: 7rem;' : ''">
             <Desktop :started="started" :source="vnc_uri" />
-            <!-- <b-img class="keyboard" :src="require('@/assets/keyb.png')"></b-img> -->
         </div>
     </b-container>
 </template>
@@ -121,7 +99,7 @@ export default {
     computed: {
         ...mapGetters(["getUser"]),
         message: function() {
-            const { robot_id, project, container_id } = this.container;
+            const { robot_id, container_id } = this.container;
             if (container_id) {
                 return `Your simulation environment is ready`;
             } else {
@@ -176,11 +154,9 @@ export default {
             this.$api.post(`/containers/start/${slug}`, {}, {params}).then((res) => {
                 const { path } = res.data
                 // Update the UI
-                console.log(res.data)
                 this.container.vnc_uri = path;
 				this.inspectContainer()
                 this.starting = false;
-                // Artificial buffer to        
             })	
 		},
 		stopContainer: function() {
@@ -192,54 +168,17 @@ export default {
 				this.inspectContainer()
             })	
 		},
-        removeContainer: function() {
-            const { slug } = this.container;
-			this.$api.post(`/containers/remove/${slug}`).then((res) => {
-                this.inspectContainer()
-                this.started = false
-				// this.ws.send("update")
-            })
-		},
-        purgeContainer: function() {
-            const { slug } = this.container;
-            this.purging = true;
-			this.$api.post(`/containers/stop/${slug}`).then((res) => {
-                this.$api.post(`/containers/remove/${slug}`).then((res) => {
-                    console.log(`${slug} purged`)
-                    this.started = false
-                    // this.ws.send("update")
-                    this.purging = false;
-                    this.inspectContainer()
-                })
-            })	
-		},
-        commitContainer: function() {
-            const { slug } = this.container;
-            this.saving = true;
-			this.$api.post(`/containers/commit/${slug}`).then((res) => {
-                console.log("Container successfully saved")
-                this.saving = false;
-            })
-		},
-        // commitCode: function() {
-        //     this.submitting = true;
-        //     // This will find the user in DB and make a push for its corresponding repository
-		// 	this.$api.post(`/api/v1/push_repo`).then((res) => {
-        //         console.log("Code successfully pushed")
-        //         this.submitting = false;
-        //         this.successMessage = "Code successfully uploaded!"
-        //         this.dismissCountDown = this.dismissSec
+        // commitContainer: function() {
+        //     const { slug } = this.container;
+        //     this.saving = true;
+		// 	this.$api.post(`/containers/commit/${slug}`).then((res) => {
+        //         console.log("Container successfully saved")
+        //         this.saving = false;
         //     })
 		// },
         countDownChanged(dismissCountDown) {
             this.dismissCountDown = dismissCountDown
         },
-        raiseIssue: function() {
-            const { slug } = this.container;
-			this.$api.put(`/api/v1/inventory/${slug}`, { issue: true } ).then((res) => {
-                console.log("Issue submitted")
-            })
-		},
         getBookingInfo: function() {
             const params = new URLSearchParams([['booking', this.sesssionID]]);
             this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`, {params}).then((res) => {
@@ -247,9 +186,9 @@ export default {
                 console.log("Active booking", this.booking)
                 // Assign ourselves a container:
                 this.requestContainer();
-            }).catch(e => {
-                // 404 redirect?
-                this.$router.push({name: "404"})
+            }).catch(_ => {
+                // 404 redirect
+                this.$router.push({ name: "404" })
              });
         },
         requestContainer: function() {
@@ -261,15 +200,9 @@ export default {
             }).catch(e => {
                 console.log("Failed to assign a container")
                 if (e.response.status == 403) {
-                    this.$router.push({name: "403"})
+                    this.$router.push({ name: "403" })
                 }
              });
-        },
-        yieldSession: function() {
-            const { slug } = this.container;
-            this.$api.post(`/containers/yield/${slug}`).then((res) => {
-                this.$router.push({ name: "Home" })
-            })
         },
         updateTime() {
             const { start, end } = this.booking;
@@ -285,7 +218,6 @@ export default {
     },
 	mounted() {
         this.timer = setInterval(this.updateTime, 1000);
-		// this.pollInterval = setInterval(() => this.inspectContainer(), 2000)
 	},
 	beforeDestroy() {  
         clearInterval(this.timer);
@@ -343,13 +275,6 @@ export default {
     opacity: 0.85;
 }
 
-.yield {
-    position: absolute;
-    right: 10rem;
-    top: 10rem;
-    font-size: 1.5rem;
-    border: 2px solid rgb(201, 204, 37);
-}
 .room {
     /* height: 20%; */
     margin: 2rem 4rem;

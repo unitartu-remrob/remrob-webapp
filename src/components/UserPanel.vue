@@ -59,7 +59,6 @@ export default {
     data() {
         return {
             fields: [
-                // { key: "id", label: "Booking ID" },
                 { key: "title", label: "", tdClass: 'align-middle', thStyle: { width: "25%" },},
 				{ key: "start", label: "Starts", tdClass: 'align-middle'},
 				{ key: "end", label: "Ends", tdClass: 'align-middle'},

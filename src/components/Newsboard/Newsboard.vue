@@ -46,8 +46,4 @@ export default {
 	height: 98%;
 }
 
-.ss-scroll {
-	/* opacity: 1; */
-}
-
 </style>

@@ -7,7 +7,6 @@
 <script>
 
 export default {
-    // props: ['robotID'],
     data() {
         return {
             owncloud_active: false,

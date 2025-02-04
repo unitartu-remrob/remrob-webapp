@@ -23,12 +23,7 @@ export default {
     fetchCounterData() {
       // Make an API call to the backend using the specified endpoint
       // Update the counter value based on the response
-
-      // this.$api.get("/api/v1/users").then((res) => {
-      //   const users = res.data;
-      //   const inactiveUsersCount = users.filter(user => !user.active).length;
-      //   this.counter = inactiveUsersCount;
-      // })
+      
       if (this.endpoint == "users") {
         const params = new URLSearchParams([['active', false]]);
         this.$api.get("/api/v1/users", {params}).then((res) => {

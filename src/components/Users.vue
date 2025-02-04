@@ -37,6 +37,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
+
 export default {
     data() {
         return {
@@ -47,7 +48,6 @@ export default {
                 { key: "last_name", label: "Last Name" },
                 { key: "email", label: "Email" },
                 { key: "files", label: "Student files" },
-                // { key: "submit", label: "Submissions" },
                 { key: "role", label: "Role" },
                 { key: "active", label: "Active" },
                 { key: "actions", label: "Actions" }
@@ -65,25 +65,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(["getUser"]),
-                                    //         <a :href="repo(users[data.index].user_repo)"
-                            // target="_blank"
-                            // class="btn"
-                            // :class="!oci(users[data.index].user_repo) ? 'disabled' : ''">
-                            // <JournalCode font-scale="1.4" :variant=""/></a>
-        renderUserLinks() {
-            return (data) => {
-                // const { owncloud_id, user_repo } = this.users[data.index]
-
-                // const owncloudActive = (owncloud_id !== null && owncloud_id.length);
-                // const repoActive = (user_repo !== null && user_repo.length);
-
-                // return (
-                //     <a :href="owncloudActive ? 'blah' : 'bleh'"></a>
-                // );
-
-            }
-        }
+        ...mapGetters(["getUser"])
     },
     methods: {
         getUsers: function() {
@@ -142,11 +124,11 @@ export default {
 <style>
 .alert-float {
   position: fixed !important;
-  top: 80px; /* Adjust top position as needed */
-  left: 400px; /* Adjust right position as needed */
+  top: 80px;
+  left: 400px;
   right: 500px;
   border-radius: 20px !important;
-  z-index: 1010; /* Adjust z-index as needed */
+  z-index: 1010;
 }
 
 </style>

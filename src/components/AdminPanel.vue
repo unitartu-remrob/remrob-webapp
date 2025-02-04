@@ -82,12 +82,10 @@ export default {
 		},
 		containerStatus: function() {
 			const items = this.containerList.map(container => {
-				const { data, slug, robot_id, robot_status, booking: { end_time, issue }, user } = container;
+				const { data, slug, robot_status, booking: { end_time, issue }, user } = container;
 				let Status,
 					StartedAt,
 					IPAddress
-
-				// let id = (robot_id) ? `robotont-${robot_id}` : slug;
 
 				if (data === 404) {
 					Status = "inactive";
@@ -117,6 +115,7 @@ export default {
 				}
 			})
 			this.alertChange();
+			
 			return items
 		}
     },
@@ -128,21 +127,17 @@ export default {
             })
 		},
 		stopContainer: function(id) {
-            this.$api.post(`/containers/stop/${id}`, {}).then((res) => {
+            this.$api.post(`/containers/stop/${id}`, {}).then((_) => {
 				console.log(`${id} stopped`)
-				// this.ws.send("update")
             })
 		},
 		removeContainer: function(id) {
-			this.$api.post(`/containers/remove/${id}`, {}).then((res) => {
-				// this.ws.send("update")
-            })
+			this.$api.post(`/containers/remove/${id}`, {});
 		},
 		switchTab: function(sim) {
 			this.is_sim = sim
 			this.ws.close()
 			this.is_loaded = false
-			// this.containerState = {}
 			this.connectWs()
 		},
 		connectWs: function() {
@@ -151,8 +146,8 @@ export default {
 			const ws = new WebSocket(`${wsRootURL}/containers/live/${endpoint}`)
 			ws.onmessage = (event) => {
 				const results = JSON.parse(event.data);
-				// console.log("PARSED", results)
-				const data = results.map(({ robot_id, slug, status, robot_status, value, booking, user }) => {
+				console.log("PARSED", results);
+				const data = results?.map(({ robot_id, slug, status, robot_status, value, booking, user }) => {
 					return {
 						robot_id, slug,
 						robot_status,

@@ -73,7 +73,7 @@ export default {
       }).then((res) => {
         if (res.status === 200) {
           this.showAlert = true;
-          setTimeout(() => this.$router.push({name: "Login"}), 3000)
+          setTimeout(() => this.$router.push({ name: "Login" }), 3000)
         }
       }).catch((error) => {
         this.dismissCountDown = this.dismissSec
