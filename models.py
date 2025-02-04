@@ -53,13 +53,6 @@ class Simtainers(db.Model):
     user_id = db.Column('user', db.Integer)
     vnc_uri = db.Column('vnc_uri', db.String(255))
 
-class Cameras(db.Model):
-    __tablename__ = "cameras"
-    id = db.Column(db.Integer, primary_key = True)
-
-    cell = db.Column('cell', db.Integer)
-    ip = db.Column('camera_ip', db.String(100))
-
 class Newsboard(db.Model):
     __tablename__ = "newsboard"
     id = db.Column(db.Integer, primary_key = True)
