@@ -9,11 +9,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_mail import Message, Mail
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, JWTManager, \
-    get_jwt, verify_jwt_in_request, decode_token, set_refresh_cookies, unset_refresh_cookies
+from flask_jwt_extended import create_access_token, create_refresh_token, \
+    get_jwt, get_jwt_identity, jwt_required, JWTManager, verify_jwt_in_request, decode_token, \
+    set_refresh_cookies, unset_refresh_cookies
 import bcrypt, os
 from dotenv import load_dotenv, find_dotenv
-
 
 app = Flask(__name__, static_folder="dist/", static_url_path="/")
 CORS(app)
@@ -26,7 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=60)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 app.config["JWT_VERIFY_SUB"] = False
 
@@ -42,7 +42,6 @@ migrate = Migrate(app, db)
 mail = Mail(app)
 
 from models import *
-
 
 def admin_required():
     def wrapper(fn):
@@ -123,12 +122,20 @@ def register():
     first_name = first_name.capitalize()
     last_name = last_name.capitalize()
 
-    user = User.query.filter(func.lower(User.email)==email.lower()).first()
+    user = User.query.filter(func.lower(User.email) == email.lower()).first()
 
     if user:
         return "There already is a user with this email", 400
     else:
-        user = User(email=email, first_name=first_name, last_name=last_name, password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"), active=False, role="ROLE_LEARNER")
+        user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            password=bcrypt.hashpw(password.encode("utf-8"),
+            bcrypt.gensalt()).decode("utf-8"),
+            active=False,
+            role="ROLE_LEARNER"
+        )
         db.session.add(user)
         db.session.commit()
         send_confirmation(email, f"{first_name} {last_name}")
@@ -393,8 +400,7 @@ def bookings_bulk():
     end_time = datetime.strptime(data["end"], date_format)
     while start_time < end_time:
         end = start_time + timedelta(minutes=int(data["interval"]))
-        # if end > end_time:
-        #     end = end_time
+
         for _ in range(int(data["nr_of_slots"])):
             booking = Bookings(
                 start_time=datetime.strftime(start_time, date_format),
@@ -403,11 +409,9 @@ def bookings_bulk():
                 project=data["project"],
                 admin=data["admin"]
             )
-            # print("adding slot", data["nr_of_slots"])
             db.session.add(booking)
         db.session.commit()
-        # print((datetime.strftime(start_time, date_format), datetime.strftime(end, date_format)))
-        start_time = end + timedelta(minutes=int(data["downtime"]))
+
     return "Slots created", 200
 
 
@@ -416,6 +420,7 @@ def bookings_bulk():
 def user_bookings(user_id):
     current_user = get_jwt_identity()
     _filter = request.args.get('booking')
+
     if current_user == int(user_id):
         results = []
         if _filter:
@@ -430,7 +435,7 @@ def user_bookings(user_id):
                 title = "Simulation"
             else:
                 title = "Robot"
-            # inv = Inventory.query.get(booking.inventory_id)
+
             slot_object = {
                 "title": title,
                 "start": booking.start_time,
@@ -503,7 +508,7 @@ def delete_date():
     ).all()
     for booking in bookings_to_delete:
         db.session.delete(booking)
-    # deleted_count = Bookings.query.filter(cast(Bookings.start_time, Date) == selected_day).delete()
+
     db.session.commit()
     return "Day cleared", 200
 
@@ -648,8 +653,7 @@ def update_inventory(inv_id):
             entry.project = data["project"]
         if "cell" in data and is_admin:
             entry.cell = data["cell"]
-        # else:
-        #     return "Bad query", 400
+
         db.session.commit()
         return "Inventory successfully updated", 200
 
@@ -728,7 +732,6 @@ def admins():
             admin.last_name = ""
         result.append(admin.first_name + " " + admin.last_name)
     return jsonify(result), 200
-
 
 
 if __name__ == '__main__':
