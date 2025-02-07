@@ -3,6 +3,7 @@ node_modules
 /dist
 /migrations
 __pycache__
+pyenv
 
 
 # local env files

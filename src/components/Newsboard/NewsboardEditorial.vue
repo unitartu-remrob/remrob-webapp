@@ -56,9 +56,6 @@ export default {
   components: {
     Newsboard
   },
-  props: {
-
-  },
   data() {
     return {
       newsContent: "",

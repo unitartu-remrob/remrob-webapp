@@ -22,7 +22,7 @@
         backdrop-variant="dark"
         backdrop
         bg-variant="dark"
-        text-variant="light"
+        text-variant="light"     
         shadow
       >
         <nav class="mb-3">
@@ -46,6 +46,7 @@
 <script>
 import { mapActions, mapGetters } from 'vuex';
 import UserSubmissionLink from './components/UserSubmissionLink.vue'
+
 export default {
   name: 'App',
   data() {

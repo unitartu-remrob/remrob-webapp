@@ -3,7 +3,6 @@ import App from './App.vue'
 import { BootstrapVue } from 'bootstrap-vue';
 import wysiwyg from "vue-wysiwyg";
 
-
 import {
   BIconJustify,
   BIconCircleFill,

@@ -24,16 +24,16 @@
                         <div class="d-flex mr-4 align-items-center ml-4">
                             <b-img v-if="item.is_simulation" class="slot-icon" :src="require('../assets/robotont-sim.png')"></b-img>
                             <b-img v-else class="slot-icon" :src="require('../assets/robotont-right.png')"></b-img>
-                            <span class="booking-title ml-5" style="font-size: 1.5rem;">{{item.title}}</span>
+                            <span class="booking-title ml-5" style="font-size: 1.5rem;">{{ item.title }}</span>
                         </div>
                     </template>
                     <template v-slot:cell(start)="{ item }">
                         <Clock variant="primary" />
-                        {{parseDate(item.start)}}
+                        {{ parseDate(item.start) }}
                     </template>
                     <template v-slot:cell(end)="{ item }">
                         <Clock variant="primary"/>
-                        {{parseDate(item.end)}}
+                        {{ parseDate(item.end) }}
                     </template>
                     <template v-slot:cell(countdown)="{ item }">
                         <div :key="timerKey" class="timer">            

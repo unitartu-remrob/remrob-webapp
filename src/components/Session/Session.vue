@@ -1,12 +1,12 @@
 <template>
     <b-container fluid>
         <div class="bg-main"
-        :class="is_sim ? 'vr-cell' : 'bg-cell'"></div>
+        :class="isSim ? 'vr-cell' : 'bg-cell'"></div>
         <!-- <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
         </b-modal> -->
-        <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
-		<b-row v-if="this.is_loaded">``
+        <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
+		<b-row v-if="this.isLoaded">``
             <b-col class="info text-center">
                 <h2>{{message}}</h2>
                 <div :key="timerKey">
@@ -44,9 +44,9 @@
                 
             </b-col>
         </b-row>
-        <b-row class="room" v-if="this.is_loaded">
+        <b-row class="room" v-if="this.isLoaded">
             <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert>
-            <div v-if="!is_sim" class="room-items">
+            <div v-if="!isSim" class="room-items">
                 <!-- <iframe class="camera-stream"
                     :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
                 </iframe> -->
@@ -56,7 +56,7 @@
                 <b-img :src="require('@/assets/robotont-sim.png')"></b-img>
             </div>
         </b-row>
-        <div class="session" v-if="this.is_loaded" :style="is_sim ? 'top: 7rem;' : ''">
+        <div class="session" v-if="this.isLoaded" :style="isSim ? 'top: 7rem;' : ''">
             <Desktop :started="started" :source="vnc_uri" />
         </div>
     </b-container>
@@ -77,7 +77,7 @@ export default {
             booking: {},
             freshImage: false,
             sesssionID: '',
-            is_loaded: false,
+            isLoaded: false,
             timerKey: 0,
             loading: true,
             saving: false,
@@ -124,7 +124,7 @@ export default {
         vnc_uri: function() {
             return `${rootURL}${this.container.vnc_uri}`;
         },
-        is_sim: function() {
+        isSim: function() {
             return this.booking.is_simulation;
         }
     },
@@ -134,15 +134,15 @@ export default {
             this.loading = true;
             this.$api.get(`/containers/inspect/${slug}`).then((res) => {
                 this.containerData = res.data
-                const { Status } = this.containerData.State;
+                const { status } = this.containerData;
                 setTimeout(() => {
-                    this.started = (Status === "exited" || Status === "running");
+                    this.started = (status === "exited" || status === "running");
                 }, 500)
                 this.loading = false;
             }).catch(e => {
                 // With the expectation of exception 404 - container dead
                 console.log("Caught inactive")
-                this.containerData.State = { Status: "inactive" }
+                this.containerData = { status: "inactive" }
                 this.loading = false;
             })
         },
@@ -150,7 +150,7 @@ export default {
             const { slug } = this.container;
             this.starting = true;
             // Always inform whether sim, the server will validate the environment if user is not an admin
-            const params = new URLSearchParams([['fresh', this.freshImage], ['is_simulation', this.booking.is_simulation]]);
+            const params = new URLSearchParams([['is_simulation', this.booking.is_simulation]]);
             this.$api.post(`/containers/start/${slug}`, {}, {params}).then((res) => {
                 const { path } = res.data
                 // Update the UI
@@ -181,7 +181,7 @@ export default {
         },
         getBookingInfo: function() {
             const params = new URLSearchParams([['booking', this.sesssionID]]);
-            this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`, {params}).then((res) => {
+            this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`, { params }).then((res) => {
                 this.booking = res.data.user_bookings[0]
                 console.log("Active booking", this.booking)
                 // Assign ourselves a container:
@@ -194,7 +194,7 @@ export default {
         requestContainer: function() {
             this.$api.get(`/containers/assign`).then((res) => {
                 console.log("Assigned container", res.data)
-                this.is_loaded = true;
+                this.isLoaded = true;
                 this.container = res.data
                 this.inspectContainer()
             }).catch(e => {
