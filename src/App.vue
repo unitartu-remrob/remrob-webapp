@@ -2,7 +2,7 @@
   <div id="app">
     <b-navbar toggleable="lg" type="dark" sticky variant="dark">
       <Justify v-b-toggle.sidebar-backdrop v-if="loggedIn" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
-      <b-navbar-brand style="cursor:pointer" @click="$router.push({name:'Home'})">Remrob</b-navbar-brand>
+      <b-navbar-brand style="cursor:pointer" @click="$router.push({ name:'Home' })">Remrob</b-navbar-brand>
       <b-navbar-nav v-if="loggedIn" class="ml-auto">
         <b-nav-item v-if="isAdmin" href="/containers/guide/" class="admin-sc mr-1">
           <b-button class="btn-dark" variant="light"><JournalText font-scale="1" class="mr-2"/>Remrob guide</b-button>

@@ -5,15 +5,32 @@
         <!-- <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
         </b-modal> -->
+        <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
+            <h4>This will undo all system changes (except files stored in your catkin workspace and Submission folder)</h4>
+        </b-modal>
         <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
 		<b-row v-if="this.isLoaded">``
-            <b-col class="info text-center">
-                <h2>{{message}}</h2>
+            <b-col class="info text-center" v-if="this.sessionIsActive">
+                <h2>{{ message }}</h2>
                 <div :key="timerKey">
-                    <h3 class="mt-4">Time left: <strong>{{ this.booking.displayTime }}</strong></h3>
+                    <h3 class="mt-4">Time left: <strong>{{ this.displayTime }}</strong></h3>
                 </div>
-                <div class="controls">
-                    <p class="h3 mb-4">Session status: <strong>{{containerState.Status}}</strong></p>
+                <p class="h3 mt-4 mb-5">Session status: <strong>{{ containerState.status }}</strong></p>
+                <div>
+                    <strong class="image-pick-label" v-if="containerState.disconnected">
+                        Pick environment:
+                    </strong>
+                    <b-form-select class="image-dropdown" v-if="containerState.disconnected"
+                        :options="imageOptions"
+                        v-model="chosenImage">
+                    </b-form-select>
+                    <span v-else>
+                        <b-img class="version-icon mr-2" :src="require(`../../assets/${getImageRosVersion(chosenImage)}.png`)"></b-img>
+                        <span class="h5">{{ getImageLabel(chosenImage) }}</span>
+                    </span>
+                </div>
+
+                <div class="controls p-2">                    
                     <!-- <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
                     </b-form-checkbox> -->
@@ -21,7 +38,7 @@
                         <b-spinner v-if="starting" small></b-spinner>
                         Start session
                     </b-button>
-                    <b-button class="mr-3" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg">
+                    <b-button class="mr-3" :href="vnc_uri" variant="primary" :disabled="containerState.inactive" target="_blank" size="lg" @click="disableDesktopIframe">
                         <Link font-scale="1" />
                         Connect to session!
                     </b-button>
@@ -38,26 +55,27 @@
                         Save environment
                     </b-button> -->
                 </div>
-
             </b-col>
-            <b-col>
-                
+            <b-col class="info text-center" v-else>
+                <h2 class="mb-4">Your session is over.</h2>
+                <h4>See if you can book another!</h4>
+                <b-button class="mt-2" variant="primary" @click="$router.push({ name: 'Booking' })">Go to booking</b-button>
             </b-col>
         </b-row>
         <b-row class="room" v-if="this.isLoaded">
-            <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert>
-            <div v-if="!isSim" class="room-items">
-                <!-- <iframe class="camera-stream"
-                    :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
-                </iframe> -->
+            <!-- <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert> -->
+            <!-- <iframe class="camera-stream"
+                :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
+            </iframe> -->
+            <div v-if="!this.isSim" class="room-items">
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
             <div v-else class="simbot">
                 <b-img :src="require('@/assets/robotont-sim.png')"></b-img>
             </div>
         </b-row>
-        <div class="session" v-if="this.isLoaded" :style="isSim ? 'top: 7rem;' : ''">
-            <Desktop :started="started" :source="vnc_uri" />
+        <div class="session" v-if="this.isLoaded" :style="this.isSim ? 'top: 7rem;' : ''">
+            <Desktop :started="started && !hasConnected" :source="vnc_uri" />
         </div>
     </b-container>
 </template>
@@ -75,18 +93,28 @@ export default {
             container: {},
             containerData: {},
             booking: {},
-            freshImage: false,
+            isSim: null,
+            displayTime: '',
+            sessionIsActive: true,
+
+            images: [],
+			defaultImage: '',
+			chosenImage: '',
+
             sesssionID: '',
             isLoaded: false,
+            hasConnected: false,
             timerKey: 0,
+
             loading: true,
+
             saving: false,
             starting: false,
             started: false,
             stopping: false,
             submitting: false,
             purging: false,
-            successMessage: null,
+
             dismissCountDown: 0,
             dismissSec: 3,
             showAlert: false,
@@ -108,14 +136,14 @@ export default {
         },
         containerState: function() {
             if (!this.loading) {
-                const { Status } = this.containerData.State;
-                const running = (Status === "running");
-                const disconnected = (Status === "inactive");
-                const exited = (Status === "exited");
+                const { status } = this.containerData;
+                const running = (status === "running");
+                const disconnected = (status === "inactive");
+                const exited = (status === "exited");
                 const inactive = (exited || disconnected);
 
                 return {
-                    running, inactive, disconnected, exited, Status
+                    running, inactive, disconnected, exited, status
                 }  
             } else {
                 return {}
@@ -124,8 +152,10 @@ export default {
         vnc_uri: function() {
             return `${rootURL}${this.container.vnc_uri}`;
         },
-        isSim: function() {
-            return this.booking.is_simulation;
+        imageOptions: function() {
+            return this.images.map(({ imageTag, label }) => {
+                return { value: imageTag, text: label }
+            })
         }
     },
     methods: {
@@ -149,9 +179,17 @@ export default {
 		startContainer: function() {
             const { slug } = this.container;
             this.starting = true;
+            
+            const image = this.chosenImage || this.defaultImage;
+            const body = {
+                rosVersion: this.getImageRosVersion(image),
+                imageTag: image,
+            }
+
             // Always inform whether sim, the server will validate the environment if user is not an admin
             const params = new URLSearchParams([['is_simulation', this.booking.is_simulation]]);
-            this.$api.post(`/containers/start/${slug}`, {}, {params}).then((res) => {
+
+            this.$api.post(`/containers/start/${slug}`, body, { params }).then((res) => {
                 const { path } = res.data
                 // Update the UI
                 this.container.vnc_uri = path;
@@ -166,7 +204,16 @@ export default {
 				console.log(`${slug} stopped`)
                 this.stopping = false;
 				this.inspectContainer()
-            })	
+            })
+            this.hasConnected = false;
+		},
+        removeContainer: function() {
+            const { slug } = this.container;
+			this.$api.post(`/containers/remove/${slug}`).then((res) => {
+                this.inspectContainer()
+                this.started = false
+				// this.ws.send("update")
+            })
 		},
         // commitContainer: function() {
         //     const { slug } = this.container;
@@ -176,13 +223,18 @@ export default {
         //         this.saving = false;
         //     })
 		// },
-        countDownChanged(dismissCountDown) {
-            this.dismissCountDown = dismissCountDown
+        // countDownChanged(dismissCountDown) {
+        //     this.dismissCountDown = dismissCountDown
+        // },
+        disableDesktopIframe: function() {
+            this.hasConnected = true;
         },
         getBookingInfo: function() {
             const params = new URLSearchParams([['booking', this.sesssionID]]);
             this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`, { params }).then((res) => {
                 this.booking = res.data.user_bookings[0]
+                this.isSim = this.booking.is_simulation;
+
                 console.log("Active booking", this.booking)
                 // Assign ourselves a container:
                 this.requestContainer();
@@ -198,7 +250,6 @@ export default {
                 this.container = res.data
                 this.inspectContainer()
             }).catch(e => {
-                console.log("Failed to assign a container")
                 if (e.response.status == 403) {
                     this.$router.push({ name: "403" })
                 }
@@ -206,19 +257,41 @@ export default {
         },
         updateTime() {
             const { start, end } = this.booking;
-            const time = getCountdown(start, end);
-            this.booking = Object.assign(this.booking, time)
+            const sessionTime = getCountdown(start, end);
+
+            this.displayTime = sessionTime.displayTime;
+            this.sessionIsActive = sessionTime.isActive;
             this.timerKey += 1;
-        }
+        },
+        getImageVariants: function() {
+			this.$api.get(`/containers/images`).then((res) => {
+				this.images = res.data;
+                this.chosenImage = this.images.find(image => image.default)?.imageTag;
+			})
+		},
+        getImageLabel: function(imageTag) {
+			return this.images.find(image => image.imageTag === imageTag)?.label;
+		},
+		getImageRosVersion: function(imageTag) {
+			return this.images.find(image => image.imageTag === imageTag)?.rosVersion;
+		},
     },
-    created() {
+    created () {
         this.sesssionID = this.$route.params.session;
         // Retrieve data about the specific booking being accessed
-        this.getBookingInfo()
+        this.getBookingInfo();
+        this.getImageVariants();
     },
 	mounted() {
         this.timer = setInterval(this.updateTime, 1000);
 	},
+    watch: {
+        isSim: function(val) {
+            if (!val) {
+                this.images = this.images.filter(image => !image.simulationExclusive);
+            }
+        }
+    },
 	beforeDestroy() {  
         clearInterval(this.timer);
     },
@@ -234,8 +307,15 @@ export default {
     background: white;
     border-radius: 1.2rem;
     border: 2px solid rgb(22, 20, 20);
-    max-width: 42%;
+    max-width: 42%;   
 }
+
+@media screen and (min-width: 2000px) {
+    .info {
+        max-width: 34%;
+    }
+}
+
 .controls {
     margin-top: 2rem;
 }
@@ -262,6 +342,13 @@ export default {
 .simbot img {
     width: 110%;
     height: auto;
+}
+
+
+@media screen and (min-width: 2000px) {
+    .simbot img {
+        width: 130%;
+    }
 }
 
 .keyboard {
@@ -293,6 +380,24 @@ export default {
     align-items: center;
     gap: 4rem;
     padding: 2rem 0;
+}
+
+.image-dropdown {
+    max-width: 40%;
+    position: relative;
+}
+
+.image-pick-label {
+    font-size: 1.2rem;
+    /* color: rgb(174, 196, 202); */
+    margin-top: 1rem;
+    margin-right: 1rem;
+}
+
+.version-icon {
+	width: 5rem;
+	height: 5rem;
+	object-fit: cover;
 }
 
 .camera-stream {

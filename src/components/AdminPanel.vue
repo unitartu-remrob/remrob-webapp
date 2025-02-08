@@ -9,13 +9,17 @@
 		</b-tabs>
 		<div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
 		<b-table striped v-else :items="containerStatus" :fields="filteredFields">
-			<template v-slot:cell(image)="{ item: { id, image, disconnected } }">
+			<template v-slot:cell(image)="{ item: { image, id, disconnected } }">
                 <b-form-select v-if="disconnected"
 					:options="imageOptions"
 					v-model="chosenImages[id]">
 				</b-form-select>
-				<div v-else class="ml-2">{{ getImageLabel(image) }}</div>
+				<div v-else class="ml-2">
+					<b-img class="version-icon mr-2" :src="require(`../assets/${getImageRosVersion(image)}.png`)"></b-img>
+					<span>{{ getImageLabel(image) }}</span>
+				</div>
 			</template>
+			
 			<template v-slot:cell(robotStatus)="{ item: { robot_status } }">
 				<div v-if="true" class="d-flex align-items-center justify-content-center">
 					<Broadcast font-scale="2" :variant="robot_status ? 'success' : 'danger'"/>
@@ -55,6 +59,9 @@ export default {
     data() {
         return {
             inventory: [],
+			containerList: [],
+			containerState: {},
+
 			fields: [
                 { key: "id", label: "Container ID", tdClass: 'align-middle', thClass: "", },
 				{ key: "image", label: "Session type", tdClass: 'align-middle'},
@@ -67,11 +74,14 @@ export default {
 				{ key: "status", label: "Container status", tdClass: 'align-middle text-center', thClass: "text-center", },
 				{ key: "connection", label: "", tdClass: 'text-left', thClass: "text-center"},
             ],
-			imageOptions: [],
-			containerList: [],
-			containerState: {},
+			
+			images: [],
+			imageOptionsSim: [],
+			defaultImageSim: '',
+			imageOptionsPhysbot: [],
+			defaultImagePhysbot: '',
 			chosenImages: {},
-			defaultImage: '',
+
 			pollInterval: null,
 			isSim: true,
 			isLoaded: false,
@@ -124,13 +134,17 @@ export default {
 					vnc_uri: `${rootURL}${vnc_uri}`, // can add &view_only=true for spying
 					user_time: getTimeLeft(end_time),
 					user,
-					robot_status
+					robot_status,
+					isSim: this.isSim
 				}
 			})
 			this.alertChange();
 			
 			return items
 		},
+		imageOptions: function() {
+			return this.isSim ? this.imageOptionsSim : this.imageOptionsPhysbot
+		}
 
     },
     methods: {
@@ -167,23 +181,28 @@ export default {
 		},
 		getImageVariants: function() {
 			this.$api.get(`/containers/images`).then((res) => {
-				console.log("got images", res.data)
 				this.images = res.data;
-				this.imageOptions = this.images.map(({ imageTag, label }) => {
+				this.physbotImages = this.images.filter(image => !image.simulationExclusive)
+				
+				this.imageOptionsSim = this.images.map(({ imageTag, label }) => {
 					return { value: imageTag, text: label }
 				})
-				this.defaultImage = this.images.find(image => image.default)?.imageTag
-				console.log(this.defaultImage)
+				this.defaultImageSim = this.images.find(image => image.default)?.imageTag
+
+				this.imageOptionsPhysbot = this.physbotImages.map(({ imageTag, label }) => {
+					return { value: imageTag, text: label }
+				})
+				this.defaultImagePhysbot = this.physbotImages.find(image => image.default)?.imageTag	
 			})
 		},
 		getImageLabel: function(imageTag) {
-			return this.images.find(image => image.imageTag === imageTag)?.label
+			return this.images.find(image => image.imageTag === imageTag)?.label;
 		},
 		getImageRosVersion: function(imageTag) {
-			return this.images.find(image => image.imageTag === imageTag)?.rosVersion
+			return this.images.find(image => image.imageTag === imageTag)?.rosVersion;
 		},
 		setImage: function(id, imageTag) {
-			this.chosenImages[id] = imageTag
+			this.chosenImages[id] = imageTag;
         },
 		startContainer: function(id) {
 			const queryParams = new URLSearchParams([['is_simulation', this.isSim]]);
@@ -223,9 +242,9 @@ export default {
 	watch: {
 		isLoaded(val) {
 			if (val) {
-				console.log("setting default images...")
+				// set default images for each container
 				this.containerList.forEach(container => {
-					this.chosenImages[container.slug] = this.defaultImage;
+					this.chosenImages[container.slug] = container.isSim ? this.defaultImageSim : this.defaultImagePhysbot;
 				})
 			}
 		}
@@ -242,4 +261,9 @@ export default {
 
 <style scoped>
 
+.version-icon {
+	width: 3rem;
+	height: 3rem;
+	object-fit: cover;
+}
 </style>

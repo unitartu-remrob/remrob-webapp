@@ -39,7 +39,7 @@ export default {
 }
 .resp-iframe {
     position: absolute;
-    top: -6rem;
+    top: -7.2rem;
     left: 0;
     width: 100%;
     height: 100%;

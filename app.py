@@ -398,6 +398,10 @@ def bookings_bulk():
     date_format = "%Y-%m-%dT%H:%M"
     start_time = datetime.strptime(data["start"], date_format)
     end_time = datetime.strptime(data["end"], date_format)
+
+    if (start_time >= end_time):
+        return "Start time cannot be after end time", 400
+    
     while start_time < end_time:
         end = start_time + timedelta(minutes=int(data["interval"]))
 
@@ -410,7 +414,9 @@ def bookings_bulk():
                 admin=data["admin"]
             )
             db.session.add(booking)
+            
         db.session.commit()
+        start_time = end + timedelta(minutes=int(data["downtime"]))
 
     return "Slots created", 200
 
