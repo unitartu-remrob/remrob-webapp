@@ -33,6 +33,7 @@ class Inventory(db.Model):
     __tablename__ = "inventory"
     id = db.Column(db.Integer, primary_key = True)
     robot_id = db.Column('robot_id', db.Integer)
+    robot_label = db.Column('robot_label', db.String(100))
     slug = db.Column('slug', db.String(100))
     project = db.Column('project', db.String(100))
     cell = db.Column('cell', db.Integer)

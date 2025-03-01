@@ -7,8 +7,12 @@
         <b-row class="mt-3">
             <b-col>
                 <b-form>
-                    <b-form-group label="Robotont nr.">
+                    <b-form-group label="Robot nr.">
                         <b-form-input type="number" v-model="robotId">  
+                        </b-form-input>
+                    </b-form-group>
+                    <b-form-group label="Robot name">
+                        <b-form-input type="string" v-model="robotLabel">  
                         </b-form-input>
                     </b-form-group>
                     <b-button @click="createInventory">Submit</b-button>
@@ -27,7 +31,7 @@
                     </template>
                     <template #cell(project)="{ item }">
                         <InventoryInput :inventoryItem="item" @update="updateInventory"/>
-                    </template>                    
+                    </template>            
                 </b-table>
             </b-col>
         </b-row>
@@ -47,10 +51,12 @@ export default {
     data() {
         return {
             robotId: null,
+            robotLabel: null,
             inventory: [],
             formState: [],
             fields: [
                 { key: "title", label: "" },
+                { key: "robot_label", label: "Robot name" },
                 // { key: "location", label: "Workcell" },
                 { key: "project", label: "Change settings" },              
                 // { key: "status", label: "Available" },
@@ -82,10 +88,13 @@ export default {
                 return 
             }
             const data = {
-                "robot_id": this.robotId
+                "robot_id": this.robotId,
+                "robot_label": this.robotLabel
             }
             this.$api.post(`/api/v1/inventory`, data).then((res) => {
                 this.robotId = null;
+                this.robotLabel = null;
+                
                 this.message = res.data;
                 this.alertType = "success";
                 this.dismissCountDown = this.dismissSec;

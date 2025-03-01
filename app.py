@@ -593,7 +593,8 @@ def inventory():
             "id": inv.id,
             "robot_id": inv.robot_id,
             "slug": inv.slug,
-            "title": f"Robotont-{inv.robot_id}",
+            "title": f"Robot-{inv.robot_id}",
+            "robot_label": inv.robot_label,
             "status": inv.status,
             "project": inv.project,
             "cell": inv.cell,
@@ -618,11 +619,14 @@ def new_inventory():
     else:
         return "Bad query", 400
 
+    robot_label = data["robot_label"] if "robot_label" in data else None
+
     entry = Inventory.query.filter(Inventory.robot_id == id).first()
     if entry == None:
         inventory = Inventory(
             robot_id=id,
             slug=f"robo-{id}",
+            robot_label=robot_label,
             project='default',
             cell=0,
             status=False
