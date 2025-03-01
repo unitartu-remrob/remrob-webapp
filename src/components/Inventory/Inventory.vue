@@ -55,7 +55,7 @@ export default {
             inventory: [],
             formState: [],
             fields: [
-                { key: "title", label: "" },
+                { key: "title", label: "ID" },
                 { key: "robot_label", label: "Robot name" },
                 // { key: "location", label: "Workcell" },
                 { key: "project", label: "Change settings" },              
