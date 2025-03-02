@@ -15,7 +15,7 @@
 					v-model="chosenImages[id]">
 				</b-form-select>
 				<div v-else class="ml-2">
-					<b-img class="version-icon mr-2" :src="require(`../assets/${getImageRosVersion(image)}.png`)"></b-img>
+					<b-img class="version-icon mr-2" :src="versionLogo(image)"></b-img>
 					<span>{{ getImageLabel(image) }}</span>
 				</div>
 			</template>
@@ -85,6 +85,7 @@ export default {
 			pollInterval: null,
 			isSim: true,
 			isLoaded: false,
+			imagesAreLoaded: false,
 			ws: null
         }
     },
@@ -144,8 +145,7 @@ export default {
 		},
 		imageOptions: function() {
 			return this.isSim ? this.imageOptionsSim : this.imageOptionsPhysbot
-		}
-
+		},
     },
     methods: {
 		switchTab: function(isSim) {
@@ -187,12 +187,19 @@ export default {
 				this.imageOptionsSim = this.images.map(({ imageTag, label }) => {
 					return { value: imageTag, text: label }
 				})
-				this.defaultImageSim = this.images.find(image => image.default)?.imageTag
+				this.defaultImageSim = this.images.find(image => image.default)?.imageTag ?? this.images[0].imageTag;
 
 				this.imageOptionsPhysbot = this.physbotImages.map(({ imageTag, label }) => {
 					return { value: imageTag, text: label }
 				})
-				this.defaultImagePhysbot = this.physbotImages.find(image => image.default)?.imageTag	
+				this.defaultImagePhysbot = this.physbotImages.find(image => image.default)?.imageTag ?? this.physbotImages[0].imageTag;
+
+				this.imagesAreLoaded = true
+			})
+		},
+		updateImageVariants: function() {
+			this.containerList.forEach(container => {
+				this.chosenImages[container.slug] = this.isSim ? this.defaultImageSim : this.defaultImagePhysbot;
 			})
 		},
 		getImageLabel: function(imageTag) {
@@ -201,9 +208,17 @@ export default {
 		getImageRosVersion: function(imageTag) {
 			return this.images.find(image => image.imageTag === imageTag)?.rosVersion;
 		},
-		setImage: function(id, imageTag) {
-			this.chosenImages[id] = imageTag;
-        },
+		versionLogo: function(imageTag) {
+			const rosVersion = this.getImageRosVersion(imageTag);
+			if (rosVersion) {
+				try {
+					return require(`../assets/${rosVersion}.png`);
+				} catch (e) {
+					return null;
+				}
+			}
+			return null;
+		},
 		startContainer: function(id) {
 			const queryParams = new URLSearchParams([['is_simulation', this.isSim]]);
 			const body = {
@@ -240,12 +255,15 @@ export default {
 		return { startSound, stopSound }
 	},
 	watch: {
-		isLoaded(val) {
+		imagesAreLoaded(val) {
 			if (val) {
 				// set default images for each container
-				this.containerList.forEach(container => {
-					this.chosenImages[container.slug] = container.isSim ? this.defaultImageSim : this.defaultImagePhysbot;
-				})
+				this.updateImageVariants();
+			}
+		},
+		isLoaded(val) {
+			if (val) {
+				this.updateImageVariants()
 			}
 		}
 	},

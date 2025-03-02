@@ -25,7 +25,7 @@
                         v-model="chosenImage">
                     </b-form-select>
                     <span v-else>
-                        <b-img class="version-icon mr-2" :src="require(`../../assets/${getImageRosVersion(chosenImage)}.png`)"></b-img>
+                        <b-img class="version-icon mr-2" :src="versionLogo(chosenImage)"></b-img>
                         <span class="h5">{{ getImageLabel(chosenImage) }}</span>
                     </span>
                 </div>
@@ -274,6 +274,17 @@ export default {
 		},
 		getImageRosVersion: function(imageTag) {
 			return this.images.find(image => image.imageTag === imageTag)?.rosVersion;
+		},
+        versionLogo: function(imageTag) {
+			const rosVersion = this.getImageRosVersion(imageTag);
+			if (rosVersion) {
+				try {
+					return require(`../../assets/${rosVersion}.png`);
+				} catch (e) {
+					return null;
+				}
+			}
+			return null;
 		},
     },
     created () {
