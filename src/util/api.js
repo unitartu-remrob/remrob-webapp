@@ -1,5 +1,6 @@
 import axios from "axios";
 import $router from "../router/router.js";
+import { getCSRFToken } from "./cookies.js";
 
 const domain = window.location.host;
 const hostname = window.location.hostname;
@@ -24,7 +25,13 @@ const api = axios.create({
 
 const refreshAccessToken = async () => {
     try {
-        const res = await api.post("/api/v1/refresh-token")
+        const csrfToken = getCSRFToken();
+
+        const res = await api.post("/api/v1/refresh-token", {}, {
+            headers: {
+                "X-CSRF-TOKEN": csrfToken,
+            },
+        })
         const token = res.data.access_token
         api.defaults.headers.common['Authorization'] = 'Bearer ' + token;
         localStorage.setItem('user', JSON.stringify(res.data));
