@@ -1,4 +1,7 @@
-# Remrob frontend application
+# Remrob Frontend app + Booking backend
+
+The frontend is written with Vue.js (v2), while the Python backend is based on the Flask web framework.
+SQLAlchemy (flask-sqlalchemy) is used as an ORM for the PostgreSQL database.
 
 ## Requirements
 
@@ -35,7 +38,40 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 pip install -r requirements.txt
 ```
 
-## Run app.py
+## Run dev server with hot-reloads
 ```
-python app.py
+npm run dev-server
 ```
+
+## Run poduction app with gunicorn
+```
+npm run start
+```
+
+## PostgreSQL database setup
+
+1. Set your database credentials in the .env or .env.production env files for development or production setup respectively.
+
+	```bash
+	# Example - db_user: postgres, db_user_password: postgres, db_name: remrob
+	SQLALCHEMY_DATABASE_URI = postgresql://postgres:postgres@localhost:5432/remrob
+	```
+
+2. Running migrations with alembic
+	
+	```bash
+	source .venv/bin/activate
+
+	flask db init # will initialize ./migrations folder
+	flask db migrate # will generate migration script under ./migrations/versions
+	flask db upgrade # will apply the migration script to the database
+	```
+
+&nbsp;&nbsp;
+
+# Acknowledgments
+
+Completed with the support by IT Academy Programme of Education and Youth Board of Estonia.
+
+Valminud Haridus- ja Noorteameti IT Akadeemia programmi toel.
+
