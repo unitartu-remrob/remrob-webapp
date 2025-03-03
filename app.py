@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_mail import Message, Mail
-from flask_jwt_extended import create_access_token, create_refresh_token, \
+from flask_jwt_extended import create_access_token, create_refresh_token, get_csrf_token, \
     get_jwt, get_jwt_identity, jwt_required, JWTManager, verify_jwt_in_request, decode_token, \
     set_refresh_cookies, unset_refresh_cookies
 import bcrypt, os
@@ -165,6 +165,10 @@ def login():
 
             response = jsonify(access_token=access_token, user_id=user.id, role=user.role)
             set_refresh_cookies(response, refresh_token)
+
+            csrf_token = get_csrf_token(refresh_token)
+            response.set_cookie("csrf_token", csrf_token, httponly=False, samesite="Strict")
+
             return response, 200
         else:
             return "Your account has not been activated yet", 403
