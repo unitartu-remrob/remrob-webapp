@@ -12,7 +12,7 @@
                         </b-form-input>
                     </b-form-group>
                     <b-form-group label="Robot name:">
-                        <b-form-input type="string" v-model="robotLabel">  
+                        <b-form-input type="text" v-model="robotLabel">  
                         </b-form-input>
                     </b-form-group>
                     <b-button variant="success" @click="createInventory">Add robot</b-button>
@@ -39,7 +39,7 @@
                     </template>
                     <template #cell(project)="{ item }">
                         <InventoryInput :inventoryItem="item" :isSimtainer=false @update="updateInventory"/>
-                    </template>            
+                    </template>
                 </b-table>
             </b-col>
             <b-col class="col-4 ml-5">
