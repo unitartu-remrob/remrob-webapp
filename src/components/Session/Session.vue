@@ -25,8 +25,9 @@
                         v-model="chosenImage">
                     </b-form-select>
                     <span v-else>
-                        <b-img class="version-icon mr-2" :src="versionLogo(chosenImage)"></b-img>
-                        <span class="h5">{{ getImageLabel(chosenImage) }}</span>
+                        <span class="h4 mr-3">Session type:</span>
+                        <b-img class="version-icon mr-2" :src="imageHandler.versionLogo(chosenImage)"></b-img>
+                        <strong style="font-size: 1.2rem">{{ imageHandler.getImageLabel(chosenImage) }}</strong>
                     </span>
                 </div>
 
@@ -86,6 +87,7 @@ import { getCountdown } from '@/util/helpers'
 import Desktop from './Desktop.vue'
 import RobotStatus from './RobotStatus.vue'
 import { rootURL } from "@/util/api";
+import { getImageOptions } from '../../shared/getImages';
 
 export default {
     data() {
@@ -97,8 +99,8 @@ export default {
             displayTime: '',
             sessionIsActive: true,
 
+            imageHandler: null,
             images: [],
-			defaultImage: '',
 			chosenImage: '',
 
             sesssionID: '',
@@ -127,11 +129,11 @@ export default {
     computed: {
         ...mapGetters(["getUser"]),
         message: function() {
-            const { robot_id, container_id } = this.container;
-            if (container_id) {
-                return `Your simulation environment is ready`;
-            } else {
+            const { robot_id } = this.container;
+            if (robot_id !== undefined) {
                 return `You have been assigned Robotont nr. ${robot_id}`;
+            } else {
+                return `Your simulation environment is ready`;
             }
         },
         containerState: function() {
@@ -179,10 +181,11 @@ export default {
 		startContainer: function() {
             const { slug } = this.container;
             this.starting = true;
-            
-            const image = this.chosenImage || this.defaultImage;
+
+            const image = this.chosenImage;
+
             const body = {
-                rosVersion: this.getImageRosVersion(image),
+                rosVersion: this.imageHandler.getImageRosVersion(image),
                 imageTag: image,
             }
 
@@ -264,27 +267,15 @@ export default {
             this.timerKey += 1;
         },
         getImageVariants: function() {
-			this.$api.get(`/containers/images`).then((res) => {
-				this.images = res.data;
-                this.chosenImage = this.images.find(image => image.default)?.imageTag;
+			getImageOptions().then(imageHandler => {
+				this.imageHandler = imageHandler
+                const { defaultImageSim, defaultImagePhysbot, images } = imageHandler;
+
+                this.images = images;
+                this.chosenImage = this.isSim ? defaultImageSim : defaultImagePhysbot;
+			}).catch(err => {
+				console.error("Error getting images", err)
 			})
-		},
-        getImageLabel: function(imageTag) {
-			return this.images.find(image => image.imageTag === imageTag)?.label;
-		},
-		getImageRosVersion: function(imageTag) {
-			return this.images.find(image => image.imageTag === imageTag)?.rosVersion;
-		},
-        versionLogo: function(imageTag) {
-			const rosVersion = this.getImageRosVersion(imageTag);
-			if (rosVersion) {
-				try {
-					return require(`../../assets/${rosVersion}.png`);
-				} catch (e) {
-					return null;
-				}
-			}
-			return null;
 		},
     },
     created () {
@@ -406,8 +397,8 @@ export default {
 }
 
 .version-icon {
-	width: 5rem;
-	height: 5rem;
+	width: 4rem;
+	height: 4rem;
 	object-fit: cover;
 }
 

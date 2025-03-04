@@ -15,8 +15,8 @@
 					v-model="chosenImages[id]">
 				</b-form-select>
 				<div v-else class="ml-2">
-					<b-img class="version-icon mr-2" :src="versionLogo(image)"></b-img>
-					<span>{{ getImageLabel(image) }}</span>
+					<b-img class="version-icon mr-2" :src="imageHandler.versionLogo(image)"></b-img>
+					<span>{{ imageHandler.getImageLabel(image) }}</span>
 				</div>
 			</template>
 
@@ -55,8 +55,9 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { getUptime, getTimeLeft } from '../util/helpers'
+import { getUptime, getTimeLeft } from '@/util/helpers'
 import { wsRootURL, rootURL } from "@/util/api";
+import { getImageOptions } from '@/shared/getImages';
 import useSound from 'vue-use-sound'
 import userJoinSound from "../assets/sound/start.wav";
 import userLeaveSound from "../assets/sound/boop.mp3";
@@ -82,17 +83,13 @@ export default {
 				{ key: "connection", label: "", tdClass: 'text-left', thClass: "text-center"},
             ],
 			
-			images: [],
-			imageOptionsSim: [],
-			defaultImageSim: '',
-			imageOptionsPhysbot: [],
-			defaultImagePhysbot: '',
+			imageHandler: null,
 			chosenImages: {},
+			imagesAreLoaded: false,
 
 			pollInterval: null,
 			isSim: true,
 			isLoaded: false,
-			imagesAreLoaded: false,
 			ws: null
         }
     },
@@ -153,7 +150,9 @@ export default {
 			return items
 		},
 		imageOptions: function() {
-			return this.isSim ? this.imageOptionsSim : this.imageOptionsPhysbot
+			const { imageOptionsSim, imageOptionsPhysbot } = this.imageHandler;
+
+			return this.isSim ? imageOptionsSim : imageOptionsPhysbot;
 		},
     },
     methods: {
@@ -189,49 +188,27 @@ export default {
 			}
 		},
 		getImageVariants: function() {
-			this.$api.get(`/containers/images`).then((res) => {
-				this.images = res.data;
-				this.physbotImages = this.images.filter(image => !image.simulationExclusive)
-				
-				this.imageOptionsSim = this.images.map(({ imageTag, label }) => {
-					return { value: imageTag, text: label }
-				})
-				this.defaultImageSim = this.images.find(image => image.default)?.imageTag ?? this.images[0].imageTag;
-
-				this.imageOptionsPhysbot = this.physbotImages.map(({ imageTag, label }) => {
-					return { value: imageTag, text: label }
-				})
-				this.defaultImagePhysbot = this.physbotImages.find(image => image.default)?.imageTag ?? this.physbotImages[0].imageTag;
-
+			getImageOptions().then(imageHandler => {
+				this.imageHandler = imageHandler
 				this.imagesAreLoaded = true
+			}).catch(err => {
+				console.error("Error getting images", err)
 			})
 		},
 		updateImageVariants: function() {
+			const { defaultImageSim, defaultImagePhysbot } = this.imageHandler;
+
+			console.log("updating with default images", defaultImageSim, defaultImagePhysbot)
+			console.log("chosenImages", this.containerList, this.chosenImages)
+
 			this.containerList.forEach(container => {
-				this.chosenImages[container.slug] = this.isSim ? this.defaultImageSim : this.defaultImagePhysbot;
+				this.chosenImages[container.slug] = this.isSim ? defaultImageSim : defaultImagePhysbot;
 			})
-		},
-		getImageLabel: function(imageTag) {
-			return this.images.find(image => image.imageTag === imageTag)?.label;
-		},
-		getImageRosVersion: function(imageTag) {
-			return this.images.find(image => image.imageTag === imageTag)?.rosVersion;
-		},
-		versionLogo: function(imageTag) {
-			const rosVersion = this.getImageRosVersion(imageTag);
-			if (rosVersion) {
-				try {
-					return require(`../assets/${rosVersion}.png`);
-				} catch (e) {
-					return null;
-				}
-			}
-			return null;
 		},
 		startContainer: function(id) {
 			const queryParams = new URLSearchParams([['is_simulation', this.isSim]]);
 			const body = {
-				rosVersion: this.getImageRosVersion(this.chosenImages[id]),
+				rosVersion: this.imageHandler.getImageRosVersion(this.chosenImages[id]),
 				imageTag: this.chosenImages[id]
 			}
 
