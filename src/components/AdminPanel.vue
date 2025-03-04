@@ -19,6 +19,12 @@
 					<span>{{ getImageLabel(image) }}</span>
 				</div>
 			</template>
+
+			<template v-slot:cell(publicContainer)="{ item: { publicContainer } }">
+				<div v-if="publicContainer" class="d-flex align-items-center justify-content-center" >
+					<span style="font-size: 1.3rem">🌐</span><span class="ml-2">Public</span>
+				</div>
+			</template>
 			
 			<template v-slot:cell(robotStatus)="{ item: { robot_status } }">
 				<div v-if="true" class="d-flex align-items-center justify-content-center">
@@ -66,6 +72,7 @@ export default {
                 { key: "id", label: "Container ID", tdClass: 'align-middle', thClass: "", },
 				{ key: "image", label: "Session type", tdClass: 'align-middle'},
 				{ key: "robotStatus", label: "Robot status", tdClass: 'align-middle', thClass: "text-center", },
+				{ key: "publicContainer", label: "", tdClass: 'align-middle', thClass: "text-center", },
 				{ key: "user", label: "", tdClass: 'align-middle text-center', thClass: "", },
 				{ key: "ip", label: "Container IP", tdClass: 'align-middle', thClass: "", },
 				{ key: "uptime", label: "Uptime", tdClass: 'align-middle', thClass: "", },
@@ -97,7 +104,7 @@ export default {
 					// return those that are not status
 					return !['robotStatus'].includes(field.key)
 				} else {
-					return true
+					return !['publicContainer'].includes(field.key)
 				}
 			})
 		},
@@ -115,6 +122,7 @@ export default {
 					robot_status,
 					end_time,
 					user,
+					open_to_public,
 					vnc_uri
 				} = container;
 
@@ -136,7 +144,8 @@ export default {
 					user_time: getTimeLeft(end_time),
 					user,
 					robot_status,
-					isSim: this.isSim
+					isSim: this.isSim,
+					publicContainer: open_to_public
 				}
 			})
 			this.alertChange();
