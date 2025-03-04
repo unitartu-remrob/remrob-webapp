@@ -375,7 +375,6 @@ def bookings():
                 color = "gray"
             else:
                 color = "blue"
-            # inv = Inventory.query.get(booking.inventory_id)
 
             if booking.simulation:
                 title = "Simulation"
@@ -552,11 +551,9 @@ def unbook(user_id, slot_id):
         return "Wrong user", 403
 
 
-@app.route("/api/v1/simtainers", methods=["POST", "GET"])
+@app.route("/api/v1/simtainers", methods=["POST", "GET", "PUT"])
 @admin_required()
 def new_simtainer():
-    # Just an endpoint, so you don't have to manually fill the table
-    # Currently a single server can handle max 9 containers, will have to adjust this table with a multi-server setup
     args = request.args
     if request.method == "POST":
         Simtainers.query.delete()
@@ -578,13 +575,30 @@ def new_simtainer():
                 "slug": sim.slug,
                 "title": f"ROBOSIM-{sim.container_id}",
                 "vnc_uri": sim.vnc_uri,
-                "user": sim.user_id
+                "user": sim.user_id,
+                "open_to_public": sim.open_to_public
             } for sim in sims
         ]
         if args.get('user') == "true":
             results = [sim for sim in results if sim["user"] != None]
         sorted_inv = sorted(results, key=lambda x: x['container_id'])
         return jsonify(sorted_inv), 200
+
+@app.route("/api/v1/simtainers/<simtainer>", methods=["PUT"])
+@admin_required()
+def update_simtainer(simtainer):
+    if request.method == "PUT":
+        entry = Simtainers.query.filter_by(slug=simtainer).first()
+        if entry == None:
+            return "Requested item does not exist", 400
+
+        data = request.json
+        if "open_to_public" in data:
+            entry.open_to_public = data["open_to_public"]
+            db.session.commit()
+            return "Simtainer inventory successfully updated", 200
+        else:
+            return "Missing data: open_to_public", 400
 
 
 @app.route("/api/v1/inventory", methods=["GET"])
