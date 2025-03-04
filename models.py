@@ -49,7 +49,9 @@ class Simtainers(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     container_id = db.Column('container_id', db.Integer)
     slug = db.Column('slug', db.String(100))
+    
     open_to_public = db.Column('open_to_public', db.Boolean)
+    public_user = db.Column('public_user', db.String(100))
 
     expires = db.Column('end_time', db.String(100))
     user_id = db.Column('user', db.Integer)
