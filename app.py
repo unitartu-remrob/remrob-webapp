@@ -576,11 +576,12 @@ def new_simtainer():
                 "title": f"ROBOSIM-{sim.container_id}",
                 "vnc_uri": sim.vnc_uri,
                 "user": sim.user_id,
-                "open_to_public": sim.open_to_public
+                "open_to_public": sim.open_to_public,
+                "public_user": sim.public_user
             } for sim in sims
         ]
         if args.get('user') == "true":
-            results = [sim for sim in results if sim["user"] != None]
+            results = [sim for sim in results if sim["user"] != None or sim["public_user"] != None]
         sorted_inv = sorted(results, key=lambda x: x['container_id'])
         return jsonify(sorted_inv), 200
 
