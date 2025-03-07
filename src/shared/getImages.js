@@ -27,7 +27,7 @@ class ImageHandler {
 		const rosVersion = this.getImageRosVersion(imageTag);
 		if (rosVersion) {
 			try {
-				return require(`../assets/${rosVersion}.png`);
+				return require(`@/assets/${rosVersion}.png`);
 			} catch (e) {
 				return null;
 			}

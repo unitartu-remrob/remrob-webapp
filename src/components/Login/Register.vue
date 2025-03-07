@@ -76,8 +76,12 @@ export default {
           setTimeout(() => this.$router.push({ name: "Login" }), 3000)
         }
       }).catch((error) => {
+        if (error.response.status === 500) {
+          this.errorMessage = "Something went wrong."
+        } else {
+          this.errorMessage = error.response.data
+        }
         this.dismissCountDown = this.dismissSec
-        this.errorMessage = error.response.data
       })
     },
     countDownChanged(dismissCountDown) {

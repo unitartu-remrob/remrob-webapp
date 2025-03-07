@@ -55,8 +55,13 @@ export const getCountdown = (start, end) => {
 	}
 }
 
-export const getTimeLeft = (expires) => {
-	var now = new Date().getTime();
+export const getTimeLeft = (expires, adjustLocalTime=false) => {
+	var now;
+	if (adjustLocalTime) {
+		now = adjustForLocal(new Date());
+	} else {
+		now = new Date().getTime();
+	}
 	
 	expires = new Date(expires)
 
@@ -91,6 +96,10 @@ export function formatDate(date) {
 	const formattedDate = `${year}-${month}-${day}`;
 
 	return formattedDate;
+}
+
+export function getDateFromDateTime(date) {
+	return date.slice(0, 16).replace("T", "  ")
 }
 
 export function formatDayTime(date) {

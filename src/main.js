@@ -15,7 +15,10 @@ import {
   BIconSignpost,
   BIconCodeSquare,
   BIconFilm,
-  BIconJournalText
+  BIconJournalText,
+  BIconBox,
+  BIconArrowRight,
+  BIconEject
 } from 'bootstrap-vue'
 import router from './router/router'
 import store from './store/store'
@@ -40,6 +43,9 @@ Vue.component('SignPost', BIconSignpost)  //journal-code
 Vue.component('JournalCode', BIconCodeSquare)
 Vue.component('JournalText', BIconJournalText)
 Vue.component('FilmIcon', BIconFilm)
+Vue.component('Box', BIconBox)
+Vue.component('Eject', BIconEject)
+Vue.component('ArrowRight', BIconArrowRight)
 
 Vue.prototype.$api = api;
 

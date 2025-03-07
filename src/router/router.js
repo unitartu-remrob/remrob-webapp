@@ -2,6 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Booking from '../components/Calendar/Booking.vue'
 import CreateSlot from '../components/Calendar/CreateSlot.vue'
+
+import Landing from '../components/Public/Landing.vue'
 import Home from '../components/Home.vue'
 import Login from '../components/Login/Login.vue'
 import Register from '../components/Login/Register.vue'
@@ -20,6 +22,30 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
+    name: 'Landing',
+    component: Landing,
+  },
+
+  {
+    path: '/public-session/:container',
+    name: 'PublicSession',
+    component: Session,
+  },
+
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
+
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
+  },
+
+  {
+    path: '/home',
     name: 'Home',
     component: Home,
     meta: {
@@ -44,18 +70,6 @@ const routes = [
       isAuthenticated: true,
       requiresAdmin: true
     }
-  },
-
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login
-  },
-
-  {
-    path: '/register',
-    name: 'Register',
-    component: Register
   },
 
   {

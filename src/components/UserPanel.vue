@@ -29,11 +29,11 @@
                     </template>
                     <template v-slot:cell(start)="{ item }">
                         <Clock variant="primary" />
-                        {{ parseDate(item.start) }}
+                        {{ getDateFromDateTime(item.start) }}
                     </template>
                     <template v-slot:cell(end)="{ item }">
                         <Clock variant="primary"/>
-                        {{ parseDate(item.end) }}
+                        {{ getDateFromDateTime(item.end) }}
                     </template>
                     <template v-slot:cell(countdown)="{ item }">
                         <div :key="timerKey" class="timer">            
@@ -54,6 +54,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { getCountdown } from '../util/helpers'
+import { getDateFromDateTime } from '../util/helpers';
 
 export default {
     data() {
@@ -89,9 +90,7 @@ export default {
                 console.log(res.data)
             })			
         },
-        parseDate: function(date) {
-            return date.slice(0, 16).replace("T", "  ")
-        },
+        getDateFromDateTime,
         updateTime() {
             this.bookings.forEach(booking => {
                 const { start, end } = booking;
@@ -110,7 +109,7 @@ export default {
     },
     beforeDestroy() {  
         clearInterval(this.timer);
-    },  
+    },
 }
 </script>
 

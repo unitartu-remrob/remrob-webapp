@@ -35,8 +35,8 @@ export default {
     return {
       email: null,
       password: null,
+      
       alertType: "",
-      showAlert: false,
       dismissSec: 5,
       dismissCountDown: 0,
       errorMessage: null
@@ -56,7 +56,7 @@ export default {
           this.$api.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.access_token;
         }
         this.setCurrentUser(res.data)
-        this.$router.push({name:"Home"})
+        this.$router.push({ name:"Home" })
       }).catch((error) => {
         if (error.response.status === 400) {
           this.alertType = "danger"

@@ -6,10 +6,10 @@
             <h4>This will overwrite any previous save</h4>
         </b-modal> -->
         <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
-            <h4>This will undo all system changes (except files stored in your catkin workspace and Submission folder)</h4>
+            <h4>This will undo all system changes</h4>
         </b-modal>
         <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
-		<b-row v-if="this.isLoaded">``
+		<b-row v-if="this.isLoaded && this.imagesAreLoaded">``
             <b-col class="info text-center" v-if="this.sessionIsActive">
                 <h2>{{ message }}</h2>
                 <div :key="timerKey">
@@ -59,8 +59,10 @@
             </b-col>
             <b-col class="info text-center" v-else>
                 <h2 class="mb-4">Your session is over.</h2>
-                <h4>See if you can book another!</h4>
-                <b-button class="mt-2" variant="primary" @click="$router.push({ name: 'Booking' })">Go to booking</b-button>
+                <div v-if="!isPublicSession">
+                    <h4>See if you can book another!</h4>
+                    <b-button class="mt-2" variant="primary" @click="$router.push({ name: 'Booking' })">Go to booking</b-button>
+                </div>
             </b-col>
         </b-row>
         <b-row class="room" v-if="this.isLoaded">
@@ -83,7 +85,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { getCountdown } from '@/util/helpers'
+import { getCountdown, getTimeLeft } from '@/util/helpers'
 import Desktop from './Desktop.vue'
 import RobotStatus from './RobotStatus.vue'
 import { rootURL } from "@/util/api";
@@ -92,6 +94,8 @@ import { getImageOptions } from '../../shared/getImages';
 export default {
     data() {
         return {
+            isPublicSession: false,
+
             container: {},
             containerData: {},
             booking: {},
@@ -102,6 +106,7 @@ export default {
             imageHandler: null,
             images: [],
 			chosenImage: '',
+            imagesAreLoaded: false,
 
             sesssionID: '',
             isLoaded: false,
@@ -158,13 +163,34 @@ export default {
             return this.images.map(({ imageTag, label }) => {
                 return { value: imageTag, text: label }
             })
+        },
+        inspectEndpoint: function() {
+            return this.isPublicSession ? `inspect-public-container` : `inspect/${this.container.slug}`
+        },
+        startEndpoint: function() {
+            return this.isPublicSession ? `start-public-container` : `start/${this.container.slug}`
+        },
+        stopEndpoint: function() {
+            return this.isPublicSession ? `stop-public-container` : `stop/${this.container.slug}`
+        },
+        removeEndpoint: function() {
+            return this.isPublicSession ? `remove-public-container` : `remove/${this.container.slug}`
         }
     },
     methods: {
+        loadPublicSessionData: function(containerId) {
+            this.$api.get(`/containers/claim/${containerId}`, {}).then((res) => {
+                this.container = res.data;
+                this.inspectContainer()
+                this.isLoaded = true;
+            }).catch(err => {
+                console.log(err);
+                this.$router.push({ name: "403" })
+            })
+        },
 		inspectContainer: function() {
-            const { slug } = this.container;
             this.loading = true;
-            this.$api.get(`/containers/inspect/${slug}`).then((res) => {
+            this.$api.get(`/containers/${this.inspectEndpoint}`).then((res) => {
                 this.containerData = res.data
                 const { status } = this.containerData;
                 setTimeout(() => {
@@ -179,7 +205,6 @@ export default {
             })
         },
 		startContainer: function() {
-            const { slug } = this.container;
             this.starting = true;
 
             const image = this.chosenImage;
@@ -190,9 +215,9 @@ export default {
             }
 
             // Always inform whether sim, the server will validate the environment if user is not an admin
-            const params = new URLSearchParams([['is_simulation', this.booking.is_simulation]]);
+            const params = new URLSearchParams([['is_simulation', this.isPublicSession || this.booking.is_simulation]]);
 
-            this.$api.post(`/containers/start/${slug}`, body, { params }).then((res) => {
+            this.$api.post(`/containers/${this.startEndpoint}`, body, { params }).then((res) => {
                 const { path } = res.data
                 // Update the UI
                 this.container.vnc_uri = path;
@@ -201,21 +226,17 @@ export default {
             })	
 		},
 		stopContainer: function() {
-            const { slug } = this.container;
             this.stopping = true;
-			this.$api.post(`/containers/stop/${slug}`).then((res) => {
-				console.log(`${slug} stopped`)
+			this.$api.post(`/containers/${this.stopEndpoint}`).then((_) => {
                 this.stopping = false;
 				this.inspectContainer()
             })
             this.hasConnected = false;
 		},
         removeContainer: function() {
-            const { slug } = this.container;
-			this.$api.post(`/containers/remove/${slug}`).then((res) => {
+			this.$api.post(`/containers/${this.removeEndpoint}`).then((_) => {
                 this.inspectContainer()
                 this.started = false
-				// this.ws.send("update")
             })
 		},
         // commitContainer: function() {
@@ -259,9 +280,14 @@ export default {
              });
         },
         updateTime() {
-            const { start, end } = this.booking;
-            const sessionTime = getCountdown(start, end);
-
+            let sessionTime;
+            if (this.isPublicSession) {
+                sessionTime = getTimeLeft(this.container.end_time, true)
+            } else {
+                const { start, end } = this.booking;
+                sessionTime = getCountdown(start, end);
+            }
+            
             this.displayTime = sessionTime.displayTime;
             this.sessionIsActive = sessionTime.isActive;
             this.timerKey += 1;
@@ -273,6 +299,8 @@ export default {
 
                 this.images = images;
                 this.chosenImage = this.isSim ? defaultImageSim : defaultImagePhysbot;
+
+                this.imagesAreLoaded = true;
 			}).catch(err => {
 				console.error("Error getting images", err)
 			})
@@ -280,8 +308,14 @@ export default {
     },
     created () {
         this.sesssionID = this.$route.params.session;
-        // Retrieve data about the specific booking being accessed
-        this.getBookingInfo();
+
+        if (this.$route.name === "PublicSession") {
+            this.isPublicSession = true;
+            this.isSim = true; // public sessions are always simulations
+            this.loadPublicSessionData(this.$route.params.container);
+        } else {
+            this.getBookingInfo();  // retrieve data about the specific booking being accessed
+        }
         this.getImageVariants();
     },
 	mounted() {
@@ -365,14 +399,11 @@ export default {
 }
 
 .room {
-    /* height: 20%; */
     margin: 2rem 4rem;
-    /* padding-bottom: 10rem; */
     width: 45%;
     position: absolute;
     left: 17%;
     top: 62%;
-    /* border: 2px solid black; */
 }
 
 .room-items {
@@ -391,7 +422,6 @@ export default {
 
 .image-pick-label {
     font-size: 1.2rem;
-    /* color: rgb(174, 196, 202); */
     margin-top: 1rem;
     margin-right: 1rem;
 }
