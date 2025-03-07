@@ -94,8 +94,8 @@ export default {
 <style>
 
 .sandbox-container {
-    max-width: 20vw;
-    margin: 2% 10%;
+    margin-bottom: 2.5%;
+    margin-top: 2.5%;
 }
 
 .sandbox {
