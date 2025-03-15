@@ -72,7 +72,7 @@ export default {
             simtainerInventory: [],
             formState: [],
             fields: [
-                { key: "title", label: "ID" },
+                { key: "robot_id", label: "ID" },
                 { key: "robot_label", label: "Robot name" },
                 // { key: "location", label: "Workcell" },
                 { key: "project", label: "Change settings" },              
