@@ -1,7 +1,7 @@
 <template>
     <b-container fluid class="panel">
         <div class="text-center panel-title">My sessions</div>
-        <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 4rem; height: 4rem;" type="grow" variant="info"></b-spinner></div>
+        <div class="loader" v-if="!this.is_loaded"><b-spinner style="width: 4rem; height: 4rem;" variant="info"></b-spinner></div>
         <b-row v-else>
             <b-col>
                 <b-table

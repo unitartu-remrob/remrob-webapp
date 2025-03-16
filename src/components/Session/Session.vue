@@ -8,7 +8,7 @@
         <b-modal ok-title="Confirm" @ok="removeContainer" title="Restart session?" id="restart-modal">
             <h4>This will undo all system changes</h4>
         </b-modal>
-        <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
+        <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" variant="info"></b-spinner></div>
 		<b-row v-if="this.isLoaded && this.imagesAreLoaded">``
             <b-col class="info text-center" v-if="this.sessionIsActive">
                 <h2>{{ message }}</h2>

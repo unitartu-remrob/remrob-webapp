@@ -7,7 +7,7 @@
 			<b-tab title="Simtainers" @click="switchTab(sim=true)" active>
 			</b-tab>
 		</b-tabs>
-		<div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" type="grow" variant="info"></b-spinner></div>
+		<div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" variant="info"></b-spinner></div>
 		<b-table striped v-else :items="containerStatus" :fields="filteredFields">
 			<template v-slot:cell(image)="{ item: { image, id, disconnected } }">
                 <b-form-select v-if="disconnected"
@@ -168,8 +168,9 @@ export default {
 			this.ws = new WebSocket(`${wsRootURL}/containers/live/${endpoint}`)
 
 			this.ws.onmessage = (event) => {
+				console.log(event)
 				const results = JSON.parse(event.data);
-				// console.log("PARSED", results);
+				console.log("PARSED", results);
 				const data = results?.map(({ status, value, ...restOfProps }) => {
 					return {
 						data: (status === 'fulfilled')
