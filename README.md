@@ -66,6 +66,12 @@ npm run start
 	flask db upgrade # will apply the migration script to the database
 	```
 
+## Remrob full installation
+
+For setting up full Remrob application see installation instructions at https://github.com/unitartu-remrob/remrob-setup
+
+---
+
 &nbsp;&nbsp;
 
 # Acknowledgments
