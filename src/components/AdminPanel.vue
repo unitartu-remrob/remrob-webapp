@@ -168,9 +168,7 @@ export default {
 			this.ws = new WebSocket(`${wsRootURL}/containers/live/${endpoint}`)
 
 			this.ws.onmessage = (event) => {
-				console.log(event)
 				const results = JSON.parse(event.data);
-				console.log("PARSED", results);
 				const data = results?.map(({ status, value, ...restOfProps }) => {
 					return {
 						data: (status === 'fulfilled')

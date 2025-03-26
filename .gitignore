@@ -29,5 +29,4 @@ pnpm-debug.log*
 
 # hide production env
 .env.production
-communication/.env
 

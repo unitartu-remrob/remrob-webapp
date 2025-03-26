@@ -78,7 +78,6 @@ export default {
           this.boardItems = data;
           this.activeItem = this.boardItems.find((item) => item.active === true);
           if (this.activeItem !== undefined) {
-            // console.log("ACTIVE", this.activeItem)
             this.newsContent = this.activeItem.content;
             this.postTitle = this.activeItem.title;
             this.newsLoaded = true;
@@ -177,7 +176,7 @@ export default {
 .message-picker {
   position: absolute;
   /* float: right; */
-  bottom: 22%;
+  bottom: 5%;
   right: 17%;
   width: 40%;
   display: flex;
