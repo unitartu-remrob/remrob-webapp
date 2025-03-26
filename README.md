@@ -10,10 +10,9 @@ SQLAlchemy (flask-sqlalchemy) is used as an ORM for the PostgreSQL database.
 * PostgreSQL
 
 ## Frontend setup
-
-## Project setup
 ```
 npm install
+
 python -m venv .venv
 ```
 
