@@ -15,7 +15,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_cs
 import bcrypt, os
 from dotenv import load_dotenv, find_dotenv
 
-app = Flask(__name__, static_folder="dist/", static_url_path="/")
+app = Flask(__name__, static_folder="dist/", static_url_path="/", template_folder="src/templates")
 CORS(app)
 
 is_prod = os.environ.get('FLASK_ENV') == 'production'
