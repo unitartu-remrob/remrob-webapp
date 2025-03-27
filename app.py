@@ -163,7 +163,7 @@ def login():
             access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
             refresh_token = create_refresh_token(identity=user.id, additional_claims=additional_claims)
 
-            response = jsonify(access_token=access_token, user_id=user.id, role=user.role)
+            response = jsonify(access_token=access_token, user_id=user.id, user_name=user.email, role=user.role)
             set_refresh_cookies(response, refresh_token)
 
             csrf_token = get_csrf_token(refresh_token)
