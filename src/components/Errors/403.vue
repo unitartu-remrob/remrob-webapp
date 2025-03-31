@@ -2,7 +2,7 @@
     <div class="error">
         <h1 class="display-2">403 Error</h1>
         <p>Unauthorized.</p>
-        <router-link to="/" exact>
+        <router-link to="/home" exact>
             Go to home page
         </router-link>
     </div>

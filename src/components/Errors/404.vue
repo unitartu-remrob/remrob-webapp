@@ -2,7 +2,7 @@
     <div class="error">
         <h1 class="display-2">404 Error</h1>
         <p>The resource could not be found.</p>
-        <router-link to="/" exact>
+        <router-link to="/home" exact>
             Go to home page
         </router-link>
     </div>
