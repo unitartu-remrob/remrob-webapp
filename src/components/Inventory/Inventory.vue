@@ -27,9 +27,6 @@
             <b-col class="col-8">
                 <h2>Robots</h2>
             </b-col>
-            <b-col>
-                <h2>Simtainers</h2>
-            </b-col>
         </b-row>
         <b-row>
             <b-col>
@@ -41,20 +38,6 @@
                         <InventoryInput :inventoryItem="item" :isSimtainer=false @update="updateInventory"/>
                     </template>
                 </b-table>
-            </b-col>
-            <b-col class="col-4 ml-5">
-                
-                <b-table :items="simtainerInventory" :fields="simtainerFields">
-                    <template #cell(open_to_public)="{ item }">
-                        <InventoryInput :inventoryItem="item" :isSimtainer=true @update="updateSimtainerInventory"/>
-                    </template>    
-                </b-table>
-            </b-col>
-        </b-row>
-        <b-row>
-            <b-col class="d-flex justify-content-center align-items-center">
-                <b-img style="max-width: 20vw" :src="require('@/assets/field_plan.jpg')"></b-img>
-                <h4>⬅️ Cell legend relative to door</h4>
             </b-col>
         </b-row>
     </b-container>

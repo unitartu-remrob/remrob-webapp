@@ -1,7 +1,7 @@
 <template>
     <b-container fluid>
         <div class="bg-main"
-        :class="isSim ? 'vr-cell' : 'bg-cell'"></div>
+        :class="isSim ? 'vr-cell' : ''"></div>
         <!-- <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
         </b-modal> -->
@@ -10,11 +10,8 @@
         </b-modal>
         <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" variant="info"></b-spinner></div>
 		<b-row v-if="this.isLoaded && this.imagesAreLoaded">``
-            <b-col class="info text-center" v-if="this.sessionIsActive">
+            <b-col class="info text-center">
                 <h2>{{ message }}</h2>
-                <div :key="timerKey">
-                    <h3 class="mt-4">Time left: <strong>{{ this.displayTime }}</strong></h3>
-                </div>
                 <p class="h3 mt-4 mb-5">Session status: <strong>{{ containerState.status }}</strong></p>
                 <div>
                     <strong class="image-pick-label" v-if="containerState.disconnected">
@@ -57,13 +54,6 @@
                     </b-button> -->
                 </div>
             </b-col>
-            <b-col class="info text-center" v-else>
-                <h2 class="mb-4">Your session is over.</h2>
-                <div v-if="!isPublicSession">
-                    <h4>See if you can book another!</h4>
-                    <b-button class="mt-2" variant="primary" @click="$router.push({ name: 'Booking' })">Go to booking</b-button>
-                </div>
-            </b-col>
         </b-row>
         <b-row class="room" v-if="this.isLoaded">
             <!-- <b-alert :show="dismissCountDown" dismissible variant="success" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{successMessage}}</b-alert> -->
@@ -71,6 +61,7 @@
                 :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
             </iframe> -->
             <div v-if="!this.isSim" class="room-items">
+                <b-img :src="require('@/assets/robotont.png')"></b-img>
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
             <div v-else class="simbot">
@@ -85,7 +76,6 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { getCountdown, getTimeLeft } from '@/util/helpers'
 import Desktop from './Desktop.vue'
 import RobotStatus from './RobotStatus.vue'
 import { rootURL } from "@/util/api";
@@ -134,9 +124,9 @@ export default {
     computed: {
         ...mapGetters(["getUser"]),
         message: function() {
-            const { robot_id } = this.container;
+            const { robot_id, robot_label} = this.container;
             if (robot_id !== undefined) {
-                return `You have been assigned Robotont nr. ${robot_id}`;
+                return `${robot_label || `Robot #${robot_id}`} workstation`;
             } else {
                 return `Your simulation environment is ready`;
             }
@@ -178,16 +168,6 @@ export default {
         }
     },
     methods: {
-        loadPublicSessionData: function(containerId) {
-            this.$api.get(`/containers/claim/${containerId}`, {}).then((res) => {
-                this.container = res.data;
-                this.inspectContainer()
-                this.isLoaded = true;
-            }).catch(err => {
-                console.log(err);
-                this.$router.push({ name: "403" })
-            })
-        },
 		inspectContainer: function() {
             this.loading = true;
             this.$api.get(`/containers/${this.inspectEndpoint}`).then((res) => {
@@ -215,7 +195,7 @@ export default {
             }
 
             // Always inform whether sim, the server will validate the environment if user is not an admin
-            const params = new URLSearchParams([['is_simulation', this.isPublicSession || this.booking.is_simulation]]);
+            const params = new URLSearchParams([['is_simulation', this.booking.is_simulation]]);
 
             this.$api.post(`/containers/${this.startEndpoint}`, body, { params }).then((res) => {
                 const { path } = res.data
@@ -253,22 +233,10 @@ export default {
         disableDesktopIframe: function() {
             this.hasConnected = true;
         },
-        getBookingInfo: function() {
-            const params = new URLSearchParams([['booking', this.sesssionID]]);
-            this.$api.get(`/api/v1/bookings/${this.getUser.user_id}`, { params }).then((res) => {
-                this.booking = res.data.user_bookings[0]
-                this.isSim = this.booking.is_simulation;
-
-                console.log("Active booking", this.booking)
-                // Assign ourselves a container:
-                this.requestContainer();
-            }).catch(_ => {
-                // 404 redirect
-                this.$router.push({ name: "404" })
-             });
-        },
         requestContainer: function() {
-            this.$api.get(`/containers/assign`).then((res) => {
+            const params = new URLSearchParams([['is_simulation', false]]);
+
+            this.$api.get(`/containers/assign`, { params }).then((res) => {
                 console.log("Assigned container", res.data)
                 this.isLoaded = true;
                 this.container = res.data
@@ -278,19 +246,6 @@ export default {
                     this.$router.push({ name: "403" })
                 }
              });
-        },
-        updateTime() {
-            let sessionTime;
-            if (this.isPublicSession) {
-                sessionTime = getTimeLeft(this.container.end_time, true)
-            } else {
-                const { start, end } = this.booking;
-                sessionTime = getCountdown(start, end);
-            }
-            
-            this.displayTime = sessionTime.displayTime;
-            this.sessionIsActive = sessionTime.isActive;
-            this.timerKey += 1;
         },
         getImageVariants: function() {
 			getImageOptions().then(imageHandler => {
@@ -308,29 +263,19 @@ export default {
     },
     created () {
         this.sesssionID = this.$route.params.session;
-
-        if (this.$route.name === "PublicSession") {
-            this.isPublicSession = true;
-            this.isSim = true; // public sessions are always simulations
-            this.loadPublicSessionData(this.$route.params.container);
-        } else {
-            this.getBookingInfo();  // retrieve data about the specific booking being accessed
-        }
+        
+        this.isSim = false;
+        this.requestContainer();
+        // this.getBookingInfo();
         this.getImageVariants();
     },
-	mounted() {
-        this.timer = setInterval(this.updateTime, 1000);
-	},
     watch: {
         isSim: function(val) {
             if (!val) {
                 this.images = this.images.filter(image => !image.simulationExclusive);
             }
         }
-    },
-	beforeDestroy() {  
-        clearInterval(this.timer);
-    },
+    }
 }
 </script>
 
@@ -399,10 +344,10 @@ export default {
 }
 
 .room {
-    margin: 2rem 4rem;
+    margin: 2rem 0;
     width: 45%;
     position: absolute;
-    left: 17%;
+    left: 10%;
     top: 62%;
 }
 
@@ -411,8 +356,11 @@ export default {
     position: relative;
     justify-content: center;
     align-items: center;
-    gap: 4rem;
-    padding: 2rem 0;
+}
+
+.room-items img {
+    width: 33%;
+    height: auto;
 }
 
 .image-dropdown {

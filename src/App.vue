@@ -1,16 +1,9 @@
 <template>
   <div id="app">
     <b-navbar toggleable="lg" type="dark" sticky variant="dark">
-      <Justify v-b-toggle.sidebar-backdrop v-if="loggedIn" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
-      <b-navbar-brand style="cursor:pointer" @click="homeRedirect">Remrob</b-navbar-brand>
+      <Justify v-b-toggle.sidebar-backdrop v-if="loggedIn && isSiteAdmin" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
+      <b-navbar-brand style="cursor:pointer" @click="homeRedirect">Remrob spot</b-navbar-brand>
       <b-navbar-nav v-if="loggedIn" class="ml-auto">
-        <b-nav-item v-if="isAdmin" href="/containers/guide/" class="admin-sc mr-1">
-          <b-button class="btn-dark" variant="light"><JournalText font-scale="1" class="mr-2"/>Remrob guide</b-button>
-        </b-nav-item>
-        <b-nav-item v-if="isAdmin" to="/newsboard" class="admin-sc mr-3">
-          <b-button class="btn-dark" variant="light"><SignPost font-scale="1" class="mr-2"/>Update newsboard</b-button>
-        </b-nav-item>
-        <UserSubmissionLink />
         <b-nav-item>
           <b-button @click="logout">Logout</b-button>
         </b-nav-item>
@@ -22,7 +15,7 @@
       </b-navbar-nav>
     </b-navbar>
     <b-sidebar
-        v-if="loggedIn"
+        v-if="loggedIn && isSiteAdmin"
         id="sidebar-backdrop"
         backdrop-variant="dark"
         backdrop
@@ -32,15 +25,9 @@
       >
         <nav class="mb-3">
           <b-nav vertical>
-            <b-nav-item to="/booking">Booking</b-nav-item>
-            <b-nav-item v-if="isAdmin" to="/createSlot">Create slots</b-nav-item>
             <b-nav-item v-if="isAdmin" to="/inventory">Manage inventory</b-nav-item>
             <b-nav-item v-if="isAdmin" to="/users">Users</b-nav-item>
             <b-nav-item v-if="isAdmin" to="/admin-panel">Admin panel</b-nav-item>
-            <br/>
-            <b-nav-item v-if="isAdmin" to="/newsboard">Update newsboard</b-nav-item>
-            <b-nav-item v-if="isAdmin" href="http://192.168.200.201:8000" target="_blank">Camera dashboard (only from LAN)</b-nav-item>
-            <b-nav-item v-if="isAdmin" href="/containers/guide/">Administration guide</b-nav-item>
           </b-nav>
         </nav>
       </b-sidebar>
@@ -50,7 +37,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex';
-import UserSubmissionLink from './components/UserSubmissionLink.vue'
+import { RESERVED_ADMIN_USERS } from './router/router';
 
 export default {
   name: 'App',
@@ -61,7 +48,7 @@ export default {
     }
   },
   components: {
-    UserSubmissionLink
+
   },
   computed: {
     ...mapGetters(["getUser"]),
@@ -70,6 +57,9 @@ export default {
     },
     isAdmin: function() {
       return this.getUser.role === "ROLE_ADMIN";
+    },
+    isSiteAdmin: function() {
+      return RESERVED_ADMIN_USERS.includes(this.getUser.user_name);
     }
   },
 
@@ -85,10 +75,12 @@ export default {
     },
 
     homeRedirect: function() {
-      if (this.loggedIn) {
+      if (this.isSiteAdmin) {
         this.$router.push({ name: "Home" })
+      } else if (this.loggedIn) {
+        this.$router.push({ name: "Session" })
       } else {
-        this.$router.push({ name: "Landing" })
+        this.$router.push({ name: "Login" })
       }
     }
   },

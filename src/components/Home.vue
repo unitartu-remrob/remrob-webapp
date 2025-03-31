@@ -14,12 +14,6 @@
                 <InfoPanel/>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card img-fluid class="text-center" :img-src="require('../assets/calendar.png')" title="Create slots">
-                    <b-card-text>Create bookable time slots for learners.</b-card-text>
-                    <b-button @click="$router.push({name: 'CreateSlot'})">Slot creation</b-button>
-                </b-card>
-            </b-col>
-            <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/inventory.png')" title="Manage inventory">
                     <b-card-text>Manage robot placement and access.</b-card-text>
                     <b-button @click="$router.push({name: 'Inventory'})">View inventory</b-button>
@@ -34,6 +28,12 @@
                 </b-card>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
+                <b-card img-fluid class="text-center" :img-src="require('../assets/robotont.png')" title="Robot users">
+                    <b-card-text>Register reserved robot accounts</b-card-text>
+                    <b-button @click="$router.push({name: 'Register'})" class="mt-3">Register</b-button>
+                </b-card>
+            </b-col>
+            <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
                 <b-card img-fluid class="text-center" :img-src="require('../assets/admin_panel.png')" title="Admin Panel">
                     <b-card-text>Monitor user sessions.</b-card-text>
                     <Counter endpoint="inventory">
@@ -42,23 +42,21 @@
                 </b-card>
             </b-col>
         </b-row>
-        <UserPanel/>
     </b-container>
 </template>
 
 <script lang="js">
 import { mapGetters } from 'vuex';
-import UserPanel from './UserPanel';
 import Counter from './Counter';
 import InfoPanel from './Newsboard/InfoPanel';
 
 export default {
     name: "Home",
     computed: {
-        ...mapGetters(["getUser"])
+        ...mapGetters(["getUser"]),
+        
     },
     components: {
-        UserPanel,
         Counter,
         InfoPanel
     },
@@ -90,7 +88,7 @@ export default {
 }
 
 .bg-main {
-    background-image: url('../assets/login_bg.jpg');
+    background: linear-gradient(135deg, #619fb8 0%, #f0efce 100%);
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;

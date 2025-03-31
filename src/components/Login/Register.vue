@@ -5,21 +5,11 @@
         <b-card class="login-box">
           <b-form @submit="register" class="register-form p-1">
             <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
-            <b-alert :show="showAlert" dismissible variant="success">Register successful. Check your email for confirmation.</b-alert>
+            <b-alert :show="showAlert" dismissible variant="success">Robot {{this.email}} successfully registered.</b-alert>
             <b-form-group>
-              <h3 class="text-center">Register</h3>
+              <h3 class="text-center">Register robot user</h3>
             </b-form-group>
-            <b-row class="timepicker-row mb-3">
-              <b-col cols="6">
-                  <label class="timepicker-label">First name</label>
-                  <b-form-input required v-model="firstName"/>
-              </b-col>
-              <b-col cols="6">
-                  <label class="timepicker-label">Last name</label>
-                  <b-form-input required v-model="lastName"/>
-              </b-col>
-            </b-row>
-            <b-form-group label="Email">
+            <b-form-group label="Robot ID (format: `$name-$id`), e.g. robotont-3">
               <b-form-input required v-model="email"/>
             </b-form-group>
             <!-- <b-form-group label="Occupation (optional)">
@@ -35,9 +25,6 @@
             <b-form-group>
               <b-button type="submit" :disabled="password !== confirmPassword" block class="mt-2">Register</b-button>
             </b-form-group>
-            <b-form-text class="text-center">Have an account?
-              <router-link to="/login">Login</router-link>
-            </b-form-text>
           </b-form>
         </b-card>
       </b-col>
@@ -67,13 +54,13 @@ export default {
     register: function () {
         this.$api.post(`/api/v1/register`, {
         "email": this.email,
-        "first_name": this.firstName,
-        "last_name": this.lastName,
+        "first_name": "",
+        "last_name": "",
         "password": this.password,
       }).then((res) => {
         if (res.status === 200) {
           this.showAlert = true;
-          setTimeout(() => this.$router.push({ name: "Login" }), 3000)
+          setTimeout(() => this.dismissAlert(), 3000)
         }
       }).catch((error) => {
         if (error.response.status === 500) {
@@ -86,6 +73,11 @@ export default {
     },
     countDownChanged(dismissCountDown) {
       this.dismissCountDown = dismissCountDown
+    },
+    dismissAlert() {
+      this.showAlert = false;
+      this.email = null;
+      this.password = null;
     }
   },
 }

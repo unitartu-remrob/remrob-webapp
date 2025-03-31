@@ -3,7 +3,6 @@ import VueRouter from 'vue-router'
 import Booking from '../components/Calendar/Booking.vue'
 import CreateSlot from '../components/Calendar/CreateSlot.vue'
 
-import Landing from '../components/Public/Landing.vue'
 import Home from '../components/Home.vue'
 import Login from '../components/Login/Login.vue'
 import Register from '../components/Login/Register.vue'
@@ -19,19 +18,9 @@ import NotFound from '../components/Errors/404'
 import E403 from '../components/Errors/403'
 Vue.use(VueRouter)
 
+export const RESERVED_ADMIN_USERS = ["admin"]
+
 const routes = [
-  {
-    path: '/',
-    name: 'Landing',
-    component: Landing,
-  },
-
-  {
-    path: '/public-session/:container',
-    name: 'PublicSession',
-    component: Session,
-  },
-
   {
     path: '/login',
     name: 'Login',
@@ -41,16 +30,37 @@ const routes = [
   {
     path: '/register',
     name: 'Register',
-    component: Register
+    component: Register,
+    meta: {
+      isAuthenticated: true
+    },
+    beforeEnter: (_, __, next) => {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!RESERVED_ADMIN_USERS.includes(user.user_name)) {
+        next(`/user-panel/${user.user_id}`);
+      } else {
+        next();
+      }
+    },
   },
 
   {
-    path: '/home',
+    path: '/',
     name: 'Home',
     component: Home,
     meta: {
       isAuthenticated: true
-    }
+    },
+    beforeEnter: (_, __, next) => {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!RESERVED_ADMIN_USERS.includes(user.user_name)) {
+        next(`/user-panel/${user.user_id}`);
+      } else {
+        next();
+      }
+    },
   },
 
   {
@@ -171,7 +181,7 @@ router.beforeEach((to, from, next) => {
       // The page is protected and the user is not authenticated. Force a login.
       next('/login');
     }
-    if (to.meta.requiresAdmin && (user.role !== "ROLE_ADMIN")) {
+    if (to.meta.requiresAdmin && !RESERVED_ADMIN_USERS.includes(user.user_name)) {
       // reject access to admin routes for regular users
       next('/403')
     }

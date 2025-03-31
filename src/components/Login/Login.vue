@@ -6,9 +6,9 @@
           <b-alert :show="dismissCountDown" dismissible :variant="alertType" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
           <b-form class="login-form">
             <b-form-group>
-              <h3 class="text-center">Login</h3>
+              <h3 class="text-center">Login to robot workstation</h3>
             </b-form-group>
-            <b-form-group label="E-mail">
+            <b-form-group label="Robot ID">
               <b-form-input @keyup.enter="login" v-model="email" />
             </b-form-group>
             <b-form-group label="Password">
@@ -17,8 +17,6 @@
             <b-form-group>
               <b-button block @click="login" class="mt-2">Login</b-button>
             </b-form-group>
-            <b-form-text class="text-center">No account? <router-link to="/register">Register</router-link></b-form-text>
-            <b-form-text class="text-center">Forgot password? <router-link to="/forgot">Reset</router-link></b-form-text>
           </b-form>
         </b-card>
       </b-col>
@@ -28,6 +26,7 @@
 
 <script>
 import { mapActions } from 'vuex';
+import { RESERVED_ADMIN_USERS } from '../../router/router';
 
 export default {
   name: 'Login',
@@ -55,8 +54,9 @@ export default {
           localStorage.setItem("user", JSON.stringify(res.data));
           this.$api.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.access_token;
         }
-        this.setCurrentUser(res.data)
-        this.$router.push({ name:"Home" })
+        this.setCurrentUser(res.data);
+        this.loginRedirect(res.data);
+        
       }).catch((error) => {
         if (error.response.status === 400) {
           this.alertType = "danger"
@@ -69,6 +69,13 @@ export default {
     },
     countDownChanged(dismissCountDown) {
       this.dismissCountDown = dismissCountDown
+    },
+    loginRedirect: function(user) {
+      if (RESERVED_ADMIN_USERS.includes(user.user_name)) {
+        this.$router.push({ name: "Home" });
+      } else {
+        this.$router.push({ name: "Session", params: { session: user.user_name } });
+      }
     }
 
   },
@@ -77,7 +84,9 @@ export default {
 
 <style>
 .login-container {
-  background-image: url('../../assets/login_bg.jpg');
+  /* background: linear-gradient(135deg, #593699 0%, #f0efce 100%); */
+  /* background: linear-gradient(135deg, #318486 0%, #f0efce 100%); */
+  background: linear-gradient(135deg, #619fb8 0%, #f0efce 100%);
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;

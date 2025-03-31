@@ -113,10 +113,6 @@ def register():
         return "Missing email", 400
     if not password:
         return "Missing password", 400
-    if not first_name:
-        return "Missing firstname", 400
-    if not last_name:
-        return "Missing lastname", 400
 
     # Capitalize first letter of first and last name
     first_name = first_name.capitalize()
@@ -133,12 +129,11 @@ def register():
             last_name=last_name,
             password=bcrypt.hashpw(password.encode("utf-8"),
             bcrypt.gensalt()).decode("utf-8"),
-            active=False,
-            role="ROLE_LEARNER"
+            active=True,
+            role="ROLE_ADMIN"
         )
         db.session.add(user)
         db.session.commit()
-        send_confirmation(email, f"{first_name} {last_name}")
         return "User created", 200
 
 
@@ -720,12 +715,7 @@ def users():
             user = User.query.get(data["id"])
             user_name = f"{user.first_name} {user.last_name}"
             # If user is not activated, but the request is to activate, send an activation email
-            if not user.active and data["active"]:
-                try:
-                    send_activation_email(user.email, user_name)
-                except Exception as e:
-                    print(e)
-                    print(f"Activation email failed to send for {user_name}, but account will still be activated")
+
             # Change the status, if the account gets disabled, no email is sent
             user.active = data["active"]
             db.session.commit()
