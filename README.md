@@ -1,82 +1,45 @@
-# Remrob Frontend app + Booking backend
+# Remrob Spot - bootstrapping ROS workshops
 
-The frontend is written with Vue.js (v2), while the Python backend is based on the Flask web framework.
-SQLAlchemy (flask-sqlalchemy) is used as an ORM for the PostgreSQL database.
+This is a remrob app version meant to be run locally and removes the time booking part of the webapp.
 
-## Requirements
+Instead of having user accounts, there are robot accounts - via the robot user login it is possible to immediately gain access to a robot session panel with no time cap.
 
-* Python3
-* Node v16.13.0 (npm v8.1.0)
-* PostgreSQL
+The only user able to create robot accounts is the reserved user "admin", if no such user is available then insert it into the database manually.
 
-## Frontend setup
-```
-npm install
+## Running Remrob Spot
 
-python -m venv .venv
-```
+### remrob-server
+The `remrob-server` backend needs to be enabled in Remrob Spot mode, which can be done by setting the configuration entry `LocalRemrob` to `true` in config/default.json and restarting that service (if running with pm2, then the restart can be done with: `pm2 restart remrob`).
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+### remrob-webapp
 
-### Compiles and minifies for production
-```
-npm run build
-```
+For frontend the steps are (assuming system was setup via [remrob-setup](https://github.com/unitartu-remrob/remrob-setup)):
+1) Checkout this branch
+2) Restart the flask backend:
+    `systemctl restart remrob-flask.service`
+3) Rebuild the frontend app
+    `npm run build`
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Creating robot accounts
 
+Login as the reserved "admin" user and navigate to robot registration from the admin menu:
 
-## Backend setup
+![Admin menu](./docs/admin-menu.jpg)
 
-## Install all the requirements from requirements.txt file (Python 3.9 was used)
-```
-pip install -r requirements.txt
-```
+The robot account name must match the pattern `$robot_name`-`$id`.
 
-## Run dev server with hot-reloads
-```
-npm run dev-server
-```
+**!NB: Make sure the corresponding robots are also get registered under 'Inventory'**
 
-## Run poduction app with gunicorn
-```
-npm run start
-```
+After both the robot user has been created and the robot has been entered into the inventory, you can attempt to login as the robot user.
 
-## PostgreSQL database setup
+![Robot login](./docs/robot-login-screen.png)
 
-1. Set your database credentials in the .env or .env.production env files for development or production setup respectively.
+Upon successful login you should be directly navigated to the specific robot session panel.
 
-	```bash
-	# Example - db_user: postgres, db_user_password: postgres, db_name: remrob
-	SQLALCHEMY_DATABASE_URI = postgresql://postgres:postgres@localhost:5432/remrob
-	```
+![Robot session panel](./docs/remrob-spot-workstation.png)
 
-2. Running migrations with alembic
-	
-	```bash
-	source .venv/bin/activate
+### Adding different robots
 
-	flask db init # will initialize ./migrations folder
-	flask db migrate # will generate migration script under ./migrations/versions
-	flask db upgrade # will apply the migration script to the database
-	```
+The robots which will be accepted by [remrob-server](https://github.com/unitartu-remrob/remrob-server) container backend are listed in that service under `RobotsAvailable` config entry in config/default.json.
 
-## Remrob full installation
-
-For setting up full Remrob application see installation instructions at https://github.com/unitartu-remrob/remrob-setup
-
----
-
-&nbsp;&nbsp;
-
-# Acknowledgments
-
-Completed with the support by IT Academy Programme of Education and Youth Board of Estonia.
-
-Valminud Haridus- ja Noorteameti IT Akadeemia programmi toel.
-
+To enable other robots for Remrob Spot, besides all the [regular steps](https://github.com/unitartu-remrob/remrob-setup/tree/main/robots) you must also supplement the `RobotsAvailable` list with robot names you have registered (`$robot_name` in the robot account name, e.g. "robotont").

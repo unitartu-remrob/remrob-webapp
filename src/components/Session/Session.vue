@@ -124,7 +124,7 @@ export default {
     computed: {
         ...mapGetters(["getUser"]),
         message: function() {
-            const { robot_id, robot_label} = this.container;
+            const { robot_id, robot_label } = this.container;
             if (robot_id !== undefined) {
                 return `${robot_label || `Robot #${robot_id}`} workstation`;
             } else {
