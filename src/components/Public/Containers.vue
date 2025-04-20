@@ -25,7 +25,7 @@
 		</div>
 		<div v-else class="active-session p-4">
 			<div v-if="activeContainer" class="text-center">
-				<h2>You have a claimed a simulation box:</h2>
+				<h2>You have claimed a simulation box:</h2>
 			</div>
 			<Sandbox v-if="activeContainer"
 				:container="activeContainer"
