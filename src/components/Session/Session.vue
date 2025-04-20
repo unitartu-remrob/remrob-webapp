@@ -15,7 +15,7 @@
                 <div :key="timerKey">
                     <h3 class="mt-4">Time left: <strong>{{ this.displayTime }}</strong></h3>
                 </div>
-                <p class="h3 mt-4 mb-5">Session status: <strong>{{ containerState.status }}</strong></p>
+                <p class="h3 mt-4 mb-5">Session status: <strong>{{ (starting && "booting...") || containerState.status }}</strong></p>
                 <div>
                     <strong class="image-pick-label" v-if="containerState.disconnected">
                         Pick environment:
