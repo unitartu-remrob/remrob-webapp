@@ -35,7 +35,7 @@
                     <!-- <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
                     </b-form-checkbox> -->
-                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
+                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running || starting" @click="startContainer">
                         <b-spinner v-if="starting" small></b-spinner>
                         Start session
                     </b-button>
@@ -43,7 +43,7 @@
                         <Link font-scale="1" />
                         Connect to session!
                     </b-button>
-                    <b-button class="mr-2" variant="warning" size="md" :disabled="containerState.inactive" @click="stopContainer">
+                    <b-button class="mr-2" variant="warning" size="md" :disabled="containerState.inactive || stopping" @click="stopContainer">
                         <b-spinner v-if="stopping" small></b-spinner>
                         Stop
                     </b-button>
@@ -196,6 +196,8 @@ export default {
                 setTimeout(() => {
                     this.started = (status === "exited" || status === "running");
                 }, 500)
+                this.chosenImage = this.containerData.image;
+
                 this.loading = false;
             }).catch(e => {
                 // With the expectation of exception 404 - container dead
