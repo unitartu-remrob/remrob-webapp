@@ -134,9 +134,9 @@ export default {
     computed: {
         ...mapGetters(["getUser"]),
         message: function() {
-            const { robot_id } = this.container;
-            if (robot_id !== undefined) {
-                return `You have been assigned Robotont nr. ${robot_id}`;
+            const robotTitle = this.container.robot_label;
+            if (robotTitle !== undefined) {
+                return `You have been assigned ${robotTitle}`;
             } else {
                 return `Your simulation environment is ready`;
             }
