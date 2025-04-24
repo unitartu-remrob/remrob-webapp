@@ -332,7 +332,8 @@ def all_slots():
         if slot.simulation:
             title = "Simulation"
         else:
-            title = "Robot"
+            title = slot.project
+
         slot_object = {
             "title": title,
             "start": slot.start_time,
@@ -379,7 +380,7 @@ def bookings():
             if booking.simulation:
                 title = "Simulation"
             else:
-                title = "Robot"
+                title = booking.project
             slot_object = {
                 "title": title,
                 "start": booking.start_time,
@@ -443,7 +444,7 @@ def user_bookings(user_id):
             if booking.simulation:
                 title = "Simulation"
             else:
-                title = "Robot"
+                title = booking.project
 
             slot_object = {
                 "title": title,
@@ -638,6 +639,11 @@ def new_inventory():
     else:
         return "Bad query", 400
 
+    if "project" in data and data["project"] != None:
+        project = data["project"]
+    else:
+        return "Missing project (robot type)", 400
+
     robot_label = data["robot_label"] if "robot_label" in data else None
 
     entry = Inventory.query.filter(Inventory.robot_id == id).first()
@@ -646,7 +652,7 @@ def new_inventory():
             robot_id=id,
             slug=f"robo-{id}",
             robot_label=robot_label,
-            project='default',
+            project=project,
             cell=0,
             status=False
         )

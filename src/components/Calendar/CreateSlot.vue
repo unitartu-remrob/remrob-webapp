@@ -168,12 +168,16 @@ export default {
                 this.$api.get("/api/v1/inventory"),
                 this.$api.get("/api/v1/simtainers")
             ]).then(([inventoryRes, simulationRes]) => {
-                const options = this.getOptions(inventoryRes.data);
-                for (let i = 0; i < options.length; i++) {
-                    this.inventory.push({value: {
-                        simulation: false,
-                        project: options[i].project
-                    }, text: `Robotont@${options[i].project} (x${options[i].count})`})
+                const robotInventory = this.getOptions(inventoryRes.data);
+                for (let i = 0; i < robotInventory.length; i++) {
+                    const project = robotInventory[i].project
+                    this.inventory.push({
+                        value: {
+                            simulation: false,
+                            project
+                        },
+                        text: `${project} (x${robotInventory[i].count})`
+                    })
                 }
                 // would be nice to check here how many slots are booked for the inventory already,
                 // so that it's not possible to overbook resources
