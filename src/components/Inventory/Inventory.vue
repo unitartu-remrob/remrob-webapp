@@ -11,7 +11,7 @@
                         <b-form-input type="text" v-model="robotType">  
                         </b-form-input>
                     </b-form-group>
-                    <b-form-group label="Robot label (e.g. robotont-3):">
+                    <b-form-group label="Robot name (e.g. robotont-3):">
                         <b-form-input type="text" v-model="robotLabel">  
                         </b-form-input>
                     </b-form-group>
@@ -41,7 +41,7 @@
                     <template #cell(delete)="{ item: { slug } }">
                         <b-button type="button" class="delete-button" variant="dark" @click="function() {selectedForDelete = slug; $bvModal.show('delete-modal')}">Remove</b-button>
                     </template>
-                    <template #cell(project)="{ item }">
+                    <template #cell(settings)="{ item }">
                         <InventoryInput :inventoryItem="item" :isSimtainer=false @update="updateInventory"/>
                     </template>
                 </b-table>
@@ -77,10 +77,11 @@ export default {
             simtainerInventory: [],
             formState: [],
             fields: [
-                { key: "robot_id", label: "Network ID" },
                 { key: "robot_label", label: "Robot name" },
+                { key: "project", label: "Robot type" },
+                { key: "robot_id", label: "Network ID" },
                 // { key: "location", label: "Workcell" },
-                { key: "project", label: "Change settings" },              
+                { key: "settings", label: "Change settings" },              
                 // { key: "status", label: "Available" },
                 { key: "delete", label: ""},
             ],
@@ -134,7 +135,11 @@ export default {
                 this.alertType = "success";
                 this.dismissCountDown = this.dismissSec;
                 this.getRobotInventory()
-            })
+            }).catch((err => {
+                this.message = err.response.data;
+                this.alertType = "danger";
+                this.dismissCountDown = this.dismissSec;
+            }))
         },
         deleteInventory: function(id) {
             this.inventory = this.inventory.filter(item => item.slug !== id)
@@ -154,7 +159,11 @@ export default {
 				this.message = res.data;
                 this.alertType = "success";
                 this.dismissCountDown = this.dismissSec;
-			})
+			}).catch((err => {
+                this.message = err.response.data;
+                this.alertType = "danger";
+                this.dismissCountDown = this.dismissSec;
+            }))
 		},
         updateSimtainerInventory: function(item) {
             const data = {

@@ -639,9 +639,9 @@ def new_inventory():
     else:
         return "Bad query", 400
 
-    if "project" in data and data["project"] != None:
-        project = data["project"]
-    else:
+    project = data["project"]
+
+    if project == None or project == "":
         return "Missing project (robot type)", 400
 
     robot_label = data["robot_label"] if "robot_label" in data else None
