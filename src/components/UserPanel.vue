@@ -22,8 +22,8 @@
                     </template>
                     <template v-slot:cell(title)="{ item }">
                         <div class="d-flex mr-4 align-items-center ml-4">
-                            <b-img v-if="item.is_simulation" class="slot-icon" :src="require('../assets/robotont-sim.png')"></b-img>
-                            <b-img v-else class="slot-icon" :src="require('../assets/robotont3.png')"></b-img>
+                            <b-img v-if="item.is_simulation" class="slot-icon" :src="require('@/assets/robotont-sim.png')"></b-img>
+                            <b-img v-else class="slot-icon" :src="getRobotIcon(item)"></b-img>
                             <span class="booking-title ml-5 text-ubuntu-500" style="font-size: 1.4rem;">{{ item.title }}</span>
                         </div>
                     </template>
@@ -87,7 +87,6 @@ export default {
                 this.bookings = res.data.user_bookings
 
                 this.bookings.sort((a, b) => (b.id - a.id))
-                console.log(res.data)
             })			
         },
         getDateFromDateTime,
@@ -99,6 +98,10 @@ export default {
             });
             this.is_loaded = true
             this.timerKey += 1;
+        },
+        getRobotIcon(item) {
+            const icon = item.project === "Robotont" ? 'robotont3' : 'ur5';
+            return require(`@/assets/${icon}.png`)
         }
     },
     created() {

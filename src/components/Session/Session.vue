@@ -1,7 +1,7 @@
 <template>
     <b-container fluid>
         <div class="bg-main"
-        :class="isSim ? 'vr-cell' : 'bg-cell'"></div>
+        :class="isSim ? 'vr-cell' : 'remrob-cell'"></div>
         <!-- <b-modal ok-title="Confirm" @ok="commitContainer" title="Save session?" id="commit-modal">
             <h4>This will overwrite any previous save</h4>
         </b-modal> -->
@@ -11,11 +11,14 @@
         <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" variant="info"></b-spinner></div>
 		<b-row v-if="this.isLoaded && this.imagesAreLoaded">``
             <b-col class="info text-center" v-if="this.sessionIsActive">
-                <h2>{{ message }}</h2>
+
+                <h2 v-if="this.isSim">Your simulation environment is ready</h2>
+                <h2 v-else>You have been assigned <span class="text-ubuntu-500">{{robotName}}</span></h2>
+
                 <div :key="timerKey">
                     <h3 class="mt-4">Time left: <strong>{{ this.displayTime }}</strong></h3>
                 </div>
-                <p class="h3 mt-4 mb-5">Session status: <strong>{{ (starting && "booting...") || containerState.status }}</strong></p>
+                <p class="h3 mt-4 mb-4">Session status: <strong>{{ (starting && "booting...") || containerState.status }}</strong></p>
                 <div>
                     <strong class="image-pick-label" v-if="containerState.disconnected">
                         Pick environment:
@@ -71,10 +74,14 @@
                 :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
             </iframe> -->
             <div v-if="!this.isSim" class="room-items">
+                <div class="cell-robot" :class="robotStyleClass">
+                    <b-img :src="robotImg"></b-img>
+                </div>
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
-            <div v-else class="simbot">
-                <b-img :src="require('@/assets/robotont-sim.png')"></b-img>
+            <div v-else class="room-items simbots">
+                <b-img :src="require('@/assets/robotont-sim.png')" class="robotont"></b-img>
+                <b-img :src="require('@/assets/ur5-sim.png')" class="ur5"></b-img>
             </div>
         </b-row>
         <div class="session" v-if="this.isLoaded" :style="this.isSim ? 'top: 7rem;' : ''">
@@ -133,13 +140,15 @@ export default {
     },
     computed: {
         ...mapGetters(["getUser"]),
-        message: function() {
-            const robotTitle = this.container.robot_label;
-            if (robotTitle !== undefined) {
-                return `You have been assigned ${robotTitle}`;
-            } else {
-                return `Your simulation environment is ready`;
-            }
+        robotStyleClass: function() {
+            return this.container.project === "Robotont" ? "robotont" : "ur5";
+        },
+        robotImg: function() {
+            const img = this.container.project === "Robotont" ? "robotont3" : "ur5";
+            return require(`@/assets/${img}.png`)
+        },
+        robotName: function() {
+            return this.container.robot_label;
         },
         containerState: function() {
             if (!this.loading) {
@@ -339,9 +348,9 @@ export default {
 <style scoped>
 .info {
     position: absolute;
-    margin-top: 4%;
+    margin-top: 1.8%;
     margin-left: 7.3%;
-    padding: 3rem 1.5rem;
+    padding: 2% 1%;
     background: white;
     border-radius: 1.2rem;
     border: 2px solid rgb(22, 20, 20);
@@ -354,11 +363,16 @@ export default {
     }
 }
 
+@media screen and (max-width: 1450px) {
+    .info {
+        max-width: 50%;
+    }
+}
+
 .controls {
-    margin-top: 2rem;
+    margin-top: 1.6rem;
 }
 .session {
-    /* This styling is a mess */
     position: fixed;
     transform: translateX(29rem) scale(0.58);
     right: 6rem;
@@ -367,45 +381,69 @@ export default {
     bottom: 0;
 }
 
+.remrob-cell {
+    background-image: url('../../assets/remrob_cell.jpg');
+}
+
 .vr-cell {
     background-image: url('../../assets/mesh_bg.jpg');
 }
 
-.simbot {
-    position: fixed;
-    left: 15%;
-    top: 70%;
+.simbots {
+    max-width: 45%;
+    display: flex;
+    align-items: flex-end !important;
 }
 
-.simbot img {
+.simbots img {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 100%;
+    height: auto;
+}
+
+.cell-robot {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 14rem;
+}
+
+.cell-robot img {
     width: 110%;
     height: auto;
 }
 
 
 @media screen and (min-width: 2000px) {
-    .simbot img {
-        width: 130%;
+    .cell-robot {
+        width: 17rem;
+    }
+    .ur5 {
+        width: 22.5rem !important;
     }
 }
 
-.keyboard {
-    position: fixed;
-    right: 35%;
-    bottom: -25%;
-    width: 40%;
-    height: auto;
-    transform: skew(-32deg, 16deg);
-    z-index: 2;
-    opacity: 0.85;
+.ur5 {
+    width: 17rem;
+    margin-bottom: -5rem;
+    margin-right: -5rem;
+}
+
+.simbots .robotont {
+    max-width: 12.5rem;
+    margin-bottom: -5rem;
+}
+
+.simbots .ur5 {
+    margin-bottom: -6rem;
 }
 
 .room {
-    margin: 2rem 4rem;
-    width: 45%;
+    margin: 1% 2%;
+    max-width: 60%;
     position: absolute;
-    left: 17%;
-    top: 62%;
+    left: 15%;
+    bottom: 5%;
 }
 
 .room-items {
@@ -413,8 +451,17 @@ export default {
     position: relative;
     justify-content: center;
     align-items: center;
-    gap: 4rem;
-    padding: 2rem 0;
+    gap: 2rem;
+    margin-bottom: 10%;
+}
+
+@media screen and (max-width: 1450px) {
+    .room-items {
+        margin-bottom: 20%;
+    }
+    .ur5 {
+        width: 15rem;
+    }
 }
 
 .image-dropdown {
@@ -434,10 +481,21 @@ export default {
 	object-fit: cover;
 }
 
+/* .keyboard {
+    position: fixed;
+    right: 35%;
+    bottom: -25%;
+    width: 40%;
+    height: auto;
+    transform: skew(-32deg, 16deg);
+    z-index: 2;
+    opacity: 0.85;
+}
+
 .camera-stream {
     height: 18rem;
     width: 100%;
     top: 0;
-}
+} */
 
 </style>

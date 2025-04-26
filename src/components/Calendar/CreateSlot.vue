@@ -185,7 +185,6 @@ export default {
                     simulation: true,
                     project: "simulation"
                 }, text: `Simulation (x${simulationRes.data.length})`})
-                console.log(this.inventory)
             });
         },
         handleEventClick: function (info) {
