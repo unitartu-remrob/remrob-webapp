@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <b-navbar toggleable="lg" type="dark" sticky variant="dark">
-      <Justify v-b-toggle.sidebar-backdrop v-if="loggedIn" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
-      <b-navbar-brand style="cursor:pointer" @click="homeRedirect">Remrob</b-navbar-brand>
+      <Justify v-b-toggle.sidebar-backdrop v-if="loggedIn && isAdmin" class="mr-2" style="cursor: pointer;" font-scale="2" variant="light" />
+      <b-navbar-brand style="cursor:pointer" @click="homeRedirect" class="remrob-site-brand">Remrob</b-navbar-brand>
       <b-navbar-nav v-if="loggedIn" class="ml-auto">
         <b-nav-item v-if="isAdmin" href="/containers/guide/" class="admin-sc mr-1">
           <b-button class="btn-dark" variant="light"><JournalText font-scale="1" class="mr-2"/>Remrob guide</b-button>
@@ -112,5 +112,9 @@ export default {
 
   .b-sidebar .nav-item > a:hover {
     color: gray !important;
+  }
+
+  .remrob-site-brand {
+    font-size: 1.4rem !important;
   }
 </style>
