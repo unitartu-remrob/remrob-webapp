@@ -93,7 +93,6 @@ export default {
     background-image: url('../assets/login_bg.jpg');
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
     background-position: center center;
     background-attachment: fixed;
     box-sizing: border-box;
@@ -101,10 +100,10 @@ export default {
     z-index: -5;
     top: 0;
     left: 0;
+    width: 100vw;
     height: 100vh;
-    width: 100%;
-    filter: blur(0.5px);
     opacity: 0.9;
+    will-change: transform;
 }
 
 .bg-cell {
