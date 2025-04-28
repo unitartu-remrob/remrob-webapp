@@ -179,7 +179,7 @@ def refresh():
     user = User.query.filter_by(id=user_id).first()
     is_administrator = user.role == "ROLE_ADMIN"
     access_token = create_access_token(identity=user_id, additional_claims={"is_administrator": is_administrator})
-    return jsonify(access_token=access_token, user_id=user_id, role=user.role)
+    return jsonify(access_token=access_token, user_id=user_id, role=user.role, user_name=user.email), 200
 
 
 @app.route("/api/v1/logout", methods=["DELETE"])
