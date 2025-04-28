@@ -7,7 +7,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start": ". .venv/bin/activate && FLASK_ENV=production gunicorn --bind 0.0.0.0:5000 app:app --workers 4",
-    "dev-server": ". .venv/bin/activate && FLASK_ENV=development flask run"
+    "dev-server": ". .venv/bin/activate && FLASK_ENV=development flask --debug run"
   },
   "dependencies": {
     "@fullcalendar/core": "^5.11.0",

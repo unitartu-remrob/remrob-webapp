@@ -105,4 +105,8 @@ export default {
   .b-sidebar .nav-item > a:hover {
     color: gray !important;
   }
+
+  .remrob-site-brand {
+    font-size: 1.4rem !important;
+  }
 </style>

@@ -4,8 +4,8 @@
         class="bg-main"
         :class="getUser.role == 'ROLE_ADMIN' ? 'bg-main' : 'bg-cell'"></div>
         <b-row class="admin-menu">
-            <b-col sm v-if="getUser.role == 'ROLE_LEARNER'">
-                <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('../assets/calendar.png')">
+            <b-col v-if="getUser.role == 'ROLE_LEARNER'" style="display: flex; justify-content: center;">
+                <b-card img-fluid class="text-center booking-card cardClass" :img-src="require('@/assets/calendar.png')">
                     <b-card-text style="font-size: 1.4rem">Find a time to access our robots and simulation environments!</b-card-text>
                     <b-button @click="$router.push({name: 'Booking'})" size="lg" variant="">Go to reservation</b-button>
                 </b-card>
@@ -91,7 +91,6 @@ export default {
     background: linear-gradient(135deg, #619fb8 0%, #f0efce 100%);
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
     background-position: center center;
     background-attachment: fixed;
     box-sizing: border-box;
@@ -99,26 +98,27 @@ export default {
     z-index: -5;
     top: 0;
     left: 0;
+    width: 100vw;
     height: 100vh;
-    width: 100%;
-    filter: blur(0.5px);
     opacity: 0.9;
+    will-change: transform;
 }
 
 .bg-cell {
-    background-image: url('../assets/cell.jpg');
+    background-image: url('../assets/login_bg.jpg');
 }
 
 .admin-menu {
     padding: 0.5rem;
     position: relative;
-    margin: 2rem auto 1rem !important;
+    margin: 2rem auto !important;
+    margin-bottom: 5% !important;
     max-width: 85%;
 }
 
 .admin-menu .card {
     background-color: rgba(255, 255, 255, 0.65);
-    border: 6px solid rgb(22, 20, 20);
+    border: 4px solid rgb(22, 20, 20);
     border-radius: 2rem;
     padding: 1rem 2rem;
     height: calc(100% - 0.5rem);
@@ -127,7 +127,6 @@ export default {
 .admin-menu .card-title {
     font-size: 1.6rem;
     font-weight: bold;
-    /* margin-top: 4px; */
 }
 
 .admin-menu .card-text {
@@ -135,18 +134,24 @@ export default {
     font-weight: 500;
 }
 
-@media screen and (min-width: 601px) {
+.booking-card .card-img {
+    width: 75%;
+    margin: auto;
+}
+
+@media screen and (min-width: 1450px) {
     .admin-menu .booking-card {
         align-items: center;
-        max-width: 22vw;
-        margin: 0 0 0 4rem;
-        padding: 1.6rem 2rem;
+        margin: 0 4rem 0 4rem !important;
+        max-width: 65% !important;
+        padding: 1.6rem 1.6rem;
         background-color: rgba(255, 255, 255, 0.9);
         z-index: 30;
     }
+
     .booking-card .card-img {
-        width: 75%;
-        
+        width: 50%;
+        margin: auto;
     }
 }
 

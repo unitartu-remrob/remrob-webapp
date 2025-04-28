@@ -1,11 +1,11 @@
 <template>
-  <div class="remrob-info robot-ground">
+  <div class="remrob-info">
     <b-card class="resources">
       <template v-if=newsLoaded>
         <Newsboard :content="newsBoardText"/>
       </template>
     </b-card>
-    <b-img class="robot-slide" :src="currentImage"></b-img>
+    <!-- <b-img class="robot-slide" :src="currentImage"></b-img> -->
   </div>
 </template>
 
@@ -63,10 +63,10 @@ export default {
 
   },
   created() {
-    this.startImageRotation();
+    // this.startImageRotation();
   },
   beforeDestroy() {
-    this.stopImageRotation();
+    // this.stopImageRotation();
   },
 }
 </script>
@@ -90,11 +90,11 @@ export default {
 
 .admin-menu .remrob-info .resources,
 .remrob-info .resources {
-  background-color: rgba(255, 255, 255, 0.904);
-  /* background-color: white; */
+  /* background-color: rgba(255, 255, 255, 0.904); */
+  background-color: rgba(250, 246, 246, 0.925);
   padding: 0;
   margin: 0;
-  width: 25%;
+  width: 30%;
   height: 30% !important;
   position: fixed;
   top: 13%;
@@ -104,7 +104,7 @@ export default {
 }
 
 .resources {
-  transform: skewY(5deg) skewX(-2deg);
+  /* transform: skewY(5deg) skewX(-2deg); */
   z-index: 0;
 }
 

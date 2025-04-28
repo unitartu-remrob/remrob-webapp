@@ -1,5 +1,5 @@
 <template>
-    <b-container fluid class="pt-3 pl-4 bg-white">
+    <b-container fluid class="pt-3 pl-4 pr-4 bg-white">
         <b-alert :show="dismissCountDown" dismissible @dismissed="dismissCountDown=0" :variant="alertType">{{message}}</b-alert>
         <b-modal ok-title="Confirm" @ok="deleteInventory(selectedForDelete)" title="Delete inventory item" id="delete-modal">
             <h4>Are you sure you want to remove this inventory item?</h4>
@@ -7,12 +7,16 @@
         <b-row class="mt-3">
             <b-col class="col-4">
                 <b-form>
-                    <b-form-group label="Robot nr.:">
-                        <b-form-input type="number" v-model="robotId">  
+                    <b-form-group label="Robot type (e.g. Robotont)">
+                        <b-form-input type="text" v-model="robotType">  
                         </b-form-input>
                     </b-form-group>
-                    <b-form-group label="Robot name:">
+                    <b-form-group label="Robot name (e.g. robotont-3):">
                         <b-form-input type="text" v-model="robotLabel">  
+                        </b-form-input>
+                    </b-form-group>
+                    <b-form-group label="Robot nework ID:">
+                        <b-form-input type="number" v-model="robotId">  
                         </b-form-input>
                     </b-form-group>
                     <b-button variant="success" @click="createInventory">Add robot</b-button>
@@ -34,7 +38,7 @@
                     <template #cell(delete)="{ item: { slug } }">
                         <b-button type="button" class="delete-button" variant="dark" @click="function() {selectedForDelete = slug; $bvModal.show('delete-modal')}">Remove</b-button>
                     </template>
-                    <template #cell(project)="{ item }">
+                    <template #cell(settings)="{ item }">
                         <InventoryInput :inventoryItem="item" :isSimtainer=false @update="updateInventory"/>
                     </template>
                 </b-table>
@@ -50,15 +54,17 @@ export default {
     data() {
         return {
             robotId: null,
+            robotType: null,
             robotLabel: null,
             inventory: [],
             simtainerInventory: [],
             formState: [],
             fields: [
-                { key: "robot_id", label: "ID" },
                 { key: "robot_label", label: "Robot name" },
+                { key: "project", label: "Robot type" },
+                { key: "robot_id", label: "Network ID" },
                 // { key: "location", label: "Workcell" },
-                { key: "project", label: "Change settings" },              
+                { key: "settings", label: "Change settings" },              
                 // { key: "status", label: "Available" },
                 { key: "delete", label: ""},
             ],
@@ -100,17 +106,23 @@ export default {
             }
             const data = {
                 "robot_id": this.robotId,
+                "project": this.robotType,
                 "robot_label": this.robotLabel
             }
             this.$api.post(`/api/v1/inventory`, data).then((res) => {
                 this.robotId = null;
                 this.robotLabel = null;
+                this.robotType = null;
                 
                 this.message = res.data;
                 this.alertType = "success";
                 this.dismissCountDown = this.dismissSec;
                 this.getRobotInventory()
-            })
+            }).catch((err => {
+                this.message = err.response.data;
+                this.alertType = "danger";
+                this.dismissCountDown = this.dismissSec;
+            }))
         },
         deleteInventory: function(id) {
             this.inventory = this.inventory.filter(item => item.slug !== id)
@@ -130,7 +142,11 @@ export default {
 				this.message = res.data;
                 this.alertType = "success";
                 this.dismissCountDown = this.dismissSec;
-			})
+			}).catch((err => {
+                this.message = err.response.data;
+                this.alertType = "danger";
+                this.dismissCountDown = this.dismissSec;
+            }))
 		},
         updateSimtainerInventory: function(item) {
             const data = {

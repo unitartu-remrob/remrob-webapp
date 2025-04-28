@@ -2,9 +2,9 @@
     <b-container fluid class="bg-white mt-4" style="max-width: 95%; margin: auto; padding: 0.75rem 1rem; border-radius: 0.5rem">
 		<div class="bg-main"></div>
         <b-tabs card>
-			<b-tab title="Containers"  @click="switchTab(sim=false)">
+			<b-tab title="Containers"  @click="switchTab(sim=false)" active>
 			</b-tab>
-			<b-tab title="Simtainers" @click="switchTab(sim=true)" active>
+			<b-tab title="Simtainers" @click="switchTab(sim=true)">
 			</b-tab>
 		</b-tabs>
 		<div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" variant="info"></b-spinner></div>
@@ -88,7 +88,7 @@ export default {
 			imagesAreLoaded: false,
 
 			pollInterval: null,
-			isSim: true,
+			isSim: false,
 			isLoaded: false,
 			ws: null
         }

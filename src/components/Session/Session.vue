@@ -32,7 +32,7 @@
                     <!-- <b-form-checkbox class="h3 mb-3" v-model="freshImage" name="check-button" switch size="lg" :disabled="!containerState.disconnected">
                         Use fresh
                     </b-form-checkbox> -->
-                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running" @click="startContainer">
+                    <b-button class="mr-2" variant="success" size="lg" :disabled="containerState.running || starting" @click="startContainer">
                         <b-spinner v-if="starting" small></b-spinner>
                         Start session
                     </b-button>
@@ -40,7 +40,7 @@
                         <Link font-scale="1" />
                         Connect to session!
                     </b-button>
-                    <b-button class="mr-2" variant="warning" size="md" :disabled="containerState.inactive" @click="stopContainer">
+                    <b-button class="mr-2" variant="warning" size="md" :disabled="containerState.inactive || stopping" @click="stopContainer">
                         <b-spinner v-if="stopping" small></b-spinner>
                         Stop
                     </b-button>
@@ -64,8 +64,9 @@
                 <b-img :src="require('@/assets/robotont.png')"></b-img>
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
-            <div v-else class="simbot">
-                <b-img :src="require('@/assets/robotont-sim.png')"></b-img>
+            <div v-else class="room-items simbots">
+                <b-img :src="require('@/assets/robotont-sim.png')" class="robotont"></b-img>
+                <b-img :src="require('@/assets/ur5-sim.png')" class="ur5"></b-img>
             </div>
         </b-row>
         <div class="session" v-if="this.isLoaded" :style="this.isSim ? 'top: 7rem;' : ''">
@@ -176,6 +177,8 @@ export default {
                 setTimeout(() => {
                     this.started = (status === "exited" || status === "running");
                 }, 500)
+                this.chosenImage = this.containerData.image;
+
                 this.loading = false;
             }).catch(e => {
                 // With the expectation of exception 404 - container dead
@@ -282,9 +285,9 @@ export default {
 <style scoped>
 .info {
     position: absolute;
-    margin-top: 4%;
+    margin-top: 1.8%;
     margin-left: 7.3%;
-    padding: 3rem 1.5rem;
+    padding: 2% 1%;
     background: white;
     border-radius: 1.2rem;
     border: 2px solid rgb(22, 20, 20);
@@ -297,11 +300,16 @@ export default {
     }
 }
 
+@media screen and (max-width: 1450px) {
+    .info {
+        max-width: 50%;
+    }
+}
+
 .controls {
-    margin-top: 2rem;
+    margin-top: 1.6rem;
 }
 .session {
-    /* This styling is a mess */
     position: fixed;
     transform: translateX(29rem) scale(0.58);
     right: 6rem;
@@ -310,37 +318,61 @@ export default {
     bottom: 0;
 }
 
+.remrob-cell {
+    background-image: url('../../assets/remrob_cell.jpg');
+}
+
 .vr-cell {
     background-image: url('../../assets/mesh_bg.jpg');
 }
 
-.simbot {
-    position: fixed;
-    left: 15%;
-    top: 70%;
+.simbots {
+    max-width: 45%;
+    display: flex;
+    align-items: flex-end !important;
 }
 
-.simbot img {
+.simbots img {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 100%;
+    height: auto;
+}
+
+.cell-robot {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 14rem;
+}
+
+.cell-robot img {
     width: 110%;
     height: auto;
 }
 
 
 @media screen and (min-width: 2000px) {
-    .simbot img {
-        width: 130%;
+    .cell-robot {
+        width: 17rem;
+    }
+    .ur5 {
+        width: 22.5rem !important;
     }
 }
 
-.keyboard {
-    position: fixed;
-    right: 35%;
-    bottom: -25%;
-    width: 40%;
-    height: auto;
-    transform: skew(-32deg, 16deg);
-    z-index: 2;
-    opacity: 0.85;
+.ur5 {
+    width: 17rem;
+    margin-bottom: -5rem;
+    margin-right: -5rem;
+}
+
+.simbots .robotont {
+    max-width: 12.5rem;
+    margin-bottom: -5rem;
+}
+
+.simbots .ur5 {
+    margin-bottom: -6rem;
 }
 
 .room {
@@ -380,10 +412,21 @@ export default {
 	object-fit: cover;
 }
 
+/* .keyboard {
+    position: fixed;
+    right: 35%;
+    bottom: -25%;
+    width: 40%;
+    height: auto;
+    transform: skew(-32deg, 16deg);
+    z-index: 2;
+    opacity: 0.85;
+}
+
 .camera-stream {
     height: 18rem;
     width: 100%;
     top: 0;
-}
+} */
 
 </style>
