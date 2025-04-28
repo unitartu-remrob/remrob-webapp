@@ -2,7 +2,7 @@
   <div class="login-container">
     <b-row align-h="end">
       <b-col>
-        <div class="users text-center">
+        <div class="users text-center p-3">
           <h4 class="pt-3 pb-3 existing-robots-title">Existing robot users</h4>
           <b-table striped :items="users" :fields="fields"></b-table>
         </div>
