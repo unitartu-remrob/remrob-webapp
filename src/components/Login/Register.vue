@@ -1,13 +1,19 @@
 <template>
   <div class="login-container">
     <b-row align-h="end">
+      <b-col>
+        <div class="users text-center">
+          <h4 class="pt-3 pb-3 existing-robots-title">Existing robot users</h4>
+          <b-table striped :items="users" :fields="fields"></b-table>
+        </div>
+      </b-col>
       <b-col style="max-width: 35rem; margin: 5% 17.5%;">
         <b-card class="login-box">
           <b-form @submit="register" class="register-form p-1">
             <b-alert :show="dismissCountDown" dismissible variant="danger" @dismissed="dismissCountDown=0" @dismiss-count-down="countDownChanged">{{errorMessage}}</b-alert>
             <b-alert :show="showAlert" dismissible variant="success">Robot {{this.email}} successfully registered.</b-alert>
             <b-form-group>
-              <h3 class="text-center">Register robot user</h3>
+              <h3 class="text-center">Register a robot user</h3>
             </b-form-group>
             <b-form-group label="Robot ID (format: `$name-$id`), e.g. robotont-3">
               <b-form-input required v-model="email"/>
@@ -47,7 +53,13 @@ export default {
       showAlert: false,
       dismissSec: 5,
       dismissCountDown: 0,
-      errorMessage: null
+      errorMessage: null,
+
+      users: null,
+      fields: [
+          { key: "id", label: "Robot ID" },
+          { key: "email", label: "Robot Name" },
+      ],
     }
   },
   methods: {
@@ -61,7 +73,8 @@ export default {
       }).then((res) => {
         if (res.status === 200) {
           this.showAlert = true;
-          setTimeout(() => this.dismissAlert(), 3000)
+          setTimeout(() => this.dismissAlert(), 3000);
+          this.getUsers();
         }
       }).catch((error) => {
         if (error.response.status === 500) {
@@ -71,6 +84,11 @@ export default {
         }
         this.dismissCountDown = this.dismissSec
       })
+    },
+    getUsers: function() {
+        this.$api.get("/api/v1/users").then((res) => {
+            this.users = res.data.filter(user => user.email.includes("robotont"));
+        })
     },
     countDownChanged(dismissCountDown) {
       this.dismissCountDown = dismissCountDown
@@ -82,6 +100,9 @@ export default {
       this.confirmPassword = null;
     }
   },
+  created() {
+      this.getUsers();
+  },
 }
 </script>
 
@@ -89,5 +110,17 @@ export default {
 
 .login-box {
   padding: 0.2rem 1rem;
+}
+
+.existing-robots-title {
+  font-size: 1.5rem;
+  text-decoration: underline;
+}
+
+.users {
+  margin: 25% 50%;
+  background-color: rgb(255, 255, 255);
+  border-radius: 16px;
+  width: 80%;
 }
 </style>
