@@ -28,9 +28,9 @@
                 </b-card>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">
-                <b-card img-fluid class="text-center" :img-src="require('../assets/robotont.png')" title="Robot users">
-                    <b-card-text>Register reserved robot accounts</b-card-text>
-                    <b-button @click="$router.push({name: 'Register'})" class="mt-3">Register</b-button>
+                <b-card img-fluid class="text-center" :img-src="require('../assets/robotont3.png')" title="Robot users">
+                    <b-card-text>Register reserved robot accounts.</b-card-text>
+                    <b-button @click="$router.push({name: 'Register'})" class="mt-4">Register</b-button>
                 </b-card>
             </b-col>
             <b-col sm v-if="getUser.role == 'ROLE_ADMIN'">

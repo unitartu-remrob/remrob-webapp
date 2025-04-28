@@ -9,7 +9,7 @@
             <h4>This will undo all system changes</h4>
         </b-modal>
         <div class="loader" v-if="!this.isLoaded"><b-spinner style="width: 5rem; height: 5rem;" variant="info"></b-spinner></div>
-		<b-row v-if="this.isLoaded && this.imagesAreLoaded">``
+		<b-row v-if="this.isLoaded && this.imagesAreLoaded">
             <b-col class="info text-center">
                 <h2>{{ message }}</h2>
                 <p class="h3 mt-4 mb-5">Session status: <strong>{{ containerState.status }}</strong></p>
@@ -61,7 +61,7 @@
                 :src="`/cam/webrtcstreamer.html?video=Remrob%20field%20%23${this.container.cell}&options=rtptransport%3Dtcp%26timeout%3D60`">
             </iframe> -->
             <div v-if="!this.isSim" class="room-items">
-                <b-img :src="require('@/assets/robotont.png')"></b-img>
+                <b-img :src="require('@/assets/robotont3.png')"></b-img>
                 <RobotStatus :robotID="this.container.robot_id"/>
             </div>
             <div v-else class="room-items simbots">

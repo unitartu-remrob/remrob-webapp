@@ -51,7 +51,8 @@ export default {
     }
   },
   methods: {
-    register: function () {
+    register: function (event) {
+        event.preventDefault();
         this.$api.post(`/api/v1/register`, {
         "email": this.email,
         "first_name": "",
@@ -78,6 +79,7 @@ export default {
       this.showAlert = false;
       this.email = null;
       this.password = null;
+      this.confirmPassword = null;
     }
   },
 }
