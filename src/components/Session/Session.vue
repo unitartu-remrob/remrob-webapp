@@ -419,12 +419,12 @@ export default {
         width: 17rem;
     }
     .ur5 {
-        width: 22.5rem !important;
+        width: 20rem !important;
     }
 }
 
 .ur5 {
-    width: 17rem;
+    width: 15rem;
     margin-bottom: -5rem;
     margin-right: -5rem;
 }
@@ -455,12 +455,13 @@ export default {
     margin-bottom: 10%;
 }
 
-@media screen and (max-width: 1450px) {
+@media screen and (max-width: 1650px) {
     .room-items {
         margin-bottom: 20%;
     }
     .ur5 {
-        width: 15rem;
+        width: 15rem !important;
+        margin-bottom: -7rem !important;
     }
 }
 
