@@ -425,8 +425,7 @@ export default {
 
 .ur5 {
     width: 15rem;
-    margin-bottom: -5rem;
-    margin-right: -5rem;
+    margin-right: -7rem;
 }
 
 .simbots .robotont {
@@ -444,6 +443,7 @@ export default {
     position: absolute;
     left: 15%;
     bottom: 5%;
+    pointer-events: none;
 }
 
 .room-items {
